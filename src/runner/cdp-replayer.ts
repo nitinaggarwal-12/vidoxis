@@ -6,6 +6,7 @@ import { TelemetryStream, TelemetryEvent } from "../types/telemetry.js";
 import { computeMinimumJerkTrajectory, Point2D } from "./trajectory-math.js";
 import { CameraSpringController } from "./camera-spring.js";
 import { TriadSelectorResolver } from "./triad-selector.js";
+import { resolveGoogleSignedChrome, inspectChromeMetadata, DEFAULT_CHROME_FLAGS } from "../utils/chrome-path.js";
 
 export interface ReplayOptions {
   headless?: boolean;
@@ -17,22 +18,11 @@ export interface ReplayOptions {
 }
 
 export function detectChromeExecutablePath(): string | undefined {
-  if (process.env.PUPPETEER_EXECUTABLE_PATH) {
-    return process.env.PUPPETEER_EXECUTABLE_PATH;
+  try {
+    return resolveGoogleSignedChrome();
+  } catch {
+    return undefined;
   }
-  const candidatePaths = [
-    "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
-    "/Applications/Google Chrome Canary.app/Contents/MacOS/Google Chrome Canary",
-    "/Applications/Chromium.app/Contents/MacOS/Chromium",
-    "/usr/bin/google-chrome-stable",
-    "/usr/bin/google-chrome",
-    "/usr/bin/chromium-browser",
-    "/usr/bin/chromium"
-  ];
-  for (const p of candidatePaths) {
-    if (fs.existsSync(p)) return p;
-  }
-  return undefined;
 }
 
 export class CDPReplayRunner {
@@ -51,17 +41,16 @@ export class CDPReplayRunner {
 
   public async initialize(headless = true, customExecutablePath?: string): Promise<void> {
     const executablePath = customExecutablePath || detectChromeExecutablePath();
+    const meta = inspectChromeMetadata(executablePath);
+    console.log(`  ↳ Browser: Google Chrome ${meta.microVersion} (${meta.platform}, Google-signed: ${meta.isGoogleSigned}, Cloudtop: ${meta.isCloudtop})`);
 
     this.browser = await puppeteer.launch({
       headless: headless ? true : false,
       executablePath,
       args: [
-        "--no-sandbox",
-        "--disable-setuid-sandbox",
-        "--disable-dev-shm-usage",
+        ...DEFAULT_CHROME_FLAGS,
         "--disable-background-timer-throttling",
         "--disable-renderer-backgrounding",
-        "--force-color-profile=srgb",
         "--lang=en-US",
         "--window-size=1920,1080"
       ],

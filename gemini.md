@@ -99,3 +99,18 @@
    - Strictly forbidden: Tautological commentary ("Click here to click this"), corporate fluff ("in today's digital era"), and buzzwords ("delve", "game-changing", "seamless").
 3. **Mandatory 5-Act Pedagogical Arc:**
    - Every training video must contain: Act 1 (Cold Open Hook) $\rightarrow$ Act 2 (Architecture Diagram) $\rightarrow$ Act 3 (Live Console Walkthrough) $\rightarrow$ Act 4 (Chaos Debugging) $\rightarrow$ Act 5 (Production Checklist).
+
+---
+
+## 7. Google-Signed Micro-Version Chrome & Cloudtop Protocol
+
+1. **Mandatory Google-Signed Binary (macOS):**
+   - Headless Chrome sessions, CDP replay runners, and Remotion rendering pipelines must launch `/Applications/Google Chrome.app/Contents/MacOS/Google Chrome` signed by `Developer ID Application: Google LLC (EQHXZ8M8AV)`.
+   - Never rely on raw `chrome-headless-shell` or unnotarized binaries, which are blocked by corporate Santa endpoint security policies (`Killed: 9` / `SIGKILL`).
+
+2. **Cloudtop & Linux Parity:**
+   - On Google Cloudtop workstations and Debian/Ubuntu test containers, the resolver automatically falls back to canonical Google apt-installed binaries: `/usr/bin/google-chrome`, `/usr/bin/google-chrome-stable`, or `/opt/google/chrome/chrome`.
+
+3. **Micro-Version Audit & Telemetry:**
+   - Every execution phase (rehearsal, replay, E2E capture, video render) must extract and report the active micro-version (e.g., `Google Chrome 153.0.8010.36`), confirming Google LLC cryptographic signature before launching sessions.
+

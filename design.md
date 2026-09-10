@@ -31,6 +31,12 @@
 * **Console Screencast Viewport:** 1920×1080 captured at `deviceScaleFactor: 2` with 125% internal browser zoom, ensuring terminal and console text remains razor-sharp when compressed.
 * **Safe Margins:** 96px screen-edge margins on all four sides to prevent content cutoff on ultra-wide desktop monitors.
 
+### 1.1 Browser Engine & Typography Rendering (Google-Signed Chrome & Cloudtop)
+To guarantee pixel-perfect Google Sans Flex font rendering, zero sub-pixel text antialiasing drift, and complete immunity to corporate Santa endpoint security blocks (`Killed: 9`):
+- **macOS Workstations:** Exclusively runs `/Applications/Google Chrome.app/Contents/MacOS/Google Chrome` validated against `Developer ID Application: Google LLC (EQHXZ8M8AV)`.
+- **Cloudtop / Debian Linux Workstations:** Uses official Google internal repository binaries (`/usr/bin/google-chrome`, `/usr/bin/google-chrome-stable`, or `/opt/google/chrome/chrome`).
+- **Micro-Version Parity:** All authoring captures and Remotion compositing sessions must resolve to identical micro-versions (e.g. `153.0.8010.36`) to prevent kerning shifts between rehearsal traces and master video takes.
+
 ---
 
 ## 2. Kinetic Cursor Physics (The Minimum-Jerk Engine)

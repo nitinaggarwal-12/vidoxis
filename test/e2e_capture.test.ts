@@ -2,16 +2,18 @@ import fs from "node:fs";
 import path from "node:path";
 import puppeteer from "puppeteer";
 import { startMockServer, RunningMockServer } from "../src/mock-server/server.js";
-import { detectChromeExecutablePath } from "../src/runner/cdp-replayer.js";
+import { resolveGoogleSignedChrome, inspectChromeMetadata, DEFAULT_CHROME_FLAGS } from "../src/utils/chrome-path.js";
 
 async function sleep(ms: number): Promise<void> {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
 export async function runE2ECaptureSuite(): Promise<string[]> {
+  const chromeMeta = inspectChromeMetadata();
   console.log("================================================================================");
   console.log("🚀 EXECUTING E2E SCREENSHOT SUITE VIA GOOGLE-SIGNED CHROME");
-  console.log("   Executable: " + detectChromeExecutablePath());
+  console.log(`   Binary: ${chromeMeta.executablePath}`);
+  console.log(`   Version: Google Chrome ${chromeMeta.microVersion} (Google-signed: ${chromeMeta.isGoogleSigned}, Cloudtop: ${chromeMeta.isCloudtop})`);
   console.log("   Resolution: 1920x1080 @ DPR 2 (4K Master Density)");
   console.log("================================================================================\n");
 
@@ -28,15 +30,11 @@ export async function runE2ECaptureSuite(): Promise<string[]> {
     mockServer = await startMockServer({ port: 8092 });
     console.log(`  ↳ Mock Console server ready at ${mockServer.baseUrl}`);
 
-    const executablePath = detectChromeExecutablePath();
     const browser = await puppeteer.launch({
       headless: true,
-      executablePath,
+      executablePath: chromeMeta.executablePath,
       args: [
-        "--no-sandbox",
-        "--disable-setuid-sandbox",
-        "--disable-dev-shm-usage",
-        "--force-color-profile=srgb",
+        ...DEFAULT_CHROME_FLAGS,
         "--lang=en-US",
         "--window-size=1920,1080"
       ],

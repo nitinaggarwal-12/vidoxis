@@ -158,6 +158,12 @@
         "description": "Validates that Google Sans Flex TTF font metrics match macOS baseline",
         "command": "node scripts/verify_font_metrics.js",
         "fail_action": "abort"
+      },
+      {
+        "id": "google_signed_chrome_preflight_guard",
+        "description": "Verifies Google LLC Developer ID (EQHXZ8M8AV) on macOS or Google apt repo package on Cloudtop to eliminate Santa endpoint security blocks",
+        "command": "node --import tsx -e \"import { inspectChromeMetadata } from './src/utils/chrome-path.js'; const m = inspectChromeMetadata(); if (!m.isGoogleSigned && m.platform === 'darwin') throw new Error('Unsigned Chrome binary detected');\"",
+        "fail_action": "abort"
       }
     ],
     "post_capture_check": [

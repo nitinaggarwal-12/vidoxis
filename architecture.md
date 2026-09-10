@@ -117,6 +117,12 @@ Whenever a step condition gate times out or a selector resolution fails during h
 2. The runner must serialize the full live HTML DOM tree to `scratch/failures/{step_id}_dom.html`.
 3. The hook emits these exact URIs to Tier 3 Domain Supervisors for automated healing.
 
+### 2.5 Google-Signed Micro-Version Chrome & Cloudtop Binary Matrix
+To eliminate Santa endpoint security blocking (`Killed: 9` on unnotarized binaries like `chrome-headless-shell`), the execution layer enforces a unified binary resolution hierarchy across macOS and Cloudtop workstations:
+1. **macOS Host Resolution:** Discovers `/Applications/Google Chrome.app/Contents/MacOS/Google Chrome` and verifies code signing authority matching `Developer ID Application: Google LLC (EQHXZ8M8AV)`.
+2. **Cloudtop / Linux Parity:** Automatically maps to `/usr/bin/google-chrome`, `/usr/bin/google-chrome-stable`, or `/opt/google/chrome/chrome` installed via Google internal apt repositories.
+3. **Micro-Version Telemetry Guard:** Captures the full four-component semantic version (e.g. `153.0.8010.36`) and emits it into step telemetry to guarantee deterministic browser layout engine matching across authoring, rehearsal, and Remotion video rendering.
+
 ---
 
 ## 3. Multi-Agent Command Hierarchy (Tiers 1–5)

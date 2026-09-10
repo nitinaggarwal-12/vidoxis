@@ -8,7 +8,7 @@ export interface ConfidentialNDAWatermarkProps {
 
 export const ConfidentialNDAWatermark: React.FC<ConfidentialNDAWatermarkProps> = ({
   partnerName = "Enterprise Cloud Partner",
-  opacity = 0.08
+  opacity = 0.05
 }) => {
   const frame = useCurrentFrame();
   const text = `CONFIDENTIAL • UNDER NDA • PREPARED FOR ${partnerName.toUpperCase()} • DO NOT DISTRIBUTE`;
@@ -46,7 +46,7 @@ export const ConfidentialNDAWatermark: React.FC<ConfidentialNDAWatermarkProps> =
             fontSize: 22,
             fontWeight: 700,
             letterSpacing: "2px",
-            color: "#FFFFFF",
+            color: "#0F172A",
             textTransform: "uppercase"
           }}
         >

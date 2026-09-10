@@ -44,12 +44,12 @@ export const LegalPreviewDisclaimerSlate: React.FC<LegalPreviewDisclaimerSlatePr
           alignItems: "center",
           gap: 16,
           padding: "14px 28px",
-          backgroundColor: "rgba(32, 33, 36, 0.92)",
+          backgroundColor: "rgba(255, 255, 255, 0.96)",
           backdropFilter: "blur(20px)",
           WebkitBackdropFilter: "blur(20px)",
-          border: "1px solid rgba(251, 188, 4, 0.4)",
+          border: "1.5px solid #F59E0B",
           borderRadius: 40,
-          boxShadow: "0 12px 32px rgba(0, 0, 0, 0.45)"
+          boxShadow: "0 12px 32px rgba(0, 0, 0, 0.1)"
         }}
       >
         <span
@@ -60,8 +60,8 @@ export const LegalPreviewDisclaimerSlate: React.FC<LegalPreviewDisclaimerSlatePr
             width: 28,
             height: 28,
             borderRadius: "50%",
-            backgroundColor: "#FBBC04",
-            color: "#202124",
+            backgroundColor: "#F59E0B",
+            color: "#FFFFFF",
             fontWeight: 800,
             fontSize: 16
           }}
@@ -73,7 +73,7 @@ export const LegalPreviewDisclaimerSlate: React.FC<LegalPreviewDisclaimerSlatePr
             fontFamily: "'Google Sans', system-ui, sans-serif",
             fontSize: 20,
             fontWeight: 600,
-            color: "#FFFFFF",
+            color: "#1E293B",
             letterSpacing: "0.2px"
           }}
         >

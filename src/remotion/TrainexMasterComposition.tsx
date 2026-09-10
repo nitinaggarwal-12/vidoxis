@@ -70,7 +70,7 @@ export const TrainexMasterComposition: React.FC<TrainexMasterCompositionProps> =
         position: "relative",
         width: 3840,
         height: 2160,
-        backgroundColor: "#0F1115",
+        backgroundColor: "#F8FAFC",
         overflow: "hidden"
       }}
     >

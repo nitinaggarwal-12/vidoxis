@@ -210,7 +210,7 @@ export const WhiteboardTrack: React.FC<WhiteboardTrackProps> = ({
         position: "absolute",
         width: 3840,
         height: 2160,
-        backgroundColor: "#0F1115",
+        backgroundColor: "#F8FAFC",
         overflow: "hidden",
         fontFamily: "'Google Sans', 'Google Sans Flex', system-ui, sans-serif"
       }}
@@ -225,7 +225,7 @@ export const WhiteboardTrack: React.FC<WhiteboardTrackProps> = ({
         <defs>
           {/* 32px Isometric Dot Grid */}
           <pattern id="dot-grid" width="32" height="32" patternUnits="userSpaceOnUse">
-            <circle cx="16" cy="16" r="1.5" fill="#2D333F" opacity="0.6" />
+            <circle cx="16" cy="16" r="1.5" fill="#CBD5E1" opacity="0.8" />
           </pattern>
           <filter id="glow-filter" x="-30%" y="-30%" width="160%" height="160%">
             <feGaussianBlur stdDeviation="8" result="blur" />
@@ -247,17 +247,17 @@ export const WhiteboardTrack: React.FC<WhiteboardTrackProps> = ({
             width="3560"
             height="620"
             rx="24"
-            fill="rgba(26, 115, 232, 0.03)"
-            stroke="#1E293B"
+            fill="rgba(26, 115, 232, 0.04)"
+            stroke="#CBD5E1"
             strokeWidth="3"
             strokeDasharray="8 6"
           />
           <text
             x="200"
             y="730"
-            fill="#94A3B8"
+            fill="#475569"
             fontSize="24"
-            fontWeight="600"
+            fontWeight="700"
             letterSpacing="1px"
           >
             GOOGLE CLOUD PLATFORM • REGIONAL ENTERPRISE VPC (US-CENTRAL1)
@@ -358,7 +358,7 @@ export const WhiteboardTrack: React.FC<WhiteboardTrackProps> = ({
                 width={node.width}
                 height={node.height}
                 rx="16"
-                fill="#181B22"
+                fill="#FFFFFF"
                 stroke={node.color}
                 strokeWidth="3"
                 filter="url(#glow-filter)"
@@ -379,7 +379,7 @@ export const WhiteboardTrack: React.FC<WhiteboardTrackProps> = ({
                 width="140"
                 height="28"
                 rx="6"
-                fill="rgba(255, 255, 255, 0.07)"
+                fill="#F1F5F9"
               />
               <text
                 x="94"
@@ -396,7 +396,7 @@ export const WhiteboardTrack: React.FC<WhiteboardTrackProps> = ({
               <text
                 x="24"
                 y="95"
-                fill="#FFFFFF"
+                fill="#0F172A"
                 fontSize="26"
                 fontWeight="700"
               >
@@ -406,9 +406,9 @@ export const WhiteboardTrack: React.FC<WhiteboardTrackProps> = ({
               <text
                 x="24"
                 y="135"
-                fill="#94A3B8"
+                fill="#475569"
                 fontSize="18"
-                fontWeight="400"
+                fontWeight="500"
               >
                 {node.sublabel}
               </text>

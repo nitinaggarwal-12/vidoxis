@@ -52,9 +52,9 @@ export const PresenterAvatarCapsule: React.FC<PresenterAvatarCapsuleProps> = ({
           width: 440,
           height: 260,
           borderRadius: 28,
-          background: "linear-gradient(145deg, rgba(26, 32, 44, 0.95), rgba(15, 17, 21, 0.98))",
-          border: "2px solid rgba(66, 133, 244, 0.5)",
-          boxShadow: "0 25px 60px rgba(0,0,0,0.85), 0 0 40px rgba(66, 133, 244, 0.25)",
+          background: "linear-gradient(145deg, #FFFFFF, #F8FAFC)",
+          border: "2px solid #93C5FD",
+          boxShadow: "0 20px 45px rgba(0,0,0,0.08), 0 0 25px rgba(66, 133, 244, 0.15)",
           overflow: "hidden",
           display: "flex",
           alignItems: "center",
@@ -106,8 +106,8 @@ export const PresenterAvatarCapsule: React.FC<PresenterAvatarCapsuleProps> = ({
             display: "flex",
             alignItems: "center",
             gap: 6,
-            backgroundColor: "rgba(234, 67, 53, 0.2)",
-            border: "1px solid rgba(234, 67, 53, 0.6)",
+            backgroundColor: "#FCE8E6",
+            border: "1px solid #F28B82",
             borderRadius: 12,
             padding: "4px 10px"
           }}
@@ -126,7 +126,7 @@ export const PresenterAvatarCapsule: React.FC<PresenterAvatarCapsuleProps> = ({
               fontFamily: "'Google Sans Flex', 'Roboto', sans-serif",
               fontSize: 11,
               fontWeight: 800,
-              color: "#FCE8E6",
+              color: "#C5221F",
               letterSpacing: "0.08em"
             }}
           >
@@ -158,13 +158,13 @@ export const PresenterAvatarCapsule: React.FC<PresenterAvatarCapsuleProps> = ({
         style={{
           marginTop: -18,
           zIndex: 90,
-          background: "rgba(15, 17, 21, 0.95)",
-          border: "1px solid rgba(255, 255, 255, 0.15)",
+          background: "rgba(255, 255, 255, 0.95)",
+          border: "1px solid #CBD5E1",
           backdropFilter: "blur(12px)",
           borderRadius: 16,
           padding: "8px 24px",
           textAlign: "center",
-          boxShadow: "0 10px 25px rgba(0,0,0,0.6)"
+          boxShadow: "0 10px 25px rgba(0,0,0,0.08)"
         }}
       >
         <div
@@ -172,7 +172,7 @@ export const PresenterAvatarCapsule: React.FC<PresenterAvatarCapsuleProps> = ({
             fontFamily: "'Google Sans Flex', 'Roboto', sans-serif",
             fontSize: 15,
             fontWeight: 700,
-            color: "#FFFFFF",
+            color: "#0F172A",
             letterSpacing: "0.02em"
           }}
         >
@@ -182,8 +182,8 @@ export const PresenterAvatarCapsule: React.FC<PresenterAvatarCapsuleProps> = ({
           style={{
             fontFamily: "'Roboto Mono', monospace",
             fontSize: 11,
-            fontWeight: 500,
-            color: "#8AB4F8"
+            fontWeight: 600,
+            color: "#1A73E8"
           }}
         >
           {roleTitle}

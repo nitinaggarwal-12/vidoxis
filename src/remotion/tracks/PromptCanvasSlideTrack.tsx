@@ -34,7 +34,7 @@ export const PromptCanvasSlideTrack: React.FC<PromptCanvasSlideTrackProps> = ({
       style={{
         width: 3840,
         height: 2160,
-        backgroundColor: "#0F1115",
+        backgroundColor: "#F8FAFC",
         padding: "160px 240px",
         display: "flex",
         flexDirection: "column",
@@ -43,7 +43,7 @@ export const PromptCanvasSlideTrack: React.FC<PromptCanvasSlideTrackProps> = ({
         position: "relative"
       }}
     >
-      {/* Background Subtle Gradient */}
+      {/* Background Subtle Gradient Accent */}
       <div
         style={{
           position: "absolute",
@@ -52,7 +52,7 @@ export const PromptCanvasSlideTrack: React.FC<PromptCanvasSlideTrackProps> = ({
           width: 1200,
           height: 1200,
           borderRadius: "50%",
-          background: "radial-gradient(circle, rgba(66, 133, 244, 0.12) 0%, transparent 70%)",
+          background: "radial-gradient(circle, rgba(66, 133, 244, 0.1) 0%, transparent 70%)",
           filter: "blur(80px)"
         }}
       />
@@ -64,8 +64,8 @@ export const PromptCanvasSlideTrack: React.FC<PromptCanvasSlideTrackProps> = ({
             display: "inline-flex",
             alignItems: "center",
             gap: 12,
-            backgroundColor: "rgba(66, 133, 244, 0.15)",
-            border: "1px solid rgba(66, 133, 244, 0.4)",
+            backgroundColor: "#EFF6FF",
+            border: "1px solid #BFDBFE",
             borderRadius: 30,
             padding: "10px 28px",
             marginBottom: 32
@@ -76,7 +76,7 @@ export const PromptCanvasSlideTrack: React.FC<PromptCanvasSlideTrackProps> = ({
               fontFamily: "'Roboto Mono', monospace",
               fontSize: 20,
               fontWeight: 700,
-              color: "#8AB4F8",
+              color: "#1D4ED8",
               letterSpacing: "0.08em"
             }}
           >
@@ -89,7 +89,7 @@ export const PromptCanvasSlideTrack: React.FC<PromptCanvasSlideTrackProps> = ({
             fontFamily: "'Google Sans Flex', 'Roboto', sans-serif",
             fontSize: 84,
             fontWeight: 800,
-            color: "#FFFFFF",
+            color: "#0F172A",
             lineHeight: 1.15,
             margin: "0 0 24px 0",
             letterSpacing: "-0.02em"
@@ -102,8 +102,8 @@ export const PromptCanvasSlideTrack: React.FC<PromptCanvasSlideTrackProps> = ({
           style={{
             fontFamily: "'Google Sans Flex', 'Roboto', sans-serif",
             fontSize: 36,
-            fontWeight: 400,
-            color: "#9AA0A6",
+            fontWeight: 500,
+            color: "#475569",
             maxWidth: 2400,
             lineHeight: 1.4,
             margin: 0
@@ -138,11 +138,11 @@ export const PromptCanvasSlideTrack: React.FC<PromptCanvasSlideTrackProps> = ({
               style={{
                 opacity: cardOpacity,
                 transform: `translateY(${cardY}px)`,
-                backgroundColor: "rgba(26, 32, 44, 0.7)",
-                border: "1px solid rgba(255, 255, 255, 0.12)",
+                backgroundColor: "#FFFFFF",
+                border: "1px solid #E2E8F0",
                 borderRadius: 24,
                 padding: "48px 40px",
-                backdropFilter: "blur(16px)",
+                boxShadow: "0 10px 30px rgba(0, 0, 0, 0.05)",
                 display: "flex",
                 flexDirection: "column",
                 justifyContent: "space-between"
@@ -153,7 +153,7 @@ export const PromptCanvasSlideTrack: React.FC<PromptCanvasSlideTrackProps> = ({
                   fontFamily: "'Roboto Mono', monospace",
                   fontSize: 24,
                   fontWeight: 700,
-                  color: "#4285F4",
+                  color: "#1A73E8",
                   marginBottom: 24
                 }}
               >
@@ -163,8 +163,8 @@ export const PromptCanvasSlideTrack: React.FC<PromptCanvasSlideTrackProps> = ({
                 style={{
                   fontFamily: "'Google Sans Flex', 'Roboto', sans-serif",
                   fontSize: 32,
-                  fontWeight: 500,
-                  color: "#E8EAED",
+                  fontWeight: 600,
+                  color: "#1E293B",
                   lineHeight: 1.35
                 }}
               >
@@ -181,7 +181,7 @@ export const PromptCanvasSlideTrack: React.FC<PromptCanvasSlideTrackProps> = ({
           display: "flex",
           justifyContent: "space-between",
           alignItems: "center",
-          borderTop: "1px solid rgba(255, 255, 255, 0.1)",
+          borderTop: "1px solid #E2E8F0",
           paddingTop: 32
         }}
       >
@@ -189,7 +189,8 @@ export const PromptCanvasSlideTrack: React.FC<PromptCanvasSlideTrackProps> = ({
           style={{
             fontFamily: "'Google Sans Flex', sans-serif",
             fontSize: 22,
-            color: "#5F6368"
+            fontWeight: 500,
+            color: "#64748B"
           }}
         >
           Google Cloud • Technical Enablement Studio
@@ -198,7 +199,8 @@ export const PromptCanvasSlideTrack: React.FC<PromptCanvasSlideTrackProps> = ({
           style={{
             fontFamily: "'Roboto Mono', monospace",
             fontSize: 22,
-            color: "#5F6368"
+            fontWeight: 600,
+            color: "#64748B"
           }}
         >
           CONFIDENTIAL • ALPHABET ENTERPRISE

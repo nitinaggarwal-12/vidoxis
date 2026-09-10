@@ -99,12 +99,12 @@ export const KaraokeSubtitleTrack: React.FC<KaraokeSubtitleTrackProps> = ({
           flexWrap: "wrap",
           alignItems: "center",
           gap: 12,
-          backgroundColor: "rgba(15, 17, 21, 0.85)",
-          border: "1px solid rgba(255, 255, 255, 0.18)",
+          backgroundColor: "rgba(255, 255, 255, 0.95)",
+          border: "2px solid #FCD34D",
           backdropFilter: "blur(20px)",
           borderRadius: 24,
           padding: "16px 36px",
-          boxShadow: "0 15px 40px rgba(0, 0, 0, 0.75)"
+          boxShadow: "0 15px 40px rgba(0, 0, 0, 0.12)"
         }}
       >
         {activeSegment.words.map((w, idx) => {
@@ -119,13 +119,16 @@ export const KaraokeSubtitleTrack: React.FC<KaraokeSubtitleTrackProps> = ({
                 fontSize: 34,
                 fontWeight: isCurrentlyActive ? 800 : 600,
                 color: isCurrentlyActive
-                  ? "#FBBC04"
+                  ? "#92400E"
                   : isSpoken
-                  ? "#FFFFFF"
-                  : "rgba(255, 255, 255, 0.4)",
-                textShadow: isCurrentlyActive ? "0 0 16px rgba(251, 188, 4, 0.6)" : "none",
-                transform: isCurrentlyActive ? "scale(1.06)" : "scale(1)",
-                transition: "transform 0.1s ease",
+                  ? "#0F172A"
+                  : "rgba(15, 23, 42, 0.45)",
+                backgroundColor: isCurrentlyActive ? "#FEF3C7" : "transparent",
+                borderRadius: 10,
+                padding: isCurrentlyActive ? "2px 10px" : "0px",
+                border: isCurrentlyActive ? "1.5px solid #F59E0B" : "none",
+                transform: isCurrentlyActive ? "scale(1.05)" : "scale(1)",
+                transition: "all 0.1s ease",
                 letterSpacing: "0.01em"
               }}
             >

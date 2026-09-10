@@ -147,7 +147,7 @@ export const ConsoleScreencastTrack: React.FC<ConsoleScreencastTrackProps> = ({
         position: "absolute",
         width: 3840,
         height: 2160,
-        backgroundColor: "#202124",
+        backgroundColor: "#F8FAFC",
         overflow: "hidden",
         fontFamily: "'Google Sans', system-ui, sans-serif"
       }}
@@ -239,12 +239,12 @@ export const ConsoleScreencastTrack: React.FC<ConsoleScreencastTrackProps> = ({
           bottom: 48,
           left: 64,
           padding: "16px 32px",
-          backgroundColor: "rgba(32, 33, 36, 0.94)",
+          backgroundColor: "rgba(255, 255, 255, 0.96)",
           backdropFilter: "blur(16px)",
           WebkitBackdropFilter: "blur(16px)",
           borderRadius: 16,
-          border: "1px solid rgba(255, 255, 255, 0.12)",
-          boxShadow: "0 8px 24px rgba(0, 0, 0, 0.5)",
+          border: "1px solid #CBD5E1",
+          boxShadow: "0 8px 24px rgba(0, 0, 0, 0.08)",
           display: "flex",
           alignItems: "center",
           gap: 20,
@@ -257,15 +257,15 @@ export const ConsoleScreencastTrack: React.FC<ConsoleScreencastTrackProps> = ({
             width: 12,
             height: 12,
             borderRadius: "50%",
-            backgroundColor: "#34A853",
-            boxShadow: "0 0 10px #34A853"
+            backgroundColor: "#188038",
+            boxShadow: "0 0 10px #188038"
           }}
         />
         <div>
-          <div style={{ fontSize: 14, color: "#9AA0A6", fontWeight: 500, letterSpacing: "1px", textTransform: "uppercase" }}>
+          <div style={{ fontSize: 14, color: "#475569", fontWeight: 600, letterSpacing: "1px", textTransform: "uppercase" }}>
             Deterministic CDP Execution • Act 3: Live Console
           </div>
-          <div style={{ fontSize: 24, color: "#FFFFFF", fontWeight: 700, marginTop: 4 }}>
+          <div style={{ fontSize: 24, color: "#0F172A", fontWeight: 700, marginTop: 4 }}>
             {currentKeyframe.label}
           </div>
         </div>

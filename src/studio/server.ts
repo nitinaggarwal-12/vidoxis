@@ -158,7 +158,7 @@ export function createStudioServer() {
 
 function renderStudioHtml(): string {
   return `<!DOCTYPE html>
-<html lang="en" class="dark">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -169,7 +169,6 @@ function renderStudioHtml(): string {
   <link href="https://fonts.googleapis.com/css2?family=Google+Sans+Flex:wght@400;500;600;700;800&family=Roboto+Mono:wght@400;500;700&display=swap" rel="stylesheet">
   <script>
     tailwind.config = {
-      darkMode: 'class',
       theme: {
         extend: {
           fontFamily: {
@@ -182,13 +181,15 @@ function renderStudioHtml(): string {
           },
           colors: {
             brand: {
-              blue: '#4285F4',
-              green: '#34A853',
-              yellow: '#FBBC04',
-              red: '#EA4335',
-              dark: '#0F1115',
-              card: '#181B20',
-              border: '#282E38'
+              blue: '#1A73E8',
+              blueDark: '#1557B0',
+              green: '#188038',
+              yellow: '#B06000',
+              red: '#D93025',
+              dark: '#202124',
+              page: '#F8F9FA',
+              card: '#FFFFFF',
+              border: '#DADCE0'
             }
           }
         }
@@ -196,51 +197,51 @@ function renderStudioHtml(): string {
     }
   </script>
   <style>
-    body { background-color: #0F1115; color: #E8EAED; }
-    .neon-border-blue { box-shadow: 0 0 25px rgba(66, 133, 244, 0.25); }
-    .glass-panel { background: rgba(24, 27, 32, 0.75); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.08); }
+    body { background-color: #F8F9FA; color: #202124; }
+    .neon-border-blue { box-shadow: 0 4px 20px rgba(26, 115, 232, 0.12); }
+    .glass-panel { background: #FFFFFF; border: 1px solid #E2E8F0; box-shadow: 0 1px 3px rgba(0,0,0,0.06); }
     .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
-    .custom-scrollbar::-webkit-scrollbar-thumb { background: #374151; border-radius: 3px; }
+    .custom-scrollbar::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 3px; }
   </style>
 </head>
-<body class="font-sans antialiased min-h-screen flex flex-col selection:bg-brand-blue selection:text-white">
+<body class="font-sans antialiased min-h-screen flex flex-col bg-[#F8F9FA] text-gray-900 selection:bg-blue-600 selection:text-white">
 
   <!-- Sticky Full-Width Broadcast Navbar (Spacious Desktop Rule) -->
-  <header class="sticky top-0 z-50 w-full bg-brand-dark/90 backdrop-blur-xl border-b border-brand-border">
+  <header class="sticky top-0 z-50 w-full bg-white/95 backdrop-blur-xl border-b border-gray-200 shadow-sm">
     <div class="max-w-1600 mx-auto px-10 md:px-16 h-20 flex items-center justify-between">
       <!-- Left: Logo & Micro-Version Pill -->
       <div class="flex items-center gap-6">
         <div class="flex items-center gap-3">
-          <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-brand-blue to-brand-green flex items-center justify-center shadow-lg shadow-brand-blue/30">
+          <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 to-emerald-600 flex items-center justify-center shadow-md shadow-blue-500/20">
             <svg class="w-6 h-6 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
               <polygon points="5 3 19 12 5 21 5 3"></polygon>
             </svg>
           </div>
-          <span class="text-2xl font-bold tracking-tight text-white">Trainex <span class="text-brand-blue font-mono font-medium text-lg">Studio</span></span>
+          <span class="text-2xl font-bold tracking-tight text-gray-900">Trainex <span class="text-blue-600 font-mono font-medium text-lg">Studio</span></span>
         </div>
 
-        <div class="hidden lg:flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-white/10 text-xs font-mono text-gray-300">
-          <span class="w-2 h-2 rounded-full bg-brand-green animate-pulse"></span>
+        <div class="hidden lg:flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-gray-100 border border-gray-200 text-xs font-mono text-gray-700">
+          <span class="w-2.5 h-2.5 rounded-full bg-emerald-600 animate-pulse"></span>
           <span>Google Chrome 153.0.8010.36 (Developer ID: Google LLC)</span>
         </div>
       </div>
 
       <!-- Center: 5-Act Pedagogical Arc Navigator -->
-      <nav class="hidden xl:flex items-center gap-2 bg-brand-card/90 px-3 py-2 rounded-2xl border border-white/5 text-sm font-medium">
-        <button onclick="jumpToAct(1)" class="px-4 py-2 rounded-xl text-gray-400 hover:text-white hover:bg-white/5 transition-all text-xs font-semibold">Act 1: Hook</button>
-        <button onclick="jumpToAct(2)" class="px-4 py-2 rounded-xl text-brand-blue bg-brand-blue/15 border border-brand-blue/30 transition-all text-xs font-semibold">Act 2: Whiteboard</button>
-        <button onclick="jumpToAct(3)" class="px-4 py-2 rounded-xl text-gray-400 hover:text-white hover:bg-white/5 transition-all text-xs font-semibold">Act 3: Live Console</button>
-        <button onclick="jumpToAct(4)" class="px-4 py-2 rounded-xl text-gray-400 hover:text-white hover:bg-white/5 transition-all text-xs font-semibold">Act 4: Redaction</button>
-        <button onclick="jumpToAct(5)" class="px-4 py-2 rounded-xl text-gray-400 hover:text-white hover:bg-white/5 transition-all text-xs font-semibold">Act 5: Checklist</button>
+      <nav class="hidden xl:flex items-center gap-2 bg-gray-100 px-3 py-2 rounded-2xl border border-gray-200 text-sm font-medium">
+        <button onclick="jumpToAct(1)" class="px-4 py-2 rounded-xl text-gray-600 hover:text-gray-900 hover:bg-white transition-all text-xs font-semibold">Act 1: Hook</button>
+        <button onclick="jumpToAct(2)" class="px-4 py-2 rounded-xl text-blue-700 bg-white border border-blue-200 shadow-sm transition-all text-xs font-semibold">Act 2: Whiteboard</button>
+        <button onclick="jumpToAct(3)" class="px-4 py-2 rounded-xl text-gray-600 hover:text-gray-900 hover:bg-white transition-all text-xs font-semibold">Act 3: Live Console</button>
+        <button onclick="jumpToAct(4)" class="px-4 py-2 rounded-xl text-gray-600 hover:text-gray-900 hover:bg-white transition-all text-xs font-semibold">Act 4: Redaction</button>
+        <button onclick="jumpToAct(5)" class="px-4 py-2 rounded-xl text-gray-600 hover:text-gray-900 hover:bg-white transition-all text-xs font-semibold">Act 5: Checklist</button>
       </nav>
 
       <!-- Right: Action Controls -->
       <div class="flex items-center gap-4">
-        <div class="flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-mono font-semibold">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+        <div class="flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-50 border border-emerald-300 text-emerald-800 text-xs font-mono font-bold">
+          <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
           39/39 HOOKS PASS
         </div>
-        <button onclick="reloadAllArtifacts()" class="px-5 py-2.5 rounded-xl bg-brand-blue hover:bg-blue-600 text-white text-sm font-semibold tracking-wide transition-all shadow-lg shadow-brand-blue/30 flex items-center gap-2">
+        <button onclick="reloadAllArtifacts()" class="px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold tracking-wide transition-all shadow-md shadow-blue-600/20 flex items-center gap-2">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
           Live Replay
         </button>
@@ -258,57 +259,57 @@ function renderStudioHtml(): string {
       <div class="xl:col-span-8 flex flex-col gap-4">
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-3">
-            <h2 class="text-xl font-bold text-white tracking-tight">Broadcast 4K Review Player</h2>
-            <span id="active-res-badge" class="px-2.5 py-1 rounded-md bg-white/10 text-gray-300 font-mono text-xs font-semibold">3840×2160 (16:9 4K UHD)</span>
-            <span class="px-2.5 py-1 rounded-md bg-brand-yellow/15 border border-brand-yellow/30 text-brand-yellow font-mono text-xs font-semibold">60 FPS</span>
+            <h2 class="text-xl font-bold text-gray-900 tracking-tight">Broadcast 4K Review Player</h2>
+            <span id="active-res-badge" class="px-2.5 py-1 rounded-md bg-gray-100 border border-gray-300 text-gray-700 font-mono text-xs font-semibold">3840×2160 (16:9 4K UHD)</span>
+            <span class="px-2.5 py-1 rounded-md bg-amber-50 border border-amber-300 text-amber-900 font-mono text-xs font-bold">60 FPS</span>
           </div>
 
           <!-- Aspect Ratio Toggle Pills -->
-          <div class="flex items-center gap-1.5 bg-brand-card p-1 rounded-xl border border-white/10 text-xs font-semibold">
-            <button onclick="setAspectRatio('16:9')" class="aspect-btn active px-3 py-1.5 rounded-lg bg-brand-blue text-white" data-ratio="16:9">16:9</button>
-            <button onclick="setAspectRatio('4:3')" class="aspect-btn px-3 py-1.5 rounded-lg text-gray-400 hover:text-white" data-ratio="4:3">4:3</button>
-            <button onclick="setAspectRatio('1:1')" class="aspect-btn px-3 py-1.5 rounded-lg text-gray-400 hover:text-white" data-ratio="1:1">1:1</button>
-            <button onclick="setAspectRatio('9:16')" class="aspect-btn px-3 py-1.5 rounded-lg text-gray-400 hover:text-white" data-ratio="9:16">9:16</button>
+          <div class="flex items-center gap-1.5 bg-gray-100 p-1 rounded-xl border border-gray-200 text-xs font-semibold">
+            <button onclick="setAspectRatio('16:9')" class="aspect-btn active px-3 py-1.5 rounded-lg bg-blue-600 text-white font-semibold shadow-sm" data-ratio="16:9">16:9</button>
+            <button onclick="setAspectRatio('4:3')" class="aspect-btn px-3 py-1.5 rounded-lg text-gray-600 hover:text-gray-900 font-semibold" data-ratio="4:3">4:3</button>
+            <button onclick="setAspectRatio('1:1')" class="aspect-btn px-3 py-1.5 rounded-lg text-gray-600 hover:text-gray-900 font-semibold" data-ratio="1:1">1:1</button>
+            <button onclick="setAspectRatio('9:16')" class="aspect-btn px-3 py-1.5 rounded-lg text-gray-600 hover:text-gray-900 font-semibold" data-ratio="9:16">9:16</button>
           </div>
         </div>
 
         <!-- Viewport Canvas Container -->
-        <div id="viewport-frame" class="w-full aspect-video rounded-2xl glass-panel relative overflow-hidden flex items-center justify-center neon-border-blue transition-all duration-300">
+        <div id="viewport-frame" class="w-full aspect-video rounded-2xl bg-white border border-gray-300 relative overflow-hidden flex items-center justify-center neon-border-blue transition-all duration-300 shadow-sm">
           <img id="active-screen-img" src="/scratch/rendered_stills/act2_whiteboard_kinetic_particles.png" alt="Broadcast Viewport" class="w-full h-full object-contain">
 
           <!-- Telemetry Minimum-Jerk BBox Overlay Layer -->
           <div id="telemetry-overlay" class="absolute inset-0 pointer-events-none transition-opacity duration-200">
             <!-- Dynamic Telemetry Cursor & Redaction Box -->
-            <div id="cursor-halo" class="absolute w-8 h-8 rounded-full border-2 border-brand-yellow bg-brand-yellow/20 shadow-lg shadow-brand-yellow/40 transition-all duration-100 hidden" style="left: 45%; top: 38%;"></div>
-            <div id="redaction-box" class="absolute border-2 border-emerald-400 bg-emerald-400/20 backdrop-blur-md rounded-md transition-all duration-200 hidden" style="left: 20%; top: 15%; width: 220px; height: 36px;">
-              <span class="absolute -top-5 left-0 text-[10px] font-mono text-emerald-300 font-bold bg-black/80 px-1.5 py-0.5 rounded">+12px Safety Dilation</span>
+            <div id="cursor-halo" class="absolute w-8 h-8 rounded-full border-2 border-amber-500 bg-amber-400/30 shadow-md transition-all duration-100 hidden" style="left: 45%; top: 38%;"></div>
+            <div id="redaction-box" class="absolute border-2 border-emerald-600 bg-emerald-500/20 backdrop-blur-md rounded-md transition-all duration-200 hidden" style="left: 20%; top: 15%; width: 220px; height: 36px;">
+              <span class="absolute -top-5 left-0 text-[10px] font-mono text-emerald-800 font-bold bg-white/95 border border-emerald-300 px-1.5 py-0.5 rounded shadow-sm">+12px Safety Dilation</span>
             </div>
           </div>
 
           <!-- Bottom Floating Badges -->
           <div class="absolute bottom-4 left-6 flex items-center gap-3 pointer-events-none">
-            <div class="px-3 py-1.5 rounded-xl bg-black/80 backdrop-blur-md border border-white/10 text-xs font-mono text-gray-300 flex items-center gap-2">
-              <span class="w-2 h-2 rounded-full bg-brand-blue animate-pulse"></span>
+            <div class="px-3 py-1.5 rounded-xl bg-white/95 backdrop-blur-md border border-gray-300 text-xs font-mono text-gray-800 font-medium shadow-sm flex items-center gap-2">
+              <span class="w-2.5 h-2.5 rounded-full bg-blue-600 animate-pulse"></span>
               <span id="current-frame-badge">FRAME 90 / 750</span>
             </div>
-            <div class="px-3 py-1.5 rounded-xl bg-black/80 backdrop-blur-md border border-white/10 text-xs font-mono text-gray-300">
+            <div class="px-3 py-1.5 rounded-xl bg-white/95 backdrop-blur-md border border-gray-300 text-xs font-mono text-gray-800 font-medium shadow-sm">
               <span id="current-timestamp-badge">00:01.500</span>
             </div>
           </div>
         </div>
 
-        <!-- Gold Karaoke Subtitle Track (Broadcast Standard) -->
-        <div class="glass-panel p-4 rounded-2xl flex flex-col gap-2 border border-brand-yellow/20">
+        <!-- Gold Karaoke Subtitle Track (Broadcast Standard - High Contrast Light Theme) -->
+        <div class="glass-panel p-5 rounded-2xl flex flex-col gap-2 border-2 border-amber-300 bg-amber-50/40">
           <div class="flex items-center justify-between text-xs font-mono">
             <div class="flex items-center gap-2">
-              <span class="w-2 h-2 rounded-full bg-brand-yellow animate-ping"></span>
-              <span id="subtitle-act-badge" class="px-2.5 py-0.5 rounded bg-brand-yellow/20 text-brand-yellow font-bold uppercase tracking-wider text-[11px]">Act 2: Architecture Synthesis</span>
+              <span class="w-2.5 h-2.5 rounded-full bg-amber-500 animate-ping"></span>
+              <span id="subtitle-act-badge" class="px-2.5 py-0.5 rounded bg-amber-100 border border-amber-300 text-amber-900 font-bold uppercase tracking-wider text-[11px]">Act 2: Architecture Synthesis</span>
             </div>
-            <span id="subtitle-timing-badge" class="text-gray-400">00:01.500 / 00:12.500</span>
+            <span id="subtitle-timing-badge" class="text-gray-600 font-medium">00:01.500 / 00:12.500</span>
           </div>
-          <div id="karaoke-text-box" class="text-base md:text-lg font-medium text-gray-300 min-h-[3rem] flex flex-wrap items-center gap-1.5 px-2 py-1 leading-relaxed">
+          <div id="karaoke-text-box" class="text-base md:text-lg font-medium text-gray-900 min-h-[3rem] flex flex-wrap items-center gap-2 px-2 py-1 leading-relaxed">
             <!-- Words dynamically highlighted here -->
-            <span class="text-gray-400 italic">Initializing DeepMind Phoneme Karaoke Subtitles...</span>
+            <span class="text-gray-500 italic">Initializing DeepMind Phoneme Karaoke Subtitles...</span>
           </div>
         </div>
 
@@ -316,44 +317,44 @@ function renderStudioHtml(): string {
         <div class="glass-panel p-5 rounded-2xl flex flex-col gap-4">
           <!-- Scrubber Range -->
           <div class="flex items-center gap-4">
-            <span class="text-xs font-mono text-gray-400">00:00</span>
-            <input id="timeline-slider" type="range" min="0" max="750" value="90" class="flex-1 accent-brand-blue cursor-pointer h-2 bg-gray-700 rounded-lg" oninput="onScrubFrame(this.value)">
-            <span class="text-xs font-mono text-gray-400">00:12.5</span>
+            <span class="text-xs font-mono text-gray-600 font-semibold">00:00</span>
+            <input id="timeline-slider" type="range" min="0" max="750" value="90" class="flex-1 accent-blue-600 cursor-pointer h-2 bg-gray-200 rounded-lg" oninput="onScrubFrame(this.value)">
+            <span class="text-xs font-mono text-gray-600 font-semibold">00:12.5</span>
           </div>
 
           <!-- Control Buttons Bar -->
           <div class="flex items-center justify-between flex-wrap gap-4">
             <!-- Left: Play/Pause & Stepping -->
             <div class="flex items-center gap-2">
-              <button onclick="stepFrame(-1)" class="px-3 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-gray-200 text-xs font-mono font-bold flex items-center gap-1 border border-white/10">
+              <button onclick="stepFrame(-1)" class="px-3.5 py-2 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-mono font-bold flex items-center gap-1 border border-gray-300 transition-all">
                 &lt; -1 Frame
               </button>
-              <button id="play-pause-btn" onclick="togglePlay()" class="px-6 py-2.5 rounded-xl bg-brand-blue hover:bg-blue-600 text-white text-sm font-semibold flex items-center gap-2 shadow-md shadow-brand-blue/30">
+              <button id="play-pause-btn" onclick="togglePlay()" class="px-6 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold flex items-center gap-2 shadow-md shadow-blue-600/20 transition-all">
                 <svg id="play-icon" class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
                 <span id="play-btn-text">Play</span>
               </button>
-              <button onclick="stepFrame(1)" class="px-3 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-gray-200 text-xs font-mono font-bold flex items-center gap-1 border border-white/10">
+              <button onclick="stepFrame(1)" class="px-3.5 py-2 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-mono font-bold flex items-center gap-1 border border-gray-300 transition-all">
                 +1 Frame &gt;
               </button>
             </div>
 
             <!-- Middle: Quick Keyframe Selector Across All 5 Acts -->
-            <div class="flex items-center gap-1 text-xs font-mono flex-wrap">
-              <button onclick="seekFrame(15)" class="px-2 py-1 rounded-lg bg-white/5 hover:bg-white/10 text-gray-300 border border-white/5">F15 Hook</button>
-              <button onclick="seekFrame(90)" class="px-2 py-1 rounded-lg bg-white/5 hover:bg-white/10 text-gray-300 border border-white/5">F90 Whiteboard</button>
-              <button onclick="seekFrame(175)" class="px-2 py-1 rounded-lg bg-white/5 hover:bg-white/10 text-gray-300 border border-white/5">F175 Bridge</button>
-              <button onclick="seekFrame(220)" class="px-2 py-1 rounded-lg bg-white/5 hover:bg-white/10 text-gray-300 border border-white/5">F220 Drawer</button>
-              <button onclick="seekFrame(270)" class="px-2 py-1 rounded-lg bg-white/5 hover:bg-white/10 text-gray-300 border border-white/5">F270 Redact</button>
-              <button onclick="seekFrame(360)" class="px-2 py-1 rounded-lg bg-white/5 hover:bg-white/10 text-gray-300 border border-white/5">F360 Checklist</button>
+            <div class="flex items-center gap-1.5 text-xs font-mono flex-wrap">
+              <button onclick="seekFrame(15)" class="px-2.5 py-1.5 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-700 border border-gray-300 font-semibold transition-all">F15 Hook</button>
+              <button onclick="seekFrame(90)" class="px-2.5 py-1.5 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-700 border border-gray-300 font-semibold transition-all">F90 Whiteboard</button>
+              <button onclick="seekFrame(175)" class="px-2.5 py-1.5 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-700 border border-gray-300 font-semibold transition-all">F175 Bridge</button>
+              <button onclick="seekFrame(220)" class="px-2.5 py-1.5 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-700 border border-gray-300 font-semibold transition-all">F220 Drawer</button>
+              <button onclick="seekFrame(270)" class="px-2.5 py-1.5 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-700 border border-gray-300 font-semibold transition-all">F270 Redact</button>
+              <button onclick="seekFrame(360)" class="px-2.5 py-1.5 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-700 border border-gray-300 font-semibold transition-all">F360 Checklist</button>
             </div>
 
             <!-- Right: Playback Speed & Telemetry Toggle -->
-            <div class="flex items-center gap-3">
-              <label class="flex items-center gap-2 text-xs text-gray-300 font-medium cursor-pointer">
-                <input type="checkbox" id="overlay-toggle" checked onchange="toggleOverlay(this.checked)" class="rounded accent-brand-blue">
+            <div class="flex items-center gap-4">
+              <label class="flex items-center gap-2 text-xs text-gray-700 font-semibold cursor-pointer">
+                <input type="checkbox" id="overlay-toggle" checked onchange="toggleOverlay(this.checked)" class="rounded accent-blue-600">
                 Telemetry BBoxes
               </label>
-              <select id="speed-select" onchange="setSpeed(this.value)" class="bg-brand-card border border-white/10 text-xs font-mono text-gray-200 px-3 py-1.5 rounded-lg">
+              <select id="speed-select" onchange="setSpeed(this.value)" class="bg-white border border-gray-300 text-xs font-mono text-gray-800 font-semibold px-3 py-1.5 rounded-lg shadow-sm">
                 <option value="0.5">0.5x Slow</option>
                 <option value="1.0" selected>1.0x Normal</option>
                 <option value="1.5">1.5x Fast</option>
@@ -376,84 +377,84 @@ function renderStudioHtml(): string {
         <div class="glass-panel p-6 rounded-2xl flex flex-col gap-5">
           <div class="flex items-center justify-between">
             <div class="flex items-center gap-2">
-              <svg class="w-5 h-5 text-brand-blue" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"></path></svg>
-              <h3 class="text-base font-bold text-white tracking-tight">Multi-Track Audio Engine</h3>
+              <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"></path></svg>
+              <h3 class="text-base font-bold text-gray-900 tracking-tight">Multi-Track Audio Engine</h3>
             </div>
             <div class="flex items-center gap-2">
-              <span id="audio-engine-mode" class="px-2 py-0.5 rounded bg-brand-blue/15 text-brand-blue font-mono text-[11px] font-bold">MASTER STEREO</span>
-              <span class="px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 font-mono text-[11px] font-semibold">48 kHz</span>
+              <span id="audio-engine-mode" class="px-2 py-0.5 rounded bg-blue-50 border border-blue-200 text-blue-700 font-mono text-[11px] font-bold">MASTER STEREO</span>
+              <span class="px-2 py-0.5 rounded bg-emerald-50 border border-emerald-200 text-emerald-700 font-mono text-[11px] font-bold">48 kHz</span>
             </div>
           </div>
 
           <!-- Track 1: Narration (TTS) -->
-          <div class="flex flex-col gap-2 p-3.5 rounded-xl bg-white/5 border border-white/5">
+          <div class="flex flex-col gap-2 p-3.5 rounded-xl bg-gray-50 border border-gray-200">
             <div class="flex items-center justify-between text-xs">
               <div class="flex items-center gap-1.5">
-                <span class="font-semibold text-gray-200">Narration Voice</span>
-                <span class="text-[10px] text-gray-400 font-mono">(Dr. Maya Lin)</span>
+                <span class="font-bold text-gray-900">Narration Voice</span>
+                <span class="text-[10px] text-gray-600 font-mono">(Dr. Maya Lin)</span>
               </div>
-              <span class="font-mono text-gray-300 font-bold" id="vol-narration-val">100% (0 dB)</span>
+              <span class="font-mono text-gray-800 font-bold" id="vol-narration-val">100% (0 dB)</span>
             </div>
             <div class="flex items-center gap-3">
-              <input id="slider-vol-narration" type="range" min="0" max="100" value="100" class="flex-1 accent-brand-blue h-1.5 bg-gray-700 rounded cursor-pointer" oninput="updateAudioVol('narration', this.value)">
-              <button id="btn-mute-narration" onclick="toggleMute('narration')" class="px-2.5 py-1 rounded bg-white/10 hover:bg-white/20 text-[10px] font-mono font-bold text-gray-300">MUTE</button>
+              <input id="slider-vol-narration" type="range" min="0" max="100" value="100" class="flex-1 accent-blue-600 h-1.5 bg-gray-200 rounded cursor-pointer" oninput="updateAudioVol('narration', this.value)">
+              <button id="btn-mute-narration" onclick="toggleMute('narration')" class="px-2.5 py-1 rounded bg-white hover:bg-gray-100 border border-gray-300 text-[10px] font-mono font-bold text-gray-700 shadow-sm transition-all">MUTE</button>
             </div>
           </div>
 
           <!-- Track 2: Lyria Dynamic Music Bed with -18dB Ducking Envelope -->
-          <div class="flex flex-col gap-2 p-3.5 rounded-xl bg-brand-blue/10 border border-brand-blue/20">
+          <div class="flex flex-col gap-2 p-3.5 rounded-xl bg-blue-50/60 border border-blue-200">
             <div class="flex items-center justify-between text-xs">
               <div class="flex items-center gap-1.5">
-                <span class="font-semibold text-white">Lyria Music Bed</span>
-                <span id="ducking-indicator" class="px-1.5 py-0.5 rounded bg-brand-blue/30 text-brand-blue text-[10px] font-mono font-bold transition-colors duration-200">-18dB DUCKED</span>
+                <span class="font-bold text-blue-900">Lyria Music Bed</span>
+                <span id="ducking-indicator" class="px-2 py-0.5 rounded bg-blue-100 text-blue-800 border border-blue-300 text-[10px] font-mono font-bold transition-colors duration-200">-18dB DUCKED</span>
               </div>
-              <span class="font-mono text-brand-blue font-semibold" id="vol-music-val">25% (-18 dB)</span>
+              <span class="font-mono text-blue-700 font-bold" id="vol-music-val">25% (-18 dB)</span>
             </div>
             <div class="flex items-center gap-3">
-              <input id="slider-vol-music" type="range" min="0" max="100" value="25" class="flex-1 accent-brand-blue h-1.5 bg-gray-700 rounded cursor-pointer" oninput="updateAudioVol('music', this.value)">
-              <button id="btn-mute-music" onclick="toggleMute('music')" class="px-2.5 py-1 rounded bg-white/10 hover:bg-white/20 text-[10px] font-mono font-bold text-gray-300">MUTE</button>
+              <input id="slider-vol-music" type="range" min="0" max="100" value="25" class="flex-1 accent-blue-600 h-1.5 bg-gray-200 rounded cursor-pointer" oninput="updateAudioVol('music', this.value)">
+              <button id="btn-mute-music" onclick="toggleMute('music')" class="px-2.5 py-1 rounded bg-white hover:bg-gray-100 border border-gray-300 text-[10px] font-mono font-bold text-gray-700 shadow-sm transition-all">MUTE</button>
             </div>
             <!-- Ducking Envelope Animated Waveform Visualizer -->
-            <div id="wave-bars-container" class="h-6 w-full flex items-end gap-1 px-1 bg-black/40 rounded-lg overflow-hidden py-1">
-              <div class="w-1.5 bg-brand-blue h-2 rounded-sm transition-all duration-75"></div>
-              <div class="w-1.5 bg-brand-blue h-3 rounded-sm transition-all duration-75"></div>
-              <div class="w-1.5 bg-brand-blue h-4 rounded-sm transition-all duration-75"></div>
-              <div class="w-1.5 bg-brand-blue h-2.5 rounded-sm transition-all duration-75"></div>
-              <div class="w-1.5 bg-brand-blue h-5 rounded-sm transition-all duration-75"></div>
-              <div class="w-1.5 bg-brand-blue h-3.5 rounded-sm transition-all duration-75"></div>
-              <div class="w-1.5 bg-brand-blue h-2 rounded-sm transition-all duration-75"></div>
-              <div class="w-1.5 bg-brand-blue h-4.5 rounded-sm transition-all duration-75"></div>
-              <div class="w-1.5 bg-brand-blue h-3 rounded-sm transition-all duration-75"></div>
-              <div class="w-1.5 bg-brand-blue h-2.5 rounded-sm transition-all duration-75"></div>
-              <div class="w-1.5 bg-brand-blue h-4 rounded-sm transition-all duration-75"></div>
-              <div class="w-1.5 bg-brand-blue h-2 rounded-sm transition-all duration-75"></div>
+            <div id="wave-bars-container" class="h-6 w-full flex items-end gap-1 px-1 bg-white border border-blue-200 rounded-lg overflow-hidden py-1">
+              <div class="w-1.5 bg-blue-600 h-2 rounded-sm transition-all duration-75"></div>
+              <div class="w-1.5 bg-blue-600 h-3 rounded-sm transition-all duration-75"></div>
+              <div class="w-1.5 bg-blue-600 h-4 rounded-sm transition-all duration-75"></div>
+              <div class="w-1.5 bg-blue-600 h-2.5 rounded-sm transition-all duration-75"></div>
+              <div class="w-1.5 bg-blue-600 h-5 rounded-sm transition-all duration-75"></div>
+              <div class="w-1.5 bg-blue-600 h-3.5 rounded-sm transition-all duration-75"></div>
+              <div class="w-1.5 bg-blue-600 h-2 rounded-sm transition-all duration-75"></div>
+              <div class="w-1.5 bg-blue-600 h-4.5 rounded-sm transition-all duration-75"></div>
+              <div class="w-1.5 bg-blue-600 h-3 rounded-sm transition-all duration-75"></div>
+              <div class="w-1.5 bg-blue-600 h-2.5 rounded-sm transition-all duration-75"></div>
+              <div class="w-1.5 bg-blue-600 h-4 rounded-sm transition-all duration-75"></div>
+              <div class="w-1.5 bg-blue-600 h-2 rounded-sm transition-all duration-75"></div>
             </div>
           </div>
 
           <!-- Master LUFS Broadcast Peak Meter -->
-          <div class="flex flex-col gap-1.5 pt-2 border-t border-white/10">
+          <div class="flex flex-col gap-1.5 pt-2 border-t border-gray-200">
             <div class="flex items-center justify-between text-xs font-mono">
-              <span class="text-gray-400">Master Broadcast LUFS</span>
-              <span id="lufs-val" class="text-emerald-400 font-bold">-14.2 LUFS (Target: -14.0)</span>
+              <span class="text-gray-600 font-semibold">Master Broadcast LUFS</span>
+              <span id="lufs-val" class="text-emerald-700 font-bold">-14.2 LUFS (Target: -14.0)</span>
             </div>
-            <div class="h-2 w-full bg-gray-800 rounded-full overflow-hidden flex">
+            <div class="h-2.5 w-full bg-gray-200 rounded-full overflow-hidden flex">
               <div id="meter-bar-green" class="bg-emerald-500 w-[72%] h-full transition-all duration-100"></div>
-              <div id="meter-bar-yellow" class="bg-brand-yellow w-[12%] h-full transition-all duration-100"></div>
-              <div id="meter-bar-red" class="bg-brand-red w-[0%] h-full transition-all duration-100"></div>
+              <div id="meter-bar-yellow" class="bg-amber-400 w-[12%] h-full transition-all duration-100"></div>
+              <div id="meter-bar-red" class="bg-rose-500 w-[0%] h-full transition-all duration-100"></div>
             </div>
           </div>
         </div>
 
         <!-- Presenter Avatar Information Card -->
         <div class="glass-panel p-6 rounded-2xl flex items-center gap-5">
-          <div class="relative w-16 h-16 rounded-2xl bg-gradient-to-tr from-brand-blue to-purple-600 flex items-center justify-center shadow-lg shadow-brand-blue/20">
+          <div class="relative w-16 h-16 rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center shadow-md shadow-blue-500/20">
             <svg class="w-9 h-9 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="7" r="4"></circle><path d="M6 21v-2a4 4 0 014-4h4a4 4 0 014 4v2"></path></svg>
-            <span class="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-emerald-500 border-2 border-brand-dark animate-pulse"></span>
+            <span class="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-emerald-500 border-2 border-white animate-pulse"></span>
           </div>
           <div class="flex flex-col">
-            <span class="text-sm font-bold text-white tracking-tight">Dr. Maya Lin</span>
-            <span class="text-xs text-brand-blue font-medium">Google Cloud AI Evangelist</span>
-            <span class="text-[11px] text-gray-400 font-mono mt-0.5">Veo 2 Avatar • 60fps Gaze Tracking Active</span>
+            <span class="text-sm font-bold text-gray-900 tracking-tight">Dr. Maya Lin</span>
+            <span class="text-xs text-blue-700 font-semibold">Google Cloud AI Evangelist</span>
+            <span class="text-[11px] text-gray-600 font-mono mt-0.5">Veo 2 Avatar • 60fps Gaze Tracking Active</span>
           </div>
         </div>
 
@@ -464,118 +465,118 @@ function renderStudioHtml(): string {
     <div class="glass-panel p-8 rounded-3xl flex flex-col gap-6">
       <div class="flex items-center justify-between flex-wrap gap-4">
         <div>
-          <h2 class="text-2xl font-bold text-white tracking-tight">Phase 3 Master Broadcast Asset Hub</h2>
-          <p class="text-sm text-gray-400 mt-1">Synthesized 48kHz DeepMind Audio Stems, Millisecond Timing Manifest & Remotion 4K Broadcast Stills</p>
+          <h2 class="text-2xl font-bold text-gray-900 tracking-tight">Phase 3 Master Broadcast Asset Hub</h2>
+          <p class="text-sm text-gray-600 mt-1">Synthesized 48kHz DeepMind Audio Stems, Millisecond Timing Manifest & Remotion 4K Broadcast Stills</p>
         </div>
-        <div class="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-mono font-semibold">
+        <div class="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-emerald-50 border border-emerald-300 text-emerald-800 text-xs font-mono font-bold">
           ✔ 100% Deterministic Artifacts Ready
         </div>
       </div>
 
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
         <!-- Asset 1: Master Audio -->
-        <div class="p-5 rounded-2xl bg-white/5 border border-white/5 hover:border-brand-blue/30 transition-all flex flex-col justify-between gap-4">
+        <div class="p-5 rounded-2xl bg-gray-50 border border-gray-200 hover:border-blue-400 hover:shadow-md transition-all flex flex-col justify-between gap-4">
           <div class="flex items-start justify-between">
             <div class="flex items-center gap-3">
-              <div class="w-10 h-10 rounded-xl bg-brand-blue/20 text-brand-blue flex items-center justify-center font-bold text-xs">WAV</div>
+              <div class="w-10 h-10 rounded-xl bg-blue-100 text-blue-700 flex items-center justify-center font-bold text-xs">WAV</div>
               <div>
-                <h4 class="text-sm font-bold text-white">Master Broadcast Audio</h4>
-                <p class="text-xs text-gray-400">48kHz 16-bit PCM • -14.2 LUFS</p>
+                <h4 class="text-sm font-bold text-gray-900">Master Broadcast Audio</h4>
+                <p class="text-xs text-gray-600">48kHz 16-bit PCM • -14.2 LUFS</p>
               </div>
             </div>
-            <span class="text-[11px] font-mono text-gray-400">1.2 MB</span>
+            <span class="text-[11px] font-mono text-gray-600 font-medium">1.2 MB</span>
           </div>
           <div class="flex items-center gap-2">
-            <a href="/scratch/master_audio.wav" download class="flex-1 py-2 px-3 rounded-xl bg-brand-blue hover:bg-blue-600 text-white text-xs font-semibold text-center transition-all">Download WAV</a>
-            <button onclick="playSolo('/scratch/master_audio.wav')" class="py-2 px-3 rounded-xl bg-white/10 hover:bg-white/20 text-gray-200 text-xs font-mono font-semibold">Play</button>
+            <a href="/scratch/master_audio.wav" download class="flex-1 py-2 px-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold text-center transition-all shadow-sm">Download WAV</a>
+            <button onclick="playSolo('/scratch/master_audio.wav')" class="py-2 px-3 rounded-xl bg-white hover:bg-gray-100 text-gray-800 border border-gray-300 text-xs font-mono font-semibold shadow-sm transition-all">Play</button>
           </div>
         </div>
 
         <!-- Asset 2: Narration Voice -->
-        <div class="p-5 rounded-2xl bg-white/5 border border-white/5 hover:border-brand-blue/30 transition-all flex flex-col justify-between gap-4">
+        <div class="p-5 rounded-2xl bg-gray-50 border border-gray-200 hover:border-blue-400 hover:shadow-md transition-all flex flex-col justify-between gap-4">
           <div class="flex items-start justify-between">
             <div class="flex items-center gap-3">
-              <div class="w-10 h-10 rounded-xl bg-purple-500/20 text-purple-400 flex items-center justify-center font-bold text-xs">TTS</div>
+              <div class="w-10 h-10 rounded-xl bg-purple-100 text-purple-700 flex items-center justify-center font-bold text-xs">TTS</div>
               <div>
-                <h4 class="text-sm font-bold text-white">DeepMind Narration Voice</h4>
-                <p class="text-xs text-gray-400">Dr. Maya Lin • 5 Acoustic Formants</p>
+                <h4 class="text-sm font-bold text-gray-900">DeepMind Narration Voice</h4>
+                <p class="text-xs text-gray-600">Dr. Maya Lin • 5 Acoustic Formants</p>
               </div>
             </div>
-            <span class="text-[11px] font-mono text-gray-400">1.2 MB</span>
+            <span class="text-[11px] font-mono text-gray-600 font-medium">1.2 MB</span>
           </div>
           <div class="flex items-center gap-2">
-            <a href="/scratch/narration.wav" download class="flex-1 py-2 px-3 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-semibold text-center transition-all">Download Stem</a>
-            <button onclick="playSolo('/scratch/narration.wav')" class="py-2 px-3 rounded-xl bg-white/10 hover:bg-white/20 text-gray-200 text-xs font-mono font-semibold">Play</button>
+            <a href="/scratch/narration.wav" download class="flex-1 py-2 px-3 rounded-xl bg-white hover:bg-gray-100 border border-gray-300 text-gray-800 text-xs font-semibold text-center shadow-sm transition-all">Download Stem</a>
+            <button onclick="playSolo('/scratch/narration.wav')" class="py-2 px-3 rounded-xl bg-white hover:bg-gray-100 border border-gray-300 text-gray-800 text-xs font-mono font-semibold shadow-sm transition-all">Play</button>
           </div>
         </div>
 
         <!-- Asset 3: Lyria Dynamic Music Bed -->
-        <div class="p-5 rounded-2xl bg-white/5 border border-white/5 hover:border-brand-blue/30 transition-all flex flex-col justify-between gap-4">
+        <div class="p-5 rounded-2xl bg-gray-50 border border-gray-200 hover:border-blue-400 hover:shadow-md transition-all flex flex-col justify-between gap-4">
           <div class="flex items-start justify-between">
             <div class="flex items-center gap-3">
-              <div class="w-10 h-10 rounded-xl bg-brand-green/20 text-brand-green flex items-center justify-center font-bold text-xs">BED</div>
+              <div class="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-800 flex items-center justify-center font-bold text-xs">BED</div>
               <div>
-                <h4 class="text-sm font-bold text-white">Lyria Music Bed (-18dB)</h4>
-                <p class="text-xs text-gray-400">Dynamic Speech Ducking Envelope</p>
+                <h4 class="text-sm font-bold text-gray-900">Lyria Music Bed (-18dB)</h4>
+                <p class="text-xs text-gray-600">Dynamic Speech Ducking Envelope</p>
               </div>
             </div>
-            <span class="text-[11px] font-mono text-gray-400">1.2 MB</span>
+            <span class="text-[11px] font-mono text-gray-600 font-medium">1.2 MB</span>
           </div>
           <div class="flex items-center gap-2">
-            <a href="/scratch/music_bed.wav" download class="flex-1 py-2 px-3 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-semibold text-center transition-all">Download Stem</a>
-            <button onclick="playSolo('/scratch/music_bed.wav')" class="py-2 px-3 rounded-xl bg-white/10 hover:bg-white/20 text-gray-200 text-xs font-mono font-semibold">Play</button>
+            <a href="/scratch/music_bed.wav" download class="flex-1 py-2 px-3 rounded-xl bg-white hover:bg-gray-100 border border-gray-300 text-gray-800 text-xs font-semibold text-center shadow-sm transition-all">Download Stem</a>
+            <button onclick="playSolo('/scratch/music_bed.wav')" class="py-2 px-3 rounded-xl bg-white hover:bg-gray-100 border border-gray-300 text-gray-800 text-xs font-mono font-semibold shadow-sm transition-all">Play</button>
           </div>
         </div>
 
         <!-- Asset 4: Phonemes Timing Manifest -->
-        <div class="p-5 rounded-2xl bg-white/5 border border-white/5 hover:border-brand-blue/30 transition-all flex flex-col justify-between gap-4">
+        <div class="p-5 rounded-2xl bg-gray-50 border border-gray-200 hover:border-blue-400 hover:shadow-md transition-all flex flex-col justify-between gap-4">
           <div class="flex items-start justify-between">
             <div class="flex items-center gap-3">
-              <div class="w-10 h-10 rounded-xl bg-brand-yellow/20 text-brand-yellow flex items-center justify-center font-bold text-xs">JSON</div>
+              <div class="w-10 h-10 rounded-xl bg-amber-100 text-amber-800 flex items-center justify-center font-bold text-xs">JSON</div>
               <div>
-                <h4 class="text-sm font-bold text-white">Phoneme Alignment Manifest</h4>
-                <p class="text-xs text-gray-400">Word-level bounds for 750 frames</p>
+                <h4 class="text-sm font-bold text-gray-900">Phoneme Alignment Manifest</h4>
+                <p class="text-xs text-gray-600">Word-level bounds for 750 frames</p>
               </div>
             </div>
-            <span class="text-[11px] font-mono text-gray-400">13.5 KB</span>
+            <span class="text-[11px] font-mono text-gray-600 font-medium">13.5 KB</span>
           </div>
           <div class="flex items-center gap-2">
-            <a href="/scratch/phonemes.json" target="_blank" class="flex-1 py-2 px-3 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-semibold text-center transition-all">View Raw JSON &gt;</a>
+            <a href="/scratch/phonemes.json" target="_blank" class="flex-1 py-2 px-3 rounded-xl bg-white hover:bg-gray-100 border border-gray-300 text-gray-800 text-xs font-semibold text-center shadow-sm transition-all">View Raw JSON &gt;</a>
           </div>
         </div>
 
         <!-- Asset 5: Whiteboard SVG Architecture -->
-        <div class="p-5 rounded-2xl bg-white/5 border border-white/5 hover:border-brand-blue/30 transition-all flex flex-col justify-between gap-4">
+        <div class="p-5 rounded-2xl bg-gray-50 border border-gray-200 hover:border-blue-400 hover:shadow-md transition-all flex flex-col justify-between gap-4">
           <div class="flex items-start justify-between">
             <div class="flex items-center gap-3">
-              <div class="w-10 h-10 rounded-xl bg-cyan-500/20 text-cyan-400 flex items-center justify-center font-bold text-xs">SVG</div>
+              <div class="w-10 h-10 rounded-xl bg-cyan-100 text-cyan-800 flex items-center justify-center font-bold text-xs">SVG</div>
               <div>
-                <h4 class="text-sm font-bold text-white">Whiteboard Architecture</h4>
-                <p class="text-xs text-gray-400">ElkJS + RoughJS • 0% BBox Collisions</p>
+                <h4 class="text-sm font-bold text-gray-900">Whiteboard Architecture</h4>
+                <p class="text-xs text-gray-600">ElkJS + RoughJS • 0% BBox Collisions</p>
               </div>
             </div>
-            <span class="text-[11px] font-mono text-gray-400">13.6 KB</span>
+            <span class="text-[11px] font-mono text-gray-600 font-medium">13.6 KB</span>
           </div>
           <div class="flex items-center gap-2">
-            <a href="/scratch/01_whiteboard_architecture.svg" target="_blank" class="flex-1 py-2 px-3 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-semibold text-center transition-all">View 4K SVG &gt;</a>
+            <a href="/scratch/01_whiteboard_architecture.svg" target="_blank" class="flex-1 py-2 px-3 rounded-xl bg-white hover:bg-gray-100 border border-gray-300 text-gray-800 text-xs font-semibold text-center shadow-sm transition-all">View 4K SVG &gt;</a>
           </div>
         </div>
 
         <!-- Asset 6: 4K Broadcast Stills Gallery -->
-        <div class="p-5 rounded-2xl bg-white/5 border border-white/5 hover:border-brand-blue/30 transition-all flex flex-col justify-between gap-4">
+        <div class="p-5 rounded-2xl bg-gray-50 border border-gray-200 hover:border-blue-400 hover:shadow-md transition-all flex flex-col justify-between gap-4">
           <div class="flex items-start justify-between">
             <div class="flex items-center gap-3">
-              <div class="w-10 h-10 rounded-xl bg-red-500/20 text-red-400 flex items-center justify-center font-bold text-xs">PNG</div>
+              <div class="w-10 h-10 rounded-xl bg-rose-100 text-rose-800 flex items-center justify-center font-bold text-xs">PNG</div>
               <div>
-                <h4 class="text-sm font-bold text-white">6x 4K Broadcast Stills</h4>
-                <p class="text-xs text-gray-400">3840×2160 • All 5 Acts Mastered</p>
+                <h4 class="text-sm font-bold text-gray-900">6x 4K Broadcast Stills</h4>
+                <p class="text-xs text-gray-600">3840×2160 • All 5 Acts Mastered</p>
               </div>
             </div>
-            <span class="text-[11px] font-mono text-gray-400">6 Shots</span>
+            <span class="text-[11px] font-mono text-gray-600 font-medium">6 Shots</span>
           </div>
           <div class="flex items-center gap-2">
-            <a href="/scratch/rendered_stills/act1_cold_open_hook.png" target="_blank" class="flex-1 py-2 px-3 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-semibold text-center transition-all">Open Still F15 &gt;</a>
-            <a href="/scratch/rendered_stills/act5_production_checklist.png" target="_blank" class="flex-1 py-2 px-3 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-semibold text-center transition-all">Open Still F360 &gt;</a>
+            <a href="/scratch/rendered_stills/act1_cold_open_hook.png" target="_blank" class="flex-1 py-2 px-3 rounded-xl bg-white hover:bg-gray-100 border border-gray-300 text-gray-800 text-xs font-semibold text-center shadow-sm transition-all">Open Still F15 &gt;</a>
+            <a href="/scratch/rendered_stills/act5_production_checklist.png" target="_blank" class="flex-1 py-2 px-3 rounded-xl bg-white hover:bg-gray-100 border border-gray-300 text-gray-800 text-xs font-semibold text-center shadow-sm transition-all">Open Still F360 &gt;</a>
           </div>
         </div>
       </div>
@@ -585,51 +586,51 @@ function renderStudioHtml(): string {
     <div class="glass-panel p-8 rounded-3xl flex flex-col gap-6">
       <div class="flex items-center justify-between flex-wrap gap-4">
         <div>
-          <h2 class="text-2xl font-bold text-white tracking-tight">Progressive Whiteboard Stage (ElkJS + RoughJS)</h2>
-          <p class="text-sm text-gray-400 mt-1">Broadcast Obsidian Glass Stage with 0% Bounding Box Collisions & Glowing Kinetic Particles</p>
+          <h2 class="text-2xl font-bold text-gray-900 tracking-tight">Progressive Whiteboard Stage (ElkJS + RoughJS)</h2>
+          <p class="text-sm text-gray-600 mt-1">Broadcast Studio Light Stage with 0% Bounding Box Collisions & Glowing Kinetic Particles</p>
         </div>
         <div class="flex items-center gap-3">
-          <button onclick="toggleParticles()" id="particle-btn" class="px-4 py-2 rounded-xl bg-brand-blue/20 border border-brand-blue/40 text-brand-blue text-xs font-semibold flex items-center gap-2">
-            <span class="w-2 h-2 rounded-full bg-brand-blue animate-ping"></span>
+          <button onclick="toggleParticles()" id="particle-btn" class="px-4 py-2 rounded-xl bg-blue-50 border border-blue-300 text-blue-700 text-xs font-semibold flex items-center gap-2 shadow-sm">
+            <span class="w-2.5 h-2.5 rounded-full bg-blue-600 animate-ping"></span>
             Kinetic Particles: ON
           </button>
-          <a href="/scratch/01_whiteboard_architecture.svg" target="_blank" class="px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-gray-300 text-xs font-semibold flex items-center gap-2 border border-white/10">
+          <a href="/scratch/01_whiteboard_architecture.svg" target="_blank" class="px-4 py-2 rounded-xl bg-white hover:bg-gray-100 text-gray-700 text-xs font-semibold flex items-center gap-2 border border-gray-300 shadow-sm transition-all">
             Open Raw 4K SVG &gt;
           </a>
         </div>
       </div>
 
       <!-- Interactive SVG Whiteboard Container -->
-      <div class="w-full bg-[#0F1115] border border-white/10 rounded-2xl p-6 overflow-hidden flex items-center justify-center min-h-[420px]">
+      <div class="w-full bg-[#F8FAFC] border border-gray-300 rounded-2xl p-6 overflow-hidden flex items-center justify-center min-h-[420px] shadow-inner">
         <object id="whiteboard-svg-obj" data="/scratch/01_whiteboard_architecture.svg" type="image/svg+xml" class="w-full h-auto max-h-[500px] object-contain"></object>
       </div>
 
       <!-- Contract Nodes Telemetry Strip -->
       <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
-        <div class="p-3.5 rounded-xl bg-white/5 border border-white/5 flex flex-col gap-1">
-          <span class="text-[10px] font-mono text-brand-blue font-bold">NODE 1</span>
-          <span class="text-xs font-semibold text-white">Client VPC</span>
-          <span class="text-[11px] text-gray-400 font-mono">10.0.0.0/16</span>
+        <div class="p-3.5 rounded-xl bg-gray-50 border border-gray-200 flex flex-col gap-1">
+          <span class="text-[10px] font-mono text-blue-700 font-bold">NODE 1</span>
+          <span class="text-xs font-semibold text-gray-900">Client VPC</span>
+          <span class="text-[11px] text-gray-600 font-mono">10.0.0.0/16</span>
         </div>
-        <div class="p-3.5 rounded-xl bg-white/5 border border-white/5 flex flex-col gap-1">
-          <span class="text-[10px] font-mono text-brand-blue font-bold">NODE 2</span>
-          <span class="text-xs font-semibold text-white">PSC Forwarding Rule</span>
-          <span class="text-[11px] text-gray-400 font-mono">10.0.1.50</span>
+        <div class="p-3.5 rounded-xl bg-gray-50 border border-gray-200 flex flex-col gap-1">
+          <span class="text-[10px] font-mono text-blue-700 font-bold">NODE 2</span>
+          <span class="text-xs font-semibold text-gray-900">PSC Forwarding Rule</span>
+          <span class="text-[11px] text-gray-600 font-mono">10.0.1.50</span>
         </div>
-        <div class="p-3.5 rounded-xl bg-white/5 border border-white/5 flex flex-col gap-1">
-          <span class="text-[10px] font-mono text-brand-blue font-bold">NODE 3</span>
-          <span class="text-xs font-semibold text-white">Private Service Connect</span>
-          <span class="text-[11px] text-gray-400 font-mono">Zero Public IPs</span>
+        <div class="p-3.5 rounded-xl bg-gray-50 border border-gray-200 flex flex-col gap-1">
+          <span class="text-[10px] font-mono text-blue-700 font-bold">NODE 3</span>
+          <span class="text-xs font-semibold text-gray-900">Private Service Connect</span>
+          <span class="text-[11px] text-gray-600 font-mono">Zero Public IPs</span>
         </div>
-        <div class="p-3.5 rounded-xl bg-white/5 border border-white/5 flex flex-col gap-1">
-          <span class="text-[10px] font-mono text-brand-blue font-bold">NODE 4</span>
-          <span class="text-xs font-semibold text-white">Vertex AI Endpoint</span>
-          <span class="text-[11px] text-gray-400 font-mono">europe-west1</span>
+        <div class="p-3.5 rounded-xl bg-gray-50 border border-gray-200 flex flex-col gap-1">
+          <span class="text-[10px] font-mono text-blue-700 font-bold">NODE 4</span>
+          <span class="text-xs font-semibold text-gray-900">Vertex AI Endpoint</span>
+          <span class="text-[11px] text-gray-600 font-mono">europe-west1</span>
         </div>
-        <div class="p-3.5 rounded-xl bg-white/5 border border-white/5 flex flex-col gap-1">
-          <span class="text-[10px] font-mono text-brand-green font-bold">NODE 5</span>
-          <span class="text-xs font-semibold text-white">Gemini 2.0 Flash</span>
-          <span class="text-[11px] text-gray-400 font-mono">Sub-15ms Private</span>
+        <div class="p-3.5 rounded-xl bg-gray-50 border border-gray-200 flex flex-col gap-1">
+          <span class="text-[10px] font-mono text-emerald-700 font-bold">NODE 5</span>
+          <span class="text-xs font-semibold text-gray-900">Gemini 2.0 Flash</span>
+          <span class="text-[11px] text-gray-600 font-mono">Sub-15ms Private</span>
         </div>
       </div>
     </div>
@@ -641,19 +642,19 @@ function renderStudioHtml(): string {
       <div class="xl:col-span-6 glass-panel p-6 rounded-2xl flex flex-col gap-4">
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-2">
-            <svg class="w-5 h-5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-            <h3 class="text-lg font-bold text-white">Deterministic CDP Telemetry</h3>
+            <svg class="w-5 h-5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+            <h3 class="text-lg font-bold text-gray-900">Deterministic CDP Telemetry</h3>
           </div>
-          <span class="text-xs font-mono text-gray-400">0% Flake Replay</span>
+          <span class="text-xs font-mono text-gray-600 font-semibold">0% Flake Replay</span>
         </div>
-        <div class="bg-black/60 rounded-xl p-4 font-mono text-xs text-gray-300 h-64 overflow-y-auto custom-scrollbar flex flex-col gap-2">
-          <div class="text-brand-blue">▶ [Session] CDP Replayer connected to Chrome 153.0.8010.36</div>
-          <div class="text-emerald-400">✔ [Step 1] Navigate to https://console.cloud.google.com/vertex-ai/models</div>
-          <div class="text-gray-300">↳ [Telemetry] Mouse spline moved to [x: 480, y: 160] (Duration: 320ms)</div>
-          <div class="text-emerald-400">✔ [Step 2] Click 'Deploy Model' [data-test-id='mg-deploy-btn']</div>
-          <div class="text-gray-300">↳ [Telemetry] Drawer expanded to 680px width</div>
-          <div class="text-emerald-400">✔ [Step 3] Type 'gemini-2-private-ep' with minimum-jerk dwell</div>
-          <div class="text-emerald-400">✔ [Step 4] Verified endpoint status 'Active' with 12px dilation redaction</div>
+        <div class="bg-gray-50 border border-gray-200 rounded-xl p-4 font-mono text-xs text-gray-800 h-64 overflow-y-auto custom-scrollbar flex flex-col gap-2">
+          <div class="text-blue-700 font-semibold">▶ [Session] CDP Replayer connected to Chrome 153.0.8010.36</div>
+          <div class="text-emerald-700 font-semibold">✔ [Step 1] Navigate to https://console.cloud.google.com/vertex-ai/models</div>
+          <div class="text-gray-600">↳ [Telemetry] Mouse spline moved to [x: 480, y: 160] (Duration: 320ms)</div>
+          <div class="text-emerald-700 font-semibold">✔ [Step 2] Click 'Deploy Model' [data-test-id='mg-deploy-btn']</div>
+          <div class="text-gray-600">↳ [Telemetry] Drawer expanded to 680px width</div>
+          <div class="text-emerald-700 font-semibold">✔ [Step 3] Type 'gemini-2-private-ep' with minimum-jerk dwell</div>
+          <div class="text-emerald-700 font-semibold">✔ [Step 4] Verified endpoint status 'Active' with 12px dilation redaction</div>
         </div>
       </div>
 
@@ -661,43 +662,43 @@ function renderStudioHtml(): string {
       <div class="xl:col-span-6 glass-panel p-6 rounded-2xl flex flex-col gap-4">
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-2">
-            <svg class="w-5 h-5 text-brand-yellow" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
-            <h3 class="text-lg font-bold text-white">Quality Guard Engine (39 Hooks)</h3>
+            <svg class="w-5 h-5 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+            <h3 class="text-lg font-bold text-gray-900">Quality Guard Engine (39 Hooks)</h3>
           </div>
-          <span class="px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 font-mono text-xs font-semibold">100% Verified</span>
+          <span class="px-2 py-0.5 rounded bg-emerald-50 border border-emerald-200 text-emerald-800 font-mono text-xs font-bold">100% Verified</span>
         </div>
         <div class="grid grid-cols-2 gap-2 text-xs font-mono h-64 overflow-y-auto custom-scrollbar p-1">
-          <div class="p-2 rounded bg-white/5 border border-white/5 flex items-center justify-between">
-            <span class="text-gray-300 truncate">sandbox_project_id_firewall</span>
-            <span class="text-emerald-400">✔ PASS</span>
+          <div class="p-2 rounded-lg bg-gray-50 border border-gray-200 flex items-center justify-between">
+            <span class="text-gray-800 font-medium truncate">sandbox_project_id_firewall</span>
+            <span class="text-emerald-700 font-bold">✔ PASS</span>
           </div>
-          <div class="p-2 rounded bg-white/5 border border-white/5 flex items-center justify-between">
-            <span class="text-gray-300 truncate">validate_manifest_schema</span>
-            <span class="text-emerald-400">✔ PASS</span>
+          <div class="p-2 rounded-lg bg-gray-50 border border-gray-200 flex items-center justify-between">
+            <span class="text-gray-800 font-medium truncate">validate_manifest_schema</span>
+            <span class="text-emerald-700 font-bold">✔ PASS</span>
           </div>
-          <div class="p-2 rounded bg-white/5 border border-white/5 flex items-center justify-between">
-            <span class="text-gray-300 truncate">whiteboard_bbox_collision_audit</span>
-            <span class="text-emerald-400">✔ PASS</span>
+          <div class="p-2 rounded-lg bg-gray-50 border border-gray-200 flex items-center justify-between">
+            <span class="text-gray-800 font-medium truncate">whiteboard_bbox_collision_audit</span>
+            <span class="text-emerald-700 font-bold">✔ PASS</span>
           </div>
-          <div class="p-2 rounded bg-white/5 border border-white/5 flex items-center justify-between">
-            <span class="text-gray-300 truncate">triad_selector_shadow_dom</span>
-            <span class="text-emerald-400">✔ PASS</span>
+          <div class="p-2 rounded-lg bg-gray-50 border border-gray-200 flex items-center justify-between">
+            <span class="text-gray-800 font-medium truncate">triad_selector_shadow_dom</span>
+            <span class="text-emerald-700 font-bold">✔ PASS</span>
           </div>
-          <div class="p-2 rounded bg-white/5 border border-white/5 flex items-center justify-between">
-            <span class="text-gray-300 truncate">headless_rehearsal_matrix</span>
-            <span class="text-emerald-400">✔ PASS</span>
+          <div class="p-2 rounded-lg bg-gray-50 border border-gray-200 flex items-center justify-between">
+            <span class="text-gray-800 font-medium truncate">headless_rehearsal_matrix</span>
+            <span class="text-emerald-700 font-bold">✔ PASS</span>
           </div>
-          <div class="p-2 rounded bg-white/5 border border-white/5 flex items-center justify-between">
-            <span class="text-gray-300 truncate">google_signed_chrome_guard</span>
-            <span class="text-emerald-400">✔ PASS</span>
+          <div class="p-2 rounded-lg bg-gray-50 border border-gray-200 flex items-center justify-between">
+            <span class="text-gray-800 font-medium truncate">google_signed_chrome_guard</span>
+            <span class="text-emerald-700 font-bold">✔ PASS</span>
           </div>
-          <div class="p-2 rounded bg-white/5 border border-white/5 flex items-center justify-between">
-            <span class="text-gray-300 truncate">zero_blank_frame_audit</span>
-            <span class="text-emerald-400">✔ PASS</span>
+          <div class="p-2 rounded-lg bg-gray-50 border border-gray-200 flex items-center justify-between">
+            <span class="text-gray-800 font-medium truncate">zero_blank_frame_audit</span>
+            <span class="text-emerald-700 font-bold">✔ PASS</span>
           </div>
-          <div class="p-2 rounded bg-white/5 border border-white/5 flex items-center justify-between">
-            <span class="text-gray-300 truncate">redaction_bounding_box_dilation</span>
-            <span class="text-emerald-400">✔ PASS</span>
+          <div class="p-2 rounded-lg bg-gray-50 border border-gray-200 flex items-center justify-between">
+            <span class="text-gray-800 font-medium truncate">redaction_bounding_box_dilation</span>
+            <span class="text-emerald-700 font-bold">✔ PASS</span>
           </div>
         </div>
       </div>
@@ -840,11 +841,11 @@ function renderStudioHtml(): string {
         const isPast = currentMs >= w.endMs;
 
         if (isCurrent) {
-          html += '<span class="text-brand-yellow font-bold text-lg scale-105 px-1.5 py-0.5 rounded bg-brand-yellow/20 border border-brand-yellow/40 shadow-[0_0_12px_rgba(251,188,4,0.4)] transition-all duration-75">' + escapeHtml(w.word) + '</span> ';
+          html += '<span class="text-amber-900 font-bold text-lg scale-105 px-2 py-0.5 rounded-lg bg-amber-100 border border-amber-400 shadow-sm transition-all duration-75">' + escapeHtml(w.word) + '</span> ';
         } else if (isPast) {
-          html += '<span class="text-white font-medium">' + escapeHtml(w.word) + '</span> ';
+          html += '<span class="text-gray-900 font-semibold">' + escapeHtml(w.word) + '</span> ';
         } else {
-          html += '<span class="text-gray-500">' + escapeHtml(w.word) + '</span> ';
+          html += '<span class="text-gray-400">' + escapeHtml(w.word) + '</span> ';
         }
       }
       textBox.innerHTML = html;
@@ -908,10 +909,10 @@ function renderStudioHtml(): string {
       const isDucked = currentFrame < 700;
       if (isDucked) {
         duckBadge.textContent = '-18dB DUCKED';
-        duckBadge.className = 'px-1.5 py-0.5 rounded bg-brand-blue/30 text-brand-blue text-[10px] font-mono font-bold transition-colors duration-200';
+        duckBadge.className = 'px-2 py-0.5 rounded bg-blue-100 text-blue-800 border border-blue-300 text-[10px] font-mono font-bold transition-colors duration-200';
       } else {
         duckBadge.textContent = 'AMBIENT 0dB';
-        duckBadge.className = 'px-1.5 py-0.5 rounded bg-white/10 text-gray-300 text-[10px] font-mono font-bold transition-colors duration-200';
+        duckBadge.className = 'px-2 py-0.5 rounded bg-gray-100 text-gray-700 border border-gray-300 text-[10px] font-mono font-bold transition-colors duration-200';
       }
     }
 
@@ -926,16 +927,14 @@ function renderStudioHtml(): string {
       const frame = document.getElementById('viewport-frame');
       const badge = document.getElementById('active-res-badge');
       document.querySelectorAll('.aspect-btn').forEach(b => {
-        b.classList.remove('bg-brand-blue', 'text-white');
-        b.classList.add('text-gray-400');
+        b.className = 'aspect-btn px-3 py-1.5 rounded-lg text-gray-600 hover:text-gray-900 font-semibold transition-all';
       });
       const activeBtn = document.querySelector('.aspect-btn[data-ratio="' + ratio + '"]');
       if (activeBtn) {
-        activeBtn.classList.add('bg-brand-blue', 'text-white');
-        activeBtn.classList.remove('text-gray-400');
+        activeBtn.className = 'aspect-btn active px-3 py-1.5 rounded-lg bg-blue-600 text-white font-semibold shadow-sm transition-all';
       }
 
-      frame.className = 'w-full rounded-2xl glass-panel relative overflow-hidden flex items-center justify-center neon-border-blue transition-all duration-300';
+      frame.className = 'w-full rounded-2xl bg-white border border-gray-300 relative overflow-hidden flex items-center justify-center neon-border-blue transition-all duration-300 shadow-sm';
       if (ratio === '16:9') {
         frame.classList.add('aspect-video');
         badge.textContent = '3840×2160 (16:9 4K UHD)';
@@ -960,12 +959,10 @@ function renderStudioHtml(): string {
       const isCurrentlyOn = btn.textContent.includes('ON');
       if (isCurrentlyOn) {
         btn.innerHTML = 'Kinetic Particles: OFF';
-        btn.classList.remove('text-brand-blue');
-        btn.classList.add('text-gray-400');
+        btn.className = 'px-4 py-2 rounded-xl bg-gray-100 border border-gray-300 text-gray-600 text-xs font-semibold flex items-center gap-2 shadow-sm transition-all';
       } else {
-        btn.innerHTML = '<span class="w-2 h-2 rounded-full bg-brand-blue animate-ping"></span>Kinetic Particles: ON';
-        btn.classList.add('text-brand-blue');
-        btn.classList.remove('text-gray-400');
+        btn.innerHTML = '<span class="w-2.5 h-2.5 rounded-full bg-blue-600 animate-ping"></span>Kinetic Particles: ON';
+        btn.className = 'px-4 py-2 rounded-xl bg-blue-50 border border-blue-300 text-blue-700 text-xs font-semibold flex items-center gap-2 shadow-sm transition-all';
       }
     }
 

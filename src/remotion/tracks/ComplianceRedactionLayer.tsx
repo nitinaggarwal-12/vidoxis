@@ -60,10 +60,10 @@ export const ComplianceRedactionLayer: React.FC<ComplianceRedactionLayerProps> =
               height: dilatedHeight,
               backdropFilter: `blur(${blurRadiusPx * factor}px)`,
               WebkitBackdropFilter: `blur(${blurRadiusPx * factor}px)`,
-              backgroundColor: "rgba(24, 27, 34, 0.45)",
+              backgroundColor: "rgba(255, 255, 255, 0.75)",
               borderRadius: 8 * factor,
-              border: `${1 * factor}px solid rgba(255, 255, 255, 0.1)`,
-              boxShadow: `0 ${4 * factor}px ${12 * factor}px rgba(0, 0, 0, 0.35)`,
+              border: `${1 * factor}px solid rgba(0, 0, 0, 0.15)`,
+              boxShadow: `0 ${4 * factor}px ${12 * factor}px rgba(0, 0, 0, 0.08)`,
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
@@ -75,7 +75,7 @@ export const ComplianceRedactionLayer: React.FC<ComplianceRedactionLayerProps> =
                 style={{
                   fontSize: 10 * factor,
                   fontWeight: 700,
-                  color: "rgba(255, 255, 255, 0.65)",
+                  color: "#1E293B",
                   letterSpacing: `${0.8 * factor}px`,
                   textTransform: "uppercase",
                   fontFamily: "'Roboto Mono', monospace"

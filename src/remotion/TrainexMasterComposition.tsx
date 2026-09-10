@@ -1,11 +1,11 @@
 import React from "react";
-import { Sequence, interpolate, useCurrentFrame } from "remotion";
+import { Sequence, interpolate, useCurrentFrame, Audio } from "remotion";
 import { WhiteboardTrack } from "./tracks/WhiteboardTrack.js";
 import { ConsoleScreencastTrack } from "./tracks/ConsoleScreencastTrack.js";
 import { LegalPreviewDisclaimerSlate } from "./tracks/LegalPreviewDisclaimerSlate.js";
 import { ConfidentialNDAWatermark } from "./tracks/ConfidentialNDAWatermark.js";
 import { PresenterAvatarCapsule } from "./tracks/PresenterAvatarCapsule.js";
-import { KaraokeSubtitleTrack } from "./tracks/KaraokeSubtitleTrack.js";
+import { KaraokeSubtitleTrack, SubtitleSegment } from "./tracks/KaraokeSubtitleTrack.js";
 import { PromptCanvasSlideTrack } from "./tracks/PromptCanvasSlideTrack.js";
 
 export interface TrainexMasterCompositionProps {
@@ -23,6 +23,8 @@ export interface TrainexMasterCompositionProps {
     cloudRun?: string;
     bigquery?: string;
   };
+  audioSrc?: string;
+  segments?: SubtitleSegment[];
   enableWatermark?: boolean;
   enableDisclaimer?: boolean;
   enableAvatar?: boolean;
@@ -37,6 +39,8 @@ export const TrainexMasterComposition: React.FC<TrainexMasterCompositionProps> =
   whiteboardDurationFrames = 180, // 3 seconds @ 60fps
   screencastDurationFrames = 300, // 5 seconds @ 60fps
   screenshots = {},
+  audioSrc,
+  segments,
   enableWatermark = true,
   enableDisclaimer = true,
   enableAvatar = true,
@@ -70,6 +74,9 @@ export const TrainexMasterComposition: React.FC<TrainexMasterCompositionProps> =
         overflow: "hidden"
       }}
     >
+      {/* Audio Layer (Narration + Ducked Lyria Music Bed + SFX) */}
+      {audioSrc && <Audio src={audioSrc} />}
+
       {/* Optional Stage 1: Keynote Slide Track */}
       {slideDurationFrames > 0 && (
         <Sequence from={0} durationInFrames={slideDurationFrames}>
@@ -95,7 +102,7 @@ export const TrainexMasterComposition: React.FC<TrainexMasterCompositionProps> =
       </Sequence>
 
       {/* Dynamic Gold Karaoke Subtitles */}
-      {enableSubtitles && <KaraokeSubtitleTrack />}
+      {enableSubtitles && <KaraokeSubtitleTrack segments={segments} />}
 
       {/* Veo 2 / Imagen 3 PiP Presenter Avatar */}
       {enableAvatar && <PresenterAvatarCapsule />}

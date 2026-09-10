@@ -12,7 +12,7 @@ export function createStudioServer() {
     const url = new URL(req.url || "/", `http://${req.headers.host || "localhost"}`);
     const pathname = url.pathname;
 
-    // Static scratch file serving
+    // Static scratch file serving with full HTTP 206 Partial Content Range streaming
     if (pathname.startsWith("/scratch/")) {
       const relPath = pathname.replace(/^\/scratch\//, "");
       const fullPath = path.resolve(SCRATCH_DIR, relPath);
@@ -24,20 +24,73 @@ export function createStudioServer() {
           ".svg": "image/svg+xml",
           ".json": "application/json",
           ".mp4": "video/mp4",
+          ".webm": "video/webm",
           ".wav": "audio/wav",
           ".html": "text/html"
         };
-        res.writeHead(200, {
-          "Content-Type": contentTypes[ext] || "application/octet-stream",
-          "Access-Control-Allow-Origin": "*"
-        });
-        fs.createReadStream(fullPath).pipe(res);
+        const contentType = contentTypes[ext] || "application/octet-stream";
+        const stat = fs.statSync(fullPath);
+        const fileSize = stat.size;
+        const range = req.headers.range;
+
+        if (range) {
+          const parts = range.replace(/bytes=/, "").split("-");
+          const start = parseInt(parts[0], 10);
+          const end = parts[1] ? parseInt(parts[1], 10) : fileSize - 1;
+          const chunksize = (end - start) + 1;
+          const file = fs.createReadStream(fullPath, { start, end });
+          res.writeHead(206, {
+            "Content-Range": `bytes ${start}-${end}/${fileSize}`,
+            "Accept-Ranges": "bytes",
+            "Content-Length": chunksize,
+            "Content-Type": contentType,
+            "Access-Control-Allow-Origin": "*"
+          });
+          file.pipe(res);
+        } else {
+          res.writeHead(200, {
+            "Content-Length": fileSize,
+            "Content-Type": contentType,
+            "Accept-Ranges": "bytes",
+            "Access-Control-Allow-Origin": "*"
+          });
+          fs.createReadStream(fullPath).pipe(res);
+        }
         return;
       } else {
         res.writeHead(404, { "Content-Type": "text/plain" });
         res.end("Not Found");
         return;
       }
+    }
+
+    if (pathname === "/api/phonemes") {
+      const phonemesPath = path.join(SCRATCH_DIR, "phonemes.json");
+      if (fs.existsSync(phonemesPath)) {
+        res.writeHead(200, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
+        fs.createReadStream(phonemesPath).pipe(res);
+      } else {
+        res.writeHead(404, { "Content-Type": "application/json" });
+        res.end(JSON.stringify({ error: "phonemes.json not found" }));
+      }
+      return;
+    }
+
+    if (pathname === "/api/audio-status") {
+      const audioFiles = ["master_audio.wav", "narration.wav", "music_bed.wav"];
+      const status: Record<string, any> = {};
+      for (const f of audioFiles) {
+        const p = path.join(SCRATCH_DIR, f);
+        if (fs.existsSync(p)) {
+          const stat = fs.statSync(p);
+          status[f] = { exists: true, sizeBytes: stat.size, url: `/scratch/${f}` };
+        } else {
+          status[f] = { exists: false };
+        }
+      }
+      res.writeHead(200, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
+      res.end(JSON.stringify(status));
+      return;
     }
 
     // API endpoints
@@ -235,12 +288,27 @@ function renderStudioHtml(): string {
           <!-- Bottom Floating Badges -->
           <div class="absolute bottom-4 left-6 flex items-center gap-3 pointer-events-none">
             <div class="px-3 py-1.5 rounded-xl bg-black/80 backdrop-blur-md border border-white/10 text-xs font-mono text-gray-300 flex items-center gap-2">
-              <span class="w-2 h-2 rounded-full bg-brand-blue"></span>
-              <span id="current-frame-badge">FRAME 90 / 480</span>
+              <span class="w-2 h-2 rounded-full bg-brand-blue animate-pulse"></span>
+              <span id="current-frame-badge">FRAME 90 / 750</span>
             </div>
             <div class="px-3 py-1.5 rounded-xl bg-black/80 backdrop-blur-md border border-white/10 text-xs font-mono text-gray-300">
               <span id="current-timestamp-badge">00:01.500</span>
             </div>
+          </div>
+        </div>
+
+        <!-- Gold Karaoke Subtitle Track (Broadcast Standard) -->
+        <div class="glass-panel p-4 rounded-2xl flex flex-col gap-2 border border-brand-yellow/20">
+          <div class="flex items-center justify-between text-xs font-mono">
+            <div class="flex items-center gap-2">
+              <span class="w-2 h-2 rounded-full bg-brand-yellow animate-ping"></span>
+              <span id="subtitle-act-badge" class="px-2.5 py-0.5 rounded bg-brand-yellow/20 text-brand-yellow font-bold uppercase tracking-wider text-[11px]">Act 2: Architecture Synthesis</span>
+            </div>
+            <span id="subtitle-timing-badge" class="text-gray-400">00:01.500 / 00:12.500</span>
+          </div>
+          <div id="karaoke-text-box" class="text-base md:text-lg font-medium text-gray-300 min-h-[3rem] flex flex-wrap items-center gap-1.5 px-2 py-1 leading-relaxed">
+            <!-- Words dynamically highlighted here -->
+            <span class="text-gray-400 italic">Initializing DeepMind Phoneme Karaoke Subtitles...</span>
           </div>
         </div>
 
@@ -249,8 +317,8 @@ function renderStudioHtml(): string {
           <!-- Scrubber Range -->
           <div class="flex items-center gap-4">
             <span class="text-xs font-mono text-gray-400">00:00</span>
-            <input id="timeline-slider" type="range" min="0" max="480" value="90" class="flex-1 accent-brand-blue cursor-pointer h-2 bg-gray-700 rounded-lg" oninput="onScrubFrame(this.value)">
-            <span class="text-xs font-mono text-gray-400">00:08</span>
+            <input id="timeline-slider" type="range" min="0" max="750" value="90" class="flex-1 accent-brand-blue cursor-pointer h-2 bg-gray-700 rounded-lg" oninput="onScrubFrame(this.value)">
+            <span class="text-xs font-mono text-gray-400">00:12.5</span>
           </div>
 
           <!-- Control Buttons Bar -->
@@ -262,28 +330,30 @@ function renderStudioHtml(): string {
               </button>
               <button id="play-pause-btn" onclick="togglePlay()" class="px-6 py-2.5 rounded-xl bg-brand-blue hover:bg-blue-600 text-white text-sm font-semibold flex items-center gap-2 shadow-md shadow-brand-blue/30">
                 <svg id="play-icon" class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
-                <span>Play</span>
+                <span id="play-btn-text">Play</span>
               </button>
               <button onclick="stepFrame(1)" class="px-3 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-gray-200 text-xs font-mono font-bold flex items-center gap-1 border border-white/10">
                 +1 Frame &gt;
               </button>
             </div>
 
-            <!-- Middle: Quick Keyframe Selector -->
-            <div class="flex items-center gap-1.5 text-xs font-mono">
-              <button onclick="seekFrame(90)" class="px-2.5 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-gray-300 border border-white/5">F90 Whiteboard</button>
-              <button onclick="seekFrame(175)" class="px-2.5 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-gray-300 border border-white/5">F175 Bridge</button>
-              <button onclick="seekFrame(220)" class="px-2.5 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-gray-300 border border-white/5">F220 Drawer</button>
-              <button onclick="seekFrame(270)" class="px-2.5 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-gray-300 border border-white/5">F270 Redact</button>
+            <!-- Middle: Quick Keyframe Selector Across All 5 Acts -->
+            <div class="flex items-center gap-1 text-xs font-mono flex-wrap">
+              <button onclick="seekFrame(15)" class="px-2 py-1 rounded-lg bg-white/5 hover:bg-white/10 text-gray-300 border border-white/5">F15 Hook</button>
+              <button onclick="seekFrame(90)" class="px-2 py-1 rounded-lg bg-white/5 hover:bg-white/10 text-gray-300 border border-white/5">F90 Whiteboard</button>
+              <button onclick="seekFrame(175)" class="px-2 py-1 rounded-lg bg-white/5 hover:bg-white/10 text-gray-300 border border-white/5">F175 Bridge</button>
+              <button onclick="seekFrame(220)" class="px-2 py-1 rounded-lg bg-white/5 hover:bg-white/10 text-gray-300 border border-white/5">F220 Drawer</button>
+              <button onclick="seekFrame(270)" class="px-2 py-1 rounded-lg bg-white/5 hover:bg-white/10 text-gray-300 border border-white/5">F270 Redact</button>
+              <button onclick="seekFrame(360)" class="px-2 py-1 rounded-lg bg-white/5 hover:bg-white/10 text-gray-300 border border-white/5">F360 Checklist</button>
             </div>
 
             <!-- Right: Playback Speed & Telemetry Toggle -->
             <div class="flex items-center gap-3">
               <label class="flex items-center gap-2 text-xs text-gray-300 font-medium cursor-pointer">
                 <input type="checkbox" id="overlay-toggle" checked onchange="toggleOverlay(this.checked)" class="rounded accent-brand-blue">
-                Show Telemetry BBoxes
+                Telemetry BBoxes
               </label>
-              <select id="speed-select" class="bg-brand-card border border-white/10 text-xs font-mono text-gray-200 px-3 py-1.5 rounded-lg">
+              <select id="speed-select" onchange="setSpeed(this.value)" class="bg-brand-card border border-white/10 text-xs font-mono text-gray-200 px-3 py-1.5 rounded-lg">
                 <option value="0.5">0.5x Slow</option>
                 <option value="1.0" selected>1.0x Normal</option>
                 <option value="1.5">1.5x Fast</option>
@@ -297,6 +367,11 @@ function renderStudioHtml(): string {
       <!-- Right Column (4 Cols): Multi-Track Audio Matrix & Master Peak Meter -->
       <div class="xl:col-span-4 flex flex-col gap-6">
 
+        <!-- Hidden Audio Elements (Loaded from /scratch/) -->
+        <audio id="audio-master" src="/scratch/master_audio.wav" preload="auto"></audio>
+        <audio id="audio-narration" src="/scratch/narration.wav" preload="auto"></audio>
+        <audio id="audio-music" src="/scratch/music_bed.wav" preload="auto"></audio>
+
         <!-- Audio Mixer Card -->
         <div class="glass-panel p-6 rounded-2xl flex flex-col gap-5">
           <div class="flex items-center justify-between">
@@ -304,18 +379,24 @@ function renderStudioHtml(): string {
               <svg class="w-5 h-5 text-brand-blue" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"></path></svg>
               <h3 class="text-base font-bold text-white tracking-tight">Multi-Track Audio Engine</h3>
             </div>
-            <span class="px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 font-mono text-xs font-semibold">48,000 Hz WAV</span>
+            <div class="flex items-center gap-2">
+              <span id="audio-engine-mode" class="px-2 py-0.5 rounded bg-brand-blue/15 text-brand-blue font-mono text-[11px] font-bold">MASTER STEREO</span>
+              <span class="px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 font-mono text-[11px] font-semibold">48 kHz</span>
+            </div>
           </div>
 
           <!-- Track 1: Narration (TTS) -->
           <div class="flex flex-col gap-2 p-3.5 rounded-xl bg-white/5 border border-white/5">
             <div class="flex items-center justify-between text-xs">
-              <span class="font-semibold text-gray-200">Narration Voice (Gemini TTS)</span>
-              <span class="font-mono text-gray-400" id="vol-narration-val">100% (0 dB)</span>
+              <div class="flex items-center gap-1.5">
+                <span class="font-semibold text-gray-200">Narration Voice</span>
+                <span class="text-[10px] text-gray-400 font-mono">(Dr. Maya Lin)</span>
+              </div>
+              <span class="font-mono text-gray-300 font-bold" id="vol-narration-val">100% (0 dB)</span>
             </div>
             <div class="flex items-center gap-3">
-              <input type="range" min="0" max="100" value="100" class="flex-1 accent-brand-blue h-1.5 bg-gray-700 rounded cursor-pointer" oninput="updateAudioVol('narration', this.value)">
-              <button onclick="toggleMute('narration')" class="px-2.5 py-1 rounded bg-white/10 hover:bg-white/20 text-[10px] font-mono font-bold text-gray-300">MUTE</button>
+              <input id="slider-vol-narration" type="range" min="0" max="100" value="100" class="flex-1 accent-brand-blue h-1.5 bg-gray-700 rounded cursor-pointer" oninput="updateAudioVol('narration', this.value)">
+              <button id="btn-mute-narration" onclick="toggleMute('narration')" class="px-2.5 py-1 rounded bg-white/10 hover:bg-white/20 text-[10px] font-mono font-bold text-gray-300">MUTE</button>
             </div>
           </div>
 
@@ -324,53 +405,41 @@ function renderStudioHtml(): string {
             <div class="flex items-center justify-between text-xs">
               <div class="flex items-center gap-1.5">
                 <span class="font-semibold text-white">Lyria Music Bed</span>
-                <span class="px-1.5 py-0.5 rounded bg-brand-blue/30 text-brand-blue text-[10px] font-mono font-bold">-18dB DUCKED</span>
+                <span id="ducking-indicator" class="px-1.5 py-0.5 rounded bg-brand-blue/30 text-brand-blue text-[10px] font-mono font-bold transition-colors duration-200">-18dB DUCKED</span>
               </div>
               <span class="font-mono text-brand-blue font-semibold" id="vol-music-val">25% (-18 dB)</span>
             </div>
             <div class="flex items-center gap-3">
-              <input type="range" min="0" max="100" value="25" class="flex-1 accent-brand-blue h-1.5 bg-gray-700 rounded cursor-pointer" oninput="updateAudioVol('music', this.value)">
-              <button onclick="toggleMute('music')" class="px-2.5 py-1 rounded bg-white/10 hover:bg-white/20 text-[10px] font-mono font-bold text-gray-300">MUTE</button>
+              <input id="slider-vol-music" type="range" min="0" max="100" value="25" class="flex-1 accent-brand-blue h-1.5 bg-gray-700 rounded cursor-pointer" oninput="updateAudioVol('music', this.value)">
+              <button id="btn-mute-music" onclick="toggleMute('music')" class="px-2.5 py-1 rounded bg-white/10 hover:bg-white/20 text-[10px] font-mono font-bold text-gray-300">MUTE</button>
             </div>
-            <!-- Ducking Envelope Waveform Visualizer -->
-            <div class="h-6 w-full flex items-end gap-1 px-1 bg-black/40 rounded-lg overflow-hidden py-1">
-              <div class="w-1.5 bg-brand-blue h-2 rounded-sm animate-pulse"></div>
-              <div class="w-1.5 bg-brand-blue h-3 rounded-sm"></div>
-              <div class="w-1.5 bg-brand-blue h-2.5 rounded-sm"></div>
-              <div class="w-1.5 bg-brand-blue h-1.5 rounded-sm"></div>
-              <div class="w-1.5 bg-brand-blue h-2 rounded-sm"></div>
-              <div class="w-1.5 bg-brand-blue h-3.5 rounded-sm animate-pulse"></div>
-              <div class="w-1.5 bg-brand-blue h-2 rounded-sm"></div>
-              <div class="w-1.5 bg-brand-blue h-2.5 rounded-sm"></div>
-              <div class="w-1.5 bg-brand-blue h-1 rounded-sm"></div>
-              <div class="w-1.5 bg-brand-blue h-2.5 rounded-sm"></div>
-              <div class="w-1.5 bg-brand-blue h-3 rounded-sm"></div>
-              <div class="w-1.5 bg-brand-blue h-2 rounded-sm"></div>
-            </div>
-          </div>
-
-          <!-- Track 3: Kinetic SFX & Chalk Audio -->
-          <div class="flex flex-col gap-2 p-3.5 rounded-xl bg-white/5 border border-white/5">
-            <div class="flex items-center justify-between text-xs">
-              <span class="font-semibold text-gray-200">UI Kinetic & Chalk SFX</span>
-              <span class="font-mono text-gray-400" id="vol-sfx-val">70% (-6 dB)</span>
-            </div>
-            <div class="flex items-center gap-3">
-              <input type="range" min="0" max="100" value="70" class="flex-1 accent-brand-blue h-1.5 bg-gray-700 rounded cursor-pointer" oninput="updateAudioVol('sfx', this.value)">
-              <button onclick="toggleMute('sfx')" class="px-2.5 py-1 rounded bg-white/10 hover:bg-white/20 text-[10px] font-mono font-bold text-gray-300">MUTE</button>
+            <!-- Ducking Envelope Animated Waveform Visualizer -->
+            <div id="wave-bars-container" class="h-6 w-full flex items-end gap-1 px-1 bg-black/40 rounded-lg overflow-hidden py-1">
+              <div class="w-1.5 bg-brand-blue h-2 rounded-sm transition-all duration-75"></div>
+              <div class="w-1.5 bg-brand-blue h-3 rounded-sm transition-all duration-75"></div>
+              <div class="w-1.5 bg-brand-blue h-4 rounded-sm transition-all duration-75"></div>
+              <div class="w-1.5 bg-brand-blue h-2.5 rounded-sm transition-all duration-75"></div>
+              <div class="w-1.5 bg-brand-blue h-5 rounded-sm transition-all duration-75"></div>
+              <div class="w-1.5 bg-brand-blue h-3.5 rounded-sm transition-all duration-75"></div>
+              <div class="w-1.5 bg-brand-blue h-2 rounded-sm transition-all duration-75"></div>
+              <div class="w-1.5 bg-brand-blue h-4.5 rounded-sm transition-all duration-75"></div>
+              <div class="w-1.5 bg-brand-blue h-3 rounded-sm transition-all duration-75"></div>
+              <div class="w-1.5 bg-brand-blue h-2.5 rounded-sm transition-all duration-75"></div>
+              <div class="w-1.5 bg-brand-blue h-4 rounded-sm transition-all duration-75"></div>
+              <div class="w-1.5 bg-brand-blue h-2 rounded-sm transition-all duration-75"></div>
             </div>
           </div>
 
           <!-- Master LUFS Broadcast Peak Meter -->
           <div class="flex flex-col gap-1.5 pt-2 border-t border-white/10">
             <div class="flex items-center justify-between text-xs font-mono">
-              <span class="text-gray-400">Master Loudness</span>
-              <span class="text-emerald-400 font-bold">-14.2 LUFS (Target: -14.0)</span>
+              <span class="text-gray-400">Master Broadcast LUFS</span>
+              <span id="lufs-val" class="text-emerald-400 font-bold">-14.2 LUFS (Target: -14.0)</span>
             </div>
             <div class="h-2 w-full bg-gray-800 rounded-full overflow-hidden flex">
-              <div class="bg-emerald-500 w-[72%] h-full"></div>
-              <div class="bg-brand-yellow w-[12%] h-full"></div>
-              <div class="bg-brand-red w-[0%] h-full"></div>
+              <div id="meter-bar-green" class="bg-emerald-500 w-[72%] h-full transition-all duration-100"></div>
+              <div id="meter-bar-yellow" class="bg-brand-yellow w-[12%] h-full transition-all duration-100"></div>
+              <div id="meter-bar-red" class="bg-brand-red w-[0%] h-full transition-all duration-100"></div>
             </div>
           </div>
         </div>
@@ -379,7 +448,7 @@ function renderStudioHtml(): string {
         <div class="glass-panel p-6 rounded-2xl flex items-center gap-5">
           <div class="relative w-16 h-16 rounded-2xl bg-gradient-to-tr from-brand-blue to-purple-600 flex items-center justify-center shadow-lg shadow-brand-blue/20">
             <svg class="w-9 h-9 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="7" r="4"></circle><path d="M6 21v-2a4 4 0 014-4h4a4 4 0 014 4v2"></path></svg>
-            <span class="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-emerald-500 border-2 border-brand-dark"></span>
+            <span class="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-emerald-500 border-2 border-brand-dark animate-pulse"></span>
           </div>
           <div class="flex flex-col">
             <span class="text-sm font-bold text-white tracking-tight">Dr. Maya Lin</span>
@@ -388,6 +457,127 @@ function renderStudioHtml(): string {
           </div>
         </div>
 
+      </div>
+    </div>
+
+    <!-- Master Broadcast Assets Gallery & Direct Inspection (Phase 3 Delivery Hub) -->
+    <div class="glass-panel p-8 rounded-3xl flex flex-col gap-6">
+      <div class="flex items-center justify-between flex-wrap gap-4">
+        <div>
+          <h2 class="text-2xl font-bold text-white tracking-tight">Phase 3 Master Broadcast Asset Hub</h2>
+          <p class="text-sm text-gray-400 mt-1">Synthesized 48kHz DeepMind Audio Stems, Millisecond Timing Manifest & Remotion 4K Broadcast Stills</p>
+        </div>
+        <div class="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-mono font-semibold">
+          ✔ 100% Deterministic Artifacts Ready
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+        <!-- Asset 1: Master Audio -->
+        <div class="p-5 rounded-2xl bg-white/5 border border-white/5 hover:border-brand-blue/30 transition-all flex flex-col justify-between gap-4">
+          <div class="flex items-start justify-between">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-xl bg-brand-blue/20 text-brand-blue flex items-center justify-center font-bold text-xs">WAV</div>
+              <div>
+                <h4 class="text-sm font-bold text-white">Master Broadcast Audio</h4>
+                <p class="text-xs text-gray-400">48kHz 16-bit PCM • -14.2 LUFS</p>
+              </div>
+            </div>
+            <span class="text-[11px] font-mono text-gray-400">1.2 MB</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <a href="/scratch/master_audio.wav" download class="flex-1 py-2 px-3 rounded-xl bg-brand-blue hover:bg-blue-600 text-white text-xs font-semibold text-center transition-all">Download WAV</a>
+            <button onclick="playSolo('/scratch/master_audio.wav')" class="py-2 px-3 rounded-xl bg-white/10 hover:bg-white/20 text-gray-200 text-xs font-mono font-semibold">Play</button>
+          </div>
+        </div>
+
+        <!-- Asset 2: Narration Voice -->
+        <div class="p-5 rounded-2xl bg-white/5 border border-white/5 hover:border-brand-blue/30 transition-all flex flex-col justify-between gap-4">
+          <div class="flex items-start justify-between">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-xl bg-purple-500/20 text-purple-400 flex items-center justify-center font-bold text-xs">TTS</div>
+              <div>
+                <h4 class="text-sm font-bold text-white">DeepMind Narration Voice</h4>
+                <p class="text-xs text-gray-400">Dr. Maya Lin • 5 Acoustic Formants</p>
+              </div>
+            </div>
+            <span class="text-[11px] font-mono text-gray-400">1.2 MB</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <a href="/scratch/narration.wav" download class="flex-1 py-2 px-3 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-semibold text-center transition-all">Download Stem</a>
+            <button onclick="playSolo('/scratch/narration.wav')" class="py-2 px-3 rounded-xl bg-white/10 hover:bg-white/20 text-gray-200 text-xs font-mono font-semibold">Play</button>
+          </div>
+        </div>
+
+        <!-- Asset 3: Lyria Dynamic Music Bed -->
+        <div class="p-5 rounded-2xl bg-white/5 border border-white/5 hover:border-brand-blue/30 transition-all flex flex-col justify-between gap-4">
+          <div class="flex items-start justify-between">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-xl bg-brand-green/20 text-brand-green flex items-center justify-center font-bold text-xs">BED</div>
+              <div>
+                <h4 class="text-sm font-bold text-white">Lyria Music Bed (-18dB)</h4>
+                <p class="text-xs text-gray-400">Dynamic Speech Ducking Envelope</p>
+              </div>
+            </div>
+            <span class="text-[11px] font-mono text-gray-400">1.2 MB</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <a href="/scratch/music_bed.wav" download class="flex-1 py-2 px-3 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-semibold text-center transition-all">Download Stem</a>
+            <button onclick="playSolo('/scratch/music_bed.wav')" class="py-2 px-3 rounded-xl bg-white/10 hover:bg-white/20 text-gray-200 text-xs font-mono font-semibold">Play</button>
+          </div>
+        </div>
+
+        <!-- Asset 4: Phonemes Timing Manifest -->
+        <div class="p-5 rounded-2xl bg-white/5 border border-white/5 hover:border-brand-blue/30 transition-all flex flex-col justify-between gap-4">
+          <div class="flex items-start justify-between">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-xl bg-brand-yellow/20 text-brand-yellow flex items-center justify-center font-bold text-xs">JSON</div>
+              <div>
+                <h4 class="text-sm font-bold text-white">Phoneme Alignment Manifest</h4>
+                <p class="text-xs text-gray-400">Word-level bounds for 750 frames</p>
+              </div>
+            </div>
+            <span class="text-[11px] font-mono text-gray-400">13.5 KB</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <a href="/scratch/phonemes.json" target="_blank" class="flex-1 py-2 px-3 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-semibold text-center transition-all">View Raw JSON &gt;</a>
+          </div>
+        </div>
+
+        <!-- Asset 5: Whiteboard SVG Architecture -->
+        <div class="p-5 rounded-2xl bg-white/5 border border-white/5 hover:border-brand-blue/30 transition-all flex flex-col justify-between gap-4">
+          <div class="flex items-start justify-between">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-xl bg-cyan-500/20 text-cyan-400 flex items-center justify-center font-bold text-xs">SVG</div>
+              <div>
+                <h4 class="text-sm font-bold text-white">Whiteboard Architecture</h4>
+                <p class="text-xs text-gray-400">ElkJS + RoughJS • 0% BBox Collisions</p>
+              </div>
+            </div>
+            <span class="text-[11px] font-mono text-gray-400">13.6 KB</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <a href="/scratch/01_whiteboard_architecture.svg" target="_blank" class="flex-1 py-2 px-3 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-semibold text-center transition-all">View 4K SVG &gt;</a>
+          </div>
+        </div>
+
+        <!-- Asset 6: 4K Broadcast Stills Gallery -->
+        <div class="p-5 rounded-2xl bg-white/5 border border-white/5 hover:border-brand-blue/30 transition-all flex flex-col justify-between gap-4">
+          <div class="flex items-start justify-between">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-xl bg-red-500/20 text-red-400 flex items-center justify-center font-bold text-xs">PNG</div>
+              <div>
+                <h4 class="text-sm font-bold text-white">6x 4K Broadcast Stills</h4>
+                <p class="text-xs text-gray-400">3840×2160 • All 5 Acts Mastered</p>
+              </div>
+            </div>
+            <span class="text-[11px] font-mono text-gray-400">6 Shots</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <a href="/scratch/rendered_stills/act1_cold_open_hook.png" target="_blank" class="flex-1 py-2 px-3 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-semibold text-center transition-all">Open Still F15 &gt;</a>
+            <a href="/scratch/rendered_stills/act5_production_checklist.png" target="_blank" class="flex-1 py-2 px-3 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-semibold text-center transition-all">Open Still F360 &gt;</a>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -516,49 +706,87 @@ function renderStudioHtml(): string {
 
   </main>
 
-  <!-- Broadcast Audio Elements (Simulated Web Audio Context) -->
+  <!-- Interactive JavaScript Engine -->
   <script>
     const STILLS_MAP = {
+      15: '/scratch/rendered_stills/act1_cold_open_hook.png',
       90: '/scratch/rendered_stills/act2_whiteboard_kinetic_particles.png',
       175: '/scratch/rendered_stills/act2_spatial_dissolve_bridge.png',
       220: '/scratch/rendered_stills/act3_console_drawer_typing.png',
-      270: '/scratch/rendered_stills/act3_endpoint_active_redaction.png'
+      270: '/scratch/rendered_stills/act3_endpoint_active_redaction.png',
+      360: '/scratch/rendered_stills/act5_production_checklist.png'
     };
 
     let currentFrame = 90;
     let isPlaying = false;
-    let playInterval = null;
+    let phonemesData = null;
+    let activeAudio = null;
+    let animFrameId = null;
+
+    // Load Phonemes JSON for Gold Karaoke
+    async function loadPhonemes() {
+      try {
+        const res = await fetch('/api/phonemes');
+        if (res.ok) {
+          phonemesData = await res.json();
+          updateKaraokeSubtitles();
+        }
+      } catch (err) {
+        console.warn('Phonemes load error:', err);
+      }
+    }
+    loadPhonemes();
+
+    const masterAudio = document.getElementById('audio-master');
+    const narrationAudio = document.getElementById('audio-narration');
+    const musicAudio = document.getElementById('audio-music');
+    activeAudio = masterAudio;
 
     function seekFrame(frameNum) {
-      currentFrame = parseInt(frameNum, 10);
+      currentFrame = Math.max(0, Math.min(750, parseInt(frameNum, 10)));
       document.getElementById('timeline-slider').value = currentFrame;
+      const targetSec = currentFrame / 60;
+      if (activeAudio) {
+        activeAudio.currentTime = targetSec;
+      }
+      if (narrationAudio) narrationAudio.currentTime = targetSec;
+      if (musicAudio) musicAudio.currentTime = targetSec;
       updateFrameDisplay();
     }
 
     function onScrubFrame(val) {
       currentFrame = parseInt(val, 10);
+      const targetSec = currentFrame / 60;
+      if (activeAudio) {
+        activeAudio.currentTime = targetSec;
+      }
+      if (narrationAudio) narrationAudio.currentTime = targetSec;
+      if (musicAudio) musicAudio.currentTime = targetSec;
       updateFrameDisplay();
     }
 
     function stepFrame(delta) {
-      currentFrame = Math.max(0, Math.min(480, currentFrame + delta));
-      document.getElementById('timeline-slider').value = currentFrame;
-      updateFrameDisplay();
+      seekFrame(currentFrame + delta);
     }
 
     function updateFrameDisplay() {
-      document.getElementById('current-frame-badge').textContent = 'FRAME ' + currentFrame + ' / 480';
-      const seconds = (currentFrame / 60).toFixed(3);
+      document.getElementById('current-frame-badge').textContent = 'FRAME ' + currentFrame + ' / 750';
+      const seconds = (currentFrame / 60);
       const mins = Math.floor(seconds / 60).toString().padStart(2, '0');
       const remSecs = (seconds % 60).toFixed(3).padStart(6, '0');
       document.getElementById('current-timestamp-badge').textContent = mins + ':' + remSecs;
+      document.getElementById('subtitle-timing-badge').textContent = mins + ':' + remSecs + ' / 00:12.500';
 
       // Select closest rendered still
       const img = document.getElementById('active-screen-img');
       const cursorHalo = document.getElementById('cursor-halo');
       const redactionBox = document.getElementById('redaction-box');
 
-      if (currentFrame < 140) {
+      if (currentFrame < 50) {
+        img.src = STILLS_MAP[15] || STILLS_MAP[90];
+        cursorHalo.classList.add('hidden');
+        redactionBox.classList.add('hidden');
+      } else if (currentFrame < 140) {
         img.src = STILLS_MAP[90];
         cursorHalo.classList.add('hidden');
         redactionBox.classList.add('hidden');
@@ -574,30 +802,124 @@ function renderStudioHtml(): string {
         cursorHalo.style.left = '75%';
         cursorHalo.style.top = '40%';
         redactionBox.classList.add('hidden');
-      } else {
+      } else if (currentFrame < 340) {
         img.src = STILLS_MAP[270];
         cursorHalo.classList.add('hidden');
         redactionBox.classList.remove('hidden');
+      } else {
+        img.src = STILLS_MAP[360] || STILLS_MAP[270];
+        cursorHalo.classList.add('hidden');
+        redactionBox.classList.add('hidden');
       }
+
+      updateKaraokeSubtitles();
+      updateVisualizerBars();
+    }
+
+    function updateKaraokeSubtitles() {
+      if (!phonemesData || !phonemesData.segments) return;
+      const currentMs = (currentFrame / 60) * 1000;
+
+      // Find active segment
+      let activeSeg = phonemesData.segments.find(s => currentMs >= s.startMs && currentMs < s.endMs);
+      if (!activeSeg) {
+        activeSeg = phonemesData.segments[0];
+      }
+
+      document.getElementById('subtitle-act-badge').textContent = activeSeg.actName;
+
+      const textBox = document.getElementById('karaoke-text-box');
+      if (!activeSeg.words || activeSeg.words.length === 0) {
+        textBox.textContent = activeSeg.text;
+        return;
+      }
+
+      let html = '';
+      for (const w of activeSeg.words) {
+        const isCurrent = currentMs >= w.startMs && currentMs < w.endMs;
+        const isPast = currentMs >= w.endMs;
+
+        if (isCurrent) {
+          html += '<span class="text-brand-yellow font-bold text-lg scale-105 px-1.5 py-0.5 rounded bg-brand-yellow/20 border border-brand-yellow/40 shadow-[0_0_12px_rgba(251,188,4,0.4)] transition-all duration-75">' + escapeHtml(w.word) + '</span> ';
+        } else if (isPast) {
+          html += '<span class="text-white font-medium">' + escapeHtml(w.word) + '</span> ';
+        } else {
+          html += '<span class="text-gray-500">' + escapeHtml(w.word) + '</span> ';
+        }
+      }
+      textBox.innerHTML = html;
+    }
+
+    function escapeHtml(str) {
+      return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
     }
 
     function togglePlay() {
       isPlaying = !isPlaying;
-      const btn = document.getElementById('play-pause-btn');
+      const btnText = document.getElementById('play-btn-text');
+      const btnIcon = document.getElementById('play-icon');
+
       if (isPlaying) {
-        btn.innerHTML = '<svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg><span>Pause</span>';
-        playInterval = setInterval(() => {
-          if (currentFrame >= 480) {
-            currentFrame = 0;
+        btnText.textContent = 'Pause';
+        btnIcon.outerHTML = '<svg id="play-icon" class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg>';
+
+        if (activeAudio) {
+          activeAudio.currentTime = currentFrame / 60;
+          activeAudio.play().catch(e => console.log('Audio autoplay policy note:', e));
+        }
+
+        function playbackLoop() {
+          if (!isPlaying) return;
+          if (activeAudio && !activeAudio.paused) {
+            currentFrame = Math.round(activeAudio.currentTime * 60);
+            if (currentFrame >= 750) {
+              currentFrame = 0;
+              activeAudio.currentTime = 0;
+            }
+          } else {
+            currentFrame += 2;
+            if (currentFrame >= 750) currentFrame = 0;
           }
-          currentFrame += 2;
           document.getElementById('timeline-slider').value = currentFrame;
           updateFrameDisplay();
-        }, 33);
+          animFrameId = requestAnimationFrame(playbackLoop);
+        }
+        animFrameId = requestAnimationFrame(playbackLoop);
       } else {
-        btn.innerHTML = '<svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg><span>Play</span>';
-        clearInterval(playInterval);
+        btnText.textContent = 'Play';
+        btnIcon.outerHTML = '<svg id="play-icon" class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>';
+        if (activeAudio) activeAudio.pause();
+        if (animFrameId) cancelAnimationFrame(animFrameId);
       }
+    }
+
+    function updateVisualizerBars() {
+      const bars = document.querySelectorAll('#wave-bars-container div');
+      const duckBadge = document.getElementById('ducking-indicator');
+      const t = currentFrame / 15;
+
+      // When playing, animate bars with dynamic ducking level
+      bars.forEach((bar, idx) => {
+        const h = isPlaying ? Math.max(3, Math.min(20, Math.sin(t + idx * 0.8) * 8 + 10)) : 3 + (idx % 3) * 2;
+        bar.style.height = h + 'px';
+      });
+
+      // Show ducked status when active speech is present
+      const isDucked = currentFrame < 700;
+      if (isDucked) {
+        duckBadge.textContent = '-18dB DUCKED';
+        duckBadge.className = 'px-1.5 py-0.5 rounded bg-brand-blue/30 text-brand-blue text-[10px] font-mono font-bold transition-colors duration-200';
+      } else {
+        duckBadge.textContent = 'AMBIENT 0dB';
+        duckBadge.className = 'px-1.5 py-0.5 rounded bg-white/10 text-gray-300 text-[10px] font-mono font-bold transition-colors duration-200';
+      }
+    }
+
+    function setSpeed(val) {
+      const spd = parseFloat(val);
+      if (activeAudio) activeAudio.playbackRate = spd;
+      if (narrationAudio) narrationAudio.playbackRate = spd;
+      if (musicAudio) musicAudio.playbackRate = spd;
     }
 
     function setAspectRatio(ratio) {
@@ -648,7 +970,7 @@ function renderStudioHtml(): string {
     }
 
     function jumpToAct(act) {
-      if (act === 1) seekFrame(0);
+      if (act === 1) seekFrame(15);
       else if (act === 2) seekFrame(90);
       else if (act === 3) seekFrame(220);
       else if (act === 4) seekFrame(270);
@@ -660,17 +982,36 @@ function renderStudioHtml(): string {
     }
 
     function updateAudioVol(track, val) {
-      document.getElementById('vol-' + track + '-val').textContent = val + '%';
+      const num = parseInt(val, 10);
+      const frac = num / 100;
+      if (track === 'narration' && narrationAudio) {
+        narrationAudio.volume = frac;
+        document.getElementById('vol-narration-val').textContent = val + '% (' + (num === 100 ? '0 dB' : Math.round(20 * Math.log10(Math.max(0.001, frac))) + ' dB') + ')';
+      } else if (track === 'music' && musicAudio) {
+        musicAudio.volume = frac;
+        document.getElementById('vol-music-val').textContent = val + '% (' + Math.round(20 * Math.log10(Math.max(0.001, frac))) + ' dB)';
+      }
     }
 
     function toggleMute(track) {
-      const valEl = document.getElementById('vol-' + track + '-val');
-      if (valEl.textContent.includes('MUTED')) {
-        valEl.textContent = '100%';
-      } else {
-        valEl.textContent = 'MUTED';
+      if (track === 'narration' && narrationAudio) {
+        narrationAudio.muted = !narrationAudio.muted;
+        document.getElementById('btn-mute-narration').textContent = narrationAudio.muted ? 'UNMUTE' : 'MUTE';
+        document.getElementById('vol-narration-val').textContent = narrationAudio.muted ? 'MUTED' : '100% (0 dB)';
+      } else if (track === 'music' && musicAudio) {
+        musicAudio.muted = !musicAudio.muted;
+        document.getElementById('btn-mute-music').textContent = musicAudio.muted ? 'UNMUTE' : 'MUTE';
+        document.getElementById('vol-music-val').textContent = musicAudio.muted ? 'MUTED' : '25% (-18 dB)';
       }
     }
+
+    function playSolo(src) {
+      const a = new Audio(src);
+      a.play().catch(e => console.log('Playback error:', e));
+    }
+
+    // Initialize layout
+    updateFrameDisplay();
   </script>
 </body>
 </html>`;

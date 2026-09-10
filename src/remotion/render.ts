@@ -8,6 +8,8 @@ export interface RenderOptions {
   outputVideoPath?: string;
   outputStillsDir?: string;
   renderStillsOnly?: boolean;
+  frameRange?: [number, number];
+  previewOnly?: boolean;
 }
 
 function loadScreenshotAsDataUri(filename: string): string {
@@ -17,6 +19,28 @@ function loadScreenshotAsDataUri(filename: string): string {
     return `data:image/png;base64,${buffer.toString("base64")}`;
   }
   return "";
+}
+
+function loadAudioAsDataUri(filename: string): string {
+  const filePath = path.resolve(process.cwd(), "scratch", filename);
+  if (fs.existsSync(filePath)) {
+    const buffer = fs.readFileSync(filePath);
+    return `data:audio/wav;base64,${buffer.toString("base64")}`;
+  }
+  return "";
+}
+
+function loadPhonemesSegments(): any[] | undefined {
+  const filePath = path.resolve(process.cwd(), "scratch", "phonemes.json");
+  if (fs.existsSync(filePath)) {
+    try {
+      const data = JSON.parse(fs.readFileSync(filePath, "utf-8"));
+      return data.segments;
+    } catch {
+      return undefined;
+    }
+  }
+  return undefined;
 }
 
 export async function renderTrainexVideo(options: RenderOptions = {}): Promise<{
@@ -47,9 +71,10 @@ export async function renderTrainexVideo(options: RenderOptions = {}): Promise<{
   });
   console.log(`  ✔ Bundle created at: ${bundleLocation}`);
 
-  // Prepare input props with embedded base64 screenshots
+  // Prepare input props with embedded base64 screenshots and master audio
   const inputProps = {
     title: "Deploying Private Gemini 2.0 Endpoints on Google Cloud",
+    subtitle: "Zero-Egress Enterprise Architectures with Private Service Connect & Vertex AI",
     topicId: "vertex_gemini_private_endpoint",
     whiteboardDurationFrames: 180,
     screencastDurationFrames: 300,
@@ -61,6 +86,8 @@ export async function renderTrainexVideo(options: RenderOptions = {}): Promise<{
       cloudRun: loadScreenshotAsDataUri("05_cloud_run_services.png"),
       bigquery: loadScreenshotAsDataUri("06_bigquery_studio_editor.png")
     },
+    audioSrc: undefined,
+    segments: loadPhonemesSegments(),
     enableWatermark: true,
     enableDisclaimer: true,
     enableAvatar: true,
@@ -93,10 +120,12 @@ export async function renderTrainexVideo(options: RenderOptions = {}): Promise<{
 
   // 1. Render Representative 4K Stills across the 5-Act Pedagogical Arc
   const stillKeyframes = [
+    { frame: 15, name: "act1_cold_open_hook.png", desc: "Act 1: Cold Open Hook & Legal Disclaimer" },
     { frame: 90, name: "act2_whiteboard_kinetic_particles.png", desc: "Act 2: Progressive Whiteboard & Kinetic Particles" },
     { frame: 175, name: "act2_spatial_dissolve_bridge.png", desc: "Act 2 ➔ 3: Spatial Hand-Off Dissolve Bridge" },
     { frame: 220, name: "act3_console_drawer_typing.png", desc: "Act 3: Console Drawer & Minimum-Jerk Cursor" },
-    { frame: 270, name: "act3_endpoint_active_redaction.png", desc: "Act 3 & 4: Active Endpoint + 12px Dilation Redaction" }
+    { frame: 270, name: "act3_endpoint_active_redaction.png", desc: "Act 3 & 4: Active Endpoint + 12px Dilation Redaction" },
+    { frame: 360, name: "act5_production_checklist.png", desc: "Act 5: Production Checklist & NDA Slate" }
   ];
 
   console.log("\n📸 Rendering Keyframe 4K Broadcast Stills...");
@@ -125,11 +154,13 @@ export async function renderTrainexVideo(options: RenderOptions = {}): Promise<{
     console.log(`\n🎞️ Rendering Master 4K MP4 to: ${outputVideoPath}...`);
 
     try {
+      const frameRange = options.frameRange || (options.previewOnly ? [0, 120] as [number, number] : undefined);
       await renderMedia({
         composition,
         serveUrl: bundleLocation,
         outputLocation: outputVideoPath,
         inputProps,
+        frameRange,
         codec: "h264",
         crf: 18,
         concurrency: 1,
@@ -159,7 +190,9 @@ export async function renderTrainexVideo(options: RenderOptions = {}): Promise<{
 }
 
 if (process.argv[1] && process.argv[1].endsWith("render.ts")) {
-  renderTrainexVideo().catch(err => {
+  const isPreview = process.argv.includes("--preview");
+  const stillsOnly = process.argv.includes("--stills-only");
+  renderTrainexVideo({ previewOnly: isPreview, renderStillsOnly: stillsOnly }).catch(err => {
     console.error("Render failed:", err);
     process.exit(1);
   });

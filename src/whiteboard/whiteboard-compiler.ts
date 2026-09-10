@@ -45,7 +45,9 @@ export async function compileWhiteboardManifest(
       "elk.direction": "RIGHT",
       "elk.spacing.nodeNode": "100",
       "elk.layered.spacing.nodeNodeBetweenLayers": "140",
-      "elk.padding": "[top=120,left=120,bottom=120,right=120]"
+      "elk.padding": "[top=120,left=120,bottom=120,right=120]",
+      "elk.separateConnectedComponents": "true",
+      "elk.spacing.componentComponent": "120"
     },
     children: elkNodes,
     edges: elkEdges
@@ -97,6 +99,36 @@ export async function compileWhiteboardManifest(
     currentDrawFrame += nodeDurationFrames + 15; // 250ms cadence between nodes
     return element;
   });
+
+  // 2D Bounding Box Visual Collision Auto-Healing (Mandatory Constitution Rule)
+  // Evaluates pairs with 30px collision safety padding and pushes overlapping nodes downward or rightward
+  const COLLISION_PADDING = 30;
+  for (let pass = 0; pass < 10; pass++) {
+    let resolvedCollision = false;
+    for (let i = 0; i < elements.length; i++) {
+      for (let j = i + 1; j < elements.length; j++) {
+        const a = elements[i];
+        const b = elements[j];
+
+        const overlap = !(
+          a.x + a.width + COLLISION_PADDING <= b.x ||
+          b.x + b.width + COLLISION_PADDING <= a.x ||
+          a.y + a.height + COLLISION_PADDING <= b.y ||
+          b.y + b.height + COLLISION_PADDING <= a.y
+        );
+
+        if (overlap) {
+          resolvedCollision = true;
+          if (Math.abs(a.x - b.x) < a.width / 2) {
+            b.y = a.y + a.height + COLLISION_PADDING + 40;
+          } else {
+            b.x = a.x + a.width + COLLISION_PADDING + 40;
+          }
+        }
+      }
+    }
+    if (!resolvedCollision) break;
+  }
 
   // Calculate edges and kinetic data flows
   const edgeDurationFrames = 30;

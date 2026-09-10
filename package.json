@@ -13,6 +13,7 @@
     "test": "tsx test/run_all_tests.ts",
     "test:e2e": "tsx test/e2e_capture.test.ts",
     "test:hooks": "tsx test/hooks_execution.test.ts",
+    "test:chaos": "tsx test/chaos_simulations.test.ts",
     "studio": "tsx src/studio/server.ts",
     "mock-console": "tsx src/mock-server/server.ts",
     "rehearse": "tsx src/runner/run-rehearsal.ts",

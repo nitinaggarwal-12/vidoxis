@@ -7,6 +7,7 @@
   "scripts": {
     "build": "tsc",
     "test": "tsx test/run_all_tests.ts",
+    "test:e2e": "tsx test/e2e_capture.test.ts",
     "mock-console": "tsx src/mock-server/server.ts",
     "rehearse": "tsx src/runner/run-rehearsal.ts",
     "replay": "tsx src/runner/cdp-replayer.ts",

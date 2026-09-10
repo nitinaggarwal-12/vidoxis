@@ -1,0 +1,70 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "WhiteboardManifest",
+  "type": "object",
+  "required": ["whiteboardId", "topicId", "totalFrames", "elements", "edges", "spatialHandoff"],
+  "properties": {
+    "whiteboardId": { "type": "string" },
+    "topicId": { "type": "string" },
+    "theme": { "type": "string", "enum": ["digital_glassboard", "studio_blueprint"] },
+    "canvas": {
+      "type": "object",
+      "properties": {
+        "width": { "type": "integer" },
+        "height": { "type": "integer" }
+      }
+    },
+    "totalFrames": { "type": "integer" },
+    "elements": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "label", "type", "flow", "x", "y", "width", "height", "drawStartFrame", "drawDurationFrames", "color"],
+        "properties": {
+          "id": { "type": "string" },
+          "label": { "type": "string" },
+          "subLabel": { "type": "string" },
+          "type": { "type": "string" },
+          "flow": { "type": "string", "enum": ["user_flow", "process_flow", "data_flow"] },
+          "x": { "type": "number" },
+          "y": { "type": "number" },
+          "width": { "type": "number" },
+          "height": { "type": "number" },
+          "drawStartFrame": { "type": "integer" },
+          "drawDurationFrames": { "type": "integer" },
+          "color": { "type": "string" },
+          "accentGlow": { "type": "string" },
+          "cloudIcon": { "type": "string" }
+        }
+      }
+    },
+    "edges": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "sourceId", "targetId", "flow", "drawStartFrame", "drawDurationFrames"],
+        "properties": {
+          "id": { "type": "string" },
+          "sourceId": { "type": "string" },
+          "targetId": { "type": "string" },
+          "flow": { "type": "string", "enum": ["user_flow", "process_flow", "data_flow"] },
+          "protocol": { "type": "string" },
+          "ratePps": { "type": "number" },
+          "color": { "type": "string" },
+          "drawStartFrame": { "type": "integer" },
+          "drawDurationFrames": { "type": "integer" }
+        }
+      }
+    },
+    "spatialHandoff": {
+      "type": "object",
+      "required": ["targetElementId", "zoomFactor", "transitionStartFrame", "transitionDurationFrames"],
+      "properties": {
+        "targetElementId": { "type": "string" },
+        "zoomFactor": { "type": "number" },
+        "transitionStartFrame": { "type": "integer" },
+        "transitionDurationFrames": { "type": "integer" }
+      }
+    }
+  }
+}

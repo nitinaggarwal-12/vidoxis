@@ -1,0 +1,58 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "CanonicalTopologyContract",
+  "type": "object",
+  "required": ["topicId", "title", "globalParameters", "architectureGraph", "demoActionParameters"],
+  "properties": {
+    "topicId": { "type": "string" },
+    "title": { "type": "string" },
+    "globalParameters": {
+      "type": "object",
+      "required": ["projectId", "region"],
+      "properties": {
+        "projectId": { "type": "string" },
+        "region": { "type": "string" },
+        "zone": { "type": "string" },
+        "vpcNetwork": { "type": "string" },
+        "subnetwork": { "type": "string" }
+      }
+    },
+    "architectureGraph": {
+      "type": "object",
+      "required": ["nodes", "edges"],
+      "properties": {
+        "nodes": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["id", "label", "category"],
+            "properties": {
+              "id": { "type": "string" },
+              "label": { "type": "string" },
+              "category": { "type": "string", "enum": ["client", "ingress", "compute", "storage", "ai", "security"] },
+              "cloudIcon": { "type": "string" },
+              "description": { "type": "string" }
+            }
+          }
+        },
+        "edges": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["id", "source", "target"],
+            "properties": {
+              "id": { "type": "string" },
+              "source": { "type": "string" },
+              "target": { "type": "string" },
+              "label": { "type": "string" },
+              "protocol": { "type": "string" },
+              "flowType": { "type": "string", "enum": ["control_plane", "data_plane"] },
+              "ratePps": { "type": "number" }
+            }
+          }
+        }
+      }
+    },
+    "demoActionParameters": { "type": "object" }
+  }
+}

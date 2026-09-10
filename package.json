@@ -1,0 +1,26 @@
+{
+  "name": "trainex",
+  "version": "3.3.0",
+  "description": "Autonomous Broadcast-Quality Cloud Demo & Enterprise Training Studio",
+  "main": "dist/index.js",
+  "type": "module",
+  "scripts": {
+    "build": "tsc",
+    "test": "tsx test/run_all_tests.ts",
+    "mock-console": "tsx src/mock-server/server.ts",
+    "rehearse": "tsx src/runner/run-rehearsal.ts",
+    "replay": "tsx src/runner/cdp-replayer.ts",
+    "whiteboard": "tsx src/whiteboard/whiteboard-compiler.ts"
+  },
+  "dependencies": {
+    "ajv": "^8.12.0",
+    "elkjs": "^0.9.3",
+    "puppeteer": "^24.3.0",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.6.0"
+  }
+}

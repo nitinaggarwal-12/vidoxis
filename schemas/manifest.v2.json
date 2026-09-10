@@ -1,0 +1,51 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "MasterSegmentManifest",
+  "type": "object",
+  "required": ["manifestId", "topicId", "title", "cognitiveDensityScore", "segments"],
+  "properties": {
+    "manifestId": { "type": "string" },
+    "topicId": { "type": "string" },
+    "title": { "type": "string" },
+    "fps": { "type": "number", "default": 60 },
+    "resolution": {
+      "type": "object",
+      "properties": {
+        "width": { "type": "integer" },
+        "height": { "type": "integer" }
+      }
+    },
+    "cognitiveDensityScore": { "type": "number", "minimum": 0.40 },
+    "preGaDisclaimer": { "type": "boolean" },
+    "ndaWatermarkText": { "type": "string" },
+    "segments": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "act", "title", "narration", "traceStepIds", "startFrame", "durationFrames"],
+        "properties": {
+          "id": { "type": "string" },
+          "act": {
+            "type": "string",
+            "enum": ["act1_cold_open", "act2_whiteboard_architecture", "act3_live_console_walkthrough", "act4_chaos_debugging", "act5_production_checklist"]
+          },
+          "title": { "type": "string" },
+          "narration": {
+            "type": "object",
+            "required": ["text", "targetDurationSeconds"],
+            "properties": {
+              "text": { "type": "string" },
+              "tone": { "type": "string" },
+              "phonemeTimelineUri": { "type": "string" },
+              "targetDurationSeconds": { "type": "number" }
+            }
+          },
+          "traceStepIds": { "type": "array", "items": { "type": "string" } },
+          "whiteboardTargetNodeId": { "type": "string" },
+          "startFrame": { "type": "integer" },
+          "durationFrames": { "type": "integer" }
+        }
+      }
+    }
+  }
+}

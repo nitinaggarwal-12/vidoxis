@@ -1,0 +1,240 @@
+{
+  "$schema": "https://trainex.google.internal/schemas/hooks.v3.json",
+  "project_name": "trainex",
+  "version": "3.3.0",
+  "hooks": {
+    "pre_authoring_check": [
+      {
+        "id": "sandbox_project_id_firewall",
+        "description": "Enforces immutable regex to prevent touching real corporate projects",
+        "command": "node scripts/validate_sandbox_project.js --project={PROJECT_ID}",
+        "fail_action": "abort"
+      },
+      {
+        "id": "cloud_driver_compatibility_guard",
+        "description": "Verifies target console driver (GCP, AWS, Azure, Salesforce, ServiceNow)",
+        "command": "node scripts/verify_console_driver.js --driver={TARGET_DRIVER}",
+        "fail_action": "abort"
+      },
+      {
+        "id": "gcp_api_enablement_and_quota_guard",
+        "description": "Verifies that required APIs (Vertex AI, Cloud Run, Logging) and quotas are active",
+        "command": "node scripts/verify_gcp_prerequisites.js --project={PROJECT_ID} --apis=aiplatform,run,logging",
+        "fail_action": "abort"
+      }
+    ],
+    "on_manifest_created": [
+      {
+        "id": "validate_manifest_schema",
+        "description": "Validates manifest against v2.json schema",
+        "command": "npx ajv-cli validate -s schemas/manifest.v2.json -d {FILE}",
+        "fail_action": "abort"
+      },
+      {
+        "id": "canonical_topology_contract_validation",
+        "description": "Ensures contract.json defines single-source parameters for both slides and console actions",
+        "command": "node scripts/validate_topology_contract.js --contract={CONTRACT_FILE}",
+        "fail_action": "abort"
+      },
+      {
+        "id": "five_act_pedagogical_completeness_audit",
+        "description": "Enforces Bloom's Taxonomy 5-Act Arc: Cold Open, Architecture, Live, Chaos Debugging, Checklist",
+        "command": "node scripts/audit_pedagogical_arc.js --manifest={FILE}",
+        "fail_action": "abort"
+      },
+      {
+        "id": "cognitive_density_and_anti_slop_audit",
+        "description": "Enforces Cognitive Density CD >= 0.40; bans filler words, tautologies, and corporate fluff",
+        "command": "node scripts/audit_cognitive_density.js --manifest={FILE} --min-cd=0.40",
+        "fail_action": "abort"
+      },
+      {
+        "id": "gcp_deprecation_and_staleness_sentinel",
+        "description": "Scans commands and SDK calls against Google Cloud Deprecation Feeds & Release Notes",
+        "command": "node scripts/audit_deprecation_rules.js --manifest={FILE}",
+        "fail_action": "abort"
+      },
+      {
+        "id": "duration_budget_guard",
+        "description": "Ensures total duration is within requested tolerance (±10%)",
+        "command": "node scripts/validate_duration_bounds.js {FILE}",
+        "fail_action": "warn"
+      }
+    ],
+    "on_slides_compiled": [
+      {
+        "id": "elk_bounding_box_collision_audit",
+        "description": "Verifies 0% node overlap with 30px safety padding on PromptCanvas slides",
+        "command": "node scripts/audit_slide_layout_collisions.js --slide={SLIDE_SVG}",
+        "fail_action": "abort"
+      },
+      {
+        "id": "wcag_aaa_contrast_audit",
+        "description": "Enforces strict WCAG AAA contrast ratios (>= 7:1) across all slide text and backgrounds",
+        "command": "node scripts/audit_wcag_contrast.js --slide={SLIDE_SVG} --ratio=7.0",
+        "fail_action": "abort"
+      },
+      {
+        "id": "official_cloud_icon_verification",
+        "description": "Ensures only verified cloud vendor icons (GCP, AWS, Azure, K8s) are rendered",
+        "command": "node scripts/verify_slide_icons.js --slide={SLIDE_SVG}",
+        "fail_action": "warn"
+      }
+    ],
+    "on_whiteboard_sequence_compiled": [
+      {
+        "id": "whiteboard_bbox_collision_audit",
+        "description": "Verifies 0% node and label collision with 30px safety padding on progressive whiteboard layout",
+        "command": "node scripts/audit_whiteboard_layout.js --manifest={WHITEBOARD_MANIFEST}",
+        "fail_action": "abort"
+      },
+      {
+        "id": "whiteboard_stroke_phoneme_synchronization",
+        "description": "Verifies that vector stroke unwinding durations align within 50ms of narration phoneme bounds",
+        "command": "node scripts/verify_stroke_phoneme_sync.js --whiteboard={WHITEBOARD_MANIFEST} --phonemes={PHONEMES_JSON}",
+        "fail_action": "abort"
+      },
+      {
+        "id": "whiteboard_particle_stream_continuity",
+        "description": "Validates that all data flow bezier curves have valid start and end anchor points matching valid node IDs",
+        "command": "node scripts/verify_particle_anchors.js --whiteboard={WHITEBOARD_MANIFEST}",
+        "fail_action": "abort"
+      },
+      {
+        "id": "whiteboard_wcag_aaa_neon_contrast",
+        "description": "Ensures neon chalk strokes and card backings on Obsidian Glass maintain WCAG AAA contrast ratio (>= 7:1)",
+        "command": "node scripts/audit_wcag_contrast.js --whiteboard={WHITEBOARD_MANIFEST} --ratio=7.0",
+        "fail_action": "abort"
+      }
+    ],
+    "on_trace_authored": [
+      {
+        "id": "slide_demo_semantic_alignment_audit",
+        "description": "Asserts strict equality between slide diagram tokens and live console step inputs",
+        "command": "node scripts/audit_slide_demo_alignment.js --contract={CONTRACT_FILE} --slides={SLIDE_SVG} --trace={FILE}",
+        "fail_action": "abort"
+      },
+      {
+        "id": "headless_rehearsal_matrix",
+        "description": "Replays the trace 3 consecutive times against the ephemeral sandbox pool",
+        "command": "node scripts/run_rehearsal.js --trace={FILE} --runs=3 --project-pool=trainex-ephemeral",
+        "timeout_ms": 300000,
+        "on_flake": {
+          "trigger_agent": "gemini-flash-cua",
+          "prompt": "Step {FAILED_STEP} flaked on selector '{SELECTOR}'. Inspect DOM snapshot and re-resolve triad selector."
+        }
+      }
+    ],
+    "pre_replay_check": [
+      {
+        "id": "console_session_cookie_liveness_probe",
+        "description": "Probes internal console RPC; triggers background OAuth refresh if expired",
+        "command": "node scripts/probe_console_session.js --profile={AUTH_PROFILE}",
+        "fail_action": "abort"
+      },
+      {
+        "id": "cloud_nat_static_egress_ip_verify",
+        "description": "Confirms outbound worker IP matches trusted enterprise IP whitelist",
+        "command": "node scripts/verify_egress_ip.js --expected-pool=trainex-enterprise-nat",
+        "fail_action": "abort"
+      },
+      {
+        "id": "bit_for_bit_font_metric_guard",
+        "description": "Validates that Google Sans Flex TTF font metrics match macOS baseline",
+        "command": "node scripts/verify_font_metrics.js",
+        "fail_action": "abort"
+      }
+    ],
+    "post_capture_check": [
+      {
+        "id": "zero_blank_frame_audit",
+        "description": "Scans raw screencast video to ensure zero black or frozen frames occurred",
+        "command": "node scripts/audit_screencast_frames.js --video={RAW_VIDEO}",
+        "fail_action": "abort"
+      },
+      {
+        "id": "zero_dead_air_camera_pacing_audit",
+        "description": "Verifies that pauses >800ms feature lookahead camera focus drifts or metric pulses",
+        "command": "node scripts/audit_dead_air_pacing.js --video={RAW_VIDEO} --telemetry={TELEMETRY_JSON}",
+        "fail_action": "abort"
+      },
+      {
+        "id": "telemetry_bounding_box_completeness",
+        "description": "Ensures every click and focus action has an unambiguous {x,y,w,h} bounding box",
+        "command": "node scripts/validate_telemetry_events.js --telemetry={TELEMETRY_JSON}",
+        "fail_action": "abort"
+      }
+    ],
+    "pre_composite_check": [
+      {
+        "id": "omni_visual_discrepancy_spotter",
+        "description": "Omni 1.1 checks slide diagram icons against console video (e.g. Postgres vs MySQL icon)",
+        "command": "node scripts/omni_spot_visual_discrepancies.js --slide={SLIDE_SVG} --screencast={RAW_VIDEO}",
+        "fail_action": "abort"
+      },
+      {
+        "id": "audio_sample_rate_resample_guard",
+        "description": "Ensures all audio tracks are strictly 48,000Hz 16-bit PCM WAV before compositing",
+        "command": "node scripts/verify_audio_timebase.js --audio={AUDIO_WAV}",
+        "fail_action": "auto_resample"
+      },
+      {
+        "id": "phoneme_timeline_elastic_drift_guard",
+        "description": "Enforces max 50ms boundary drift using zyvoriq studio1_timeline_sync math",
+        "command": "node scripts/verify_timeline_drift.js --phonemes={PHONEMES_JSON} --telemetry={TELEMETRY_JSON} --max-drift-ms=50",
+        "fail_action": "abort"
+      },
+      {
+        "id": "pii_redaction_audit",
+        "description": "Ensures all billing IDs, LDAPs, and internal domains are masked in the telemetry stream",
+        "command": "node scripts/audit_redaction_targets.js --trace={TRACE_FILE}",
+        "fail_action": "abort"
+      },
+      {
+        "id": "legal_preview_disclaimer_check",
+        "description": "Verifies that pre-GA or Preview features contain the mandatory legal disclaimer slate",
+        "command": "node scripts/check_legal_disclaimer.js --manifest={MANIFEST_FILE}",
+        "fail_action": "auto_inject"
+      }
+    ],
+    "on_github_pr_opened": [
+      {
+        "id": "git_video_pr_diff_generator",
+        "description": "Re-records modified steps and comments on GitHub PR with a side-by-side Video Diff MP4",
+        "command": "node scripts/generate_pr_video_diff.js --pr-diff={PR_DIFF_FILE}",
+        "fail_action": "warn"
+      }
+    ],
+    "on_ui_drift_detected": [
+      {
+        "id": "veo_neural_inpainting_patch",
+        "description": "Surgically re-records and in-paints 3-second UI deltas into master footage without a full re-render",
+        "command": "node scripts/trigger_neural_patch.js --delta-start={T_START} --delta-end={T_END} --new-screencast={NEW_CLIP}"
+      }
+    ],
+    "on_socratic_certification_completed": [
+      {
+        "id": "mint_compliance_proof_certificate",
+        "description": "Issues cryptographically signed Proof-of-Competence Certificate and logs to audit ledger",
+        "command": "node scripts/mint_certificate.js --learner={LEARNER_ID} --eval={EVAL_RESULT_JSON}",
+        "fail_action": "abort"
+      }
+    ],
+    "post_render_verify": [
+      {
+        "id": "omni_multimodal_screening_room",
+        "description": "Performs full multimodal cross-audit of final MP4 for audio-visual desyncs or semantic mismatches",
+        "command": "node scripts/omni_screening_eval.js --video={OUTPUT_MP4} --transcript={TRANSCRIPT_JSON}",
+        "fail_action": "reject_delivery"
+      }
+    ],
+    "post_publish_verify": [
+      {
+        "id": "cdn_live_hls_stream_smoke_test",
+        "description": "Performs live HTTP GET on HLS manifest and verifies stream playability and unique cache hash",
+        "command": "node scripts/verify_cdn_playback.js --manifest-url={HLS_URL}",
+        "fail_action": "alert_oncall"
+      }
+    ]
+  }
+}

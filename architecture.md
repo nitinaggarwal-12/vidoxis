@@ -83,6 +83,40 @@ flowchart TB
     OMNI_LIVE <--> SCOREX_EVAL
 ```
 
+### 2.1 The Atomic Dual-Artifact Rehearsal & Replay Contract
+A rehearsal or recording take is incomplete and invalid if it only emits telemetry JSON without the underlying video pixels. Replay workers must enforce an atomic dual-output contract:
+1. **Telemetry Event Stream (`telemetry.json`):** Frame-indexed cursor vectors, waypoints, BBoxes, spring camera states, and PII markers.
+2. **Physical Screencast Frame Buffer (`raw_screencast.mp4` / JPEG frame buffer):** Real visual pixel buffer captured via CDP `Page.startScreencast` with frame acknowledgments (`Page.screencastFrameAck`) or `HeadlessExperimental.beginFrame`.
+
+### 2.2 Universal Shadow DOM Tree-Walker Algorithm (`querySelectorAllDeep`)
+To pierce micro-frontend Web Components in Google Cloud Console (Pantheon) and AWS Console, all element selectors must execute a recursive tree walker traversing all open `shadowRoot` nodes:
+```ts
+function querySelectorAllDeep(root: Node = document): Element[] {
+  const elements: Element[] = [];
+  function traverse(node: Node) {
+    if (node instanceof Element) {
+      elements.push(node);
+      if (node.shadowRoot) {
+        for (const child of node.shadowRoot.children) traverse(child);
+      }
+    }
+    for (const child of node.childNodes) traverse(child);
+  }
+  traverse(root);
+  return elements;
+}
+```
+
+### 2.3 Coordinate Space Mapping Matrix (1080p CSS to 4K DPR 2 Master Canvas)
+Chrome captures at 1920×1080 with `deviceScaleFactor: 2`, producing a 3840×2160 physical pixel raster. To prevent cursor and highlight quadrant compression in Remotion:
+$$(X_{\text{4K}}, Y_{\text{4K}}) = (X_{\text{CSS}} \times \text{scaleFactor}, Y_{\text{CSS}} \times \text{scaleFactor}) \quad \text{where } \text{scaleFactor} = 2.0$$
+
+### 2.4 Autonomous Failure Diagnostic Snapshotting Pipeline
+Whenever a step condition gate times out or a selector resolution fails during headless rehearsal:
+1. The runner must immediately capture `scratch/failures/{step_id}_failure.png`.
+2. The runner must serialize the full live HTML DOM tree to `scratch/failures/{step_id}_dom.html`.
+3. The hook emits these exact URIs to Tier 3 Domain Supervisors for automated healing.
+
 ---
 
 ## 3. Multi-Agent Command Hierarchy (Tiers 1–5)

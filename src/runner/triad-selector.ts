@@ -29,29 +29,41 @@ export class TriadSelectorResolver {
   public static async resolve(page: Page, selector: TriadSelector): Promise<ResolvedElementTarget> {
     const viewport = page.viewport() || { width: 1920, height: 1080 };
 
-    // Tier 1: Primary — Accessible Name & ARIA Role
+    // Tier 1: Primary — Accessible Name & ARIA Role (with Deep Shadow DOM Traversal)
     try {
       const { role, name, exact } = selector.primary;
       const ariaHandle = await page.evaluateHandle((roleArg, nameArg, exactArg) => {
-        // Find all matching ARIA role elements or native equivalents
-        const elements = Array.from(document.querySelectorAll(`[role="${roleArg}"], button, input, select, a`));
-        for (const el of elements) {
-          const elRole = el.getAttribute("role") || (el.tagName ? el.tagName.toLowerCase() : "");
-          const elName = el.getAttribute("aria-label") || el.getAttribute("name") || (el as HTMLElement).innerText || "";
-          
-          const roleMatches = (roleArg === "button" && el.tagName === "BUTTON") ||
-                              (roleArg === "textbox" && (el.tagName === "INPUT" || el.getAttribute("role") === "textbox")) ||
-                              (roleArg === "combobox" && (el.tagName === "SELECT" || el.getAttribute("role") === "combobox")) ||
-                              (roleArg === "spinbutton" && el.getAttribute("role") === "spinbutton") ||
-                              elRole === roleArg;
+        // Recursive tree walker piercing all open shadowRoot boundaries
+        const stack: Node[] = [document];
+        while (stack.length > 0) {
+          const current = stack.pop()!;
+          if (current instanceof Element) {
+            const elRole = current.getAttribute("role") || (current.tagName ? current.tagName.toLowerCase() : "");
+            const elName = current.getAttribute("aria-label") || current.getAttribute("name") || (current as HTMLElement).innerText || "";
 
-          if (roleMatches) {
-            const trimmedName = elName.trim();
-            const matches = exactArg ? (trimmedName === nameArg) : trimmedName.toLowerCase().includes(nameArg.toLowerCase());
-            if (matches) {
-              const rect = el.getBoundingClientRect();
-              if (rect.width > 0 && rect.height > 0) return el;
+            const roleMatches = (roleArg === "button" && current.tagName === "BUTTON") ||
+                                (roleArg === "textbox" && (current.tagName === "INPUT" || current.getAttribute("role") === "textbox")) ||
+                                (roleArg === "combobox" && (current.tagName === "SELECT" || current.getAttribute("role") === "combobox")) ||
+                                (roleArg === "spinbutton" && current.getAttribute("role") === "spinbutton") ||
+                                elRole === roleArg;
+
+            if (roleMatches) {
+              const trimmedName = elName.trim();
+              const matches = exactArg ? (trimmedName === nameArg) : trimmedName.toLowerCase().includes(nameArg.toLowerCase());
+              if (matches) {
+                const rect = current.getBoundingClientRect();
+                if (rect.width > 0 && rect.height > 0) return current;
+              }
             }
+
+            if (current.shadowRoot) {
+              for (let i = current.shadowRoot.children.length - 1; i >= 0; i--) {
+                stack.push(current.shadowRoot.children[i]);
+              }
+            }
+          }
+          for (let i = current.childNodes.length - 1; i >= 0; i--) {
+            stack.push(current.childNodes[i]);
           }
         }
         return null;
@@ -73,18 +85,40 @@ export class TriadSelectorResolver {
       // Fall through to secondary
     }
 
-    // Tier 2: Secondary — Stable testId / data-test-id
+    // Tier 2: Secondary — Stable testId / data-test-id (with Deep Shadow DOM Traversal)
     if (selector.secondary && selector.secondary.testId) {
       try {
-        const testIdSelector = `[data-test-id="${selector.secondary.testId}"]`;
-        this.assertSafeSelector(testIdSelector);
-        
-        const elHandle = await page.$(testIdSelector);
-        if (elHandle) {
-          const bbox = await elHandle.boundingBox();
+        const testId = selector.secondary.testId;
+        this.assertSafeSelector(`[data-test-id="${testId}"]`);
+
+        const testIdHandle = await page.evaluateHandle((targetId) => {
+          const stack: Node[] = [document];
+          while (stack.length > 0) {
+            const current = stack.pop()!;
+            if (current instanceof Element) {
+              if (current.getAttribute("data-test-id") === targetId) {
+                const rect = current.getBoundingClientRect();
+                if (rect.width > 0 && rect.height > 0) return current;
+              }
+              if (current.shadowRoot) {
+                for (let i = current.shadowRoot.children.length - 1; i >= 0; i--) {
+                  stack.push(current.shadowRoot.children[i]);
+                }
+              }
+            }
+            for (let i = current.childNodes.length - 1; i >= 0; i--) {
+              stack.push(current.childNodes[i]);
+            }
+          }
+          return null;
+        }, testId);
+
+        const asElement = testIdHandle.asElement();
+        if (asElement) {
+          const bbox = await asElement.boundingBox();
           if (bbox) {
             return {
-              handle: elHandle,
+              handle: asElement,
               methodUsed: "secondary_testid",
               bbox,
               center: { x: bbox.x + bbox.width / 2, y: bbox.y + bbox.height / 2 }

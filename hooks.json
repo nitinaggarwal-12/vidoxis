@@ -115,10 +115,25 @@
         "fail_action": "abort"
       },
       {
+        "id": "triad_selector_shadow_dom_piercing_audit",
+        "description": "Verifies that selector resolution algorithms recursively traverse Shadow DOM roots (shadowRoot)",
+        "command": "node scripts/audit_shadow_dom_piercing.js --resolver=src/runner/triad-selector.ts",
+        "fail_action": "abort"
+      },
+      {
+        "id": "rehearsal_screencast_raster_presence_guard",
+        "description": "Enforces atomic dual-artifact output: verifies both telemetry.json and physical screencast frame buffer / raw_screencast.mp4 exist",
+        "command": "node scripts/verify_rehearsal_artifacts.js --telemetry={TELEMETRY_JSON} --video={RAW_VIDEO}",
+        "fail_action": "abort"
+      },
+      {
         "id": "headless_rehearsal_matrix",
         "description": "Replays the trace 3 consecutive times against the ephemeral sandbox pool",
         "command": "node scripts/run_rehearsal.js --trace={FILE} --runs=3 --project-pool=trainex-ephemeral",
         "timeout_ms": 300000,
+        "diagnostic_snapshot_on_fail": true,
+        "failure_snapshot_path": "scratch/failures/{FAILED_STEP}_failure.png",
+        "failure_dom_dump_path": "scratch/failures/{FAILED_STEP}_dom.html",
         "on_flake": {
           "trigger_agent": "gemini-flash-cua",
           "prompt": "Step {FAILED_STEP} flaked on selector '{SELECTOR}'. Inspect DOM snapshot and re-resolve triad selector."
@@ -188,6 +203,18 @@
         "id": "pii_redaction_audit",
         "description": "Ensures all billing IDs, LDAPs, and internal domains are masked in the telemetry stream",
         "command": "node scripts/audit_redaction_targets.js --trace={TRACE_FILE}",
+        "fail_action": "abort"
+      },
+      {
+        "id": "coordinate_scale_factor_integrity_guard",
+        "description": "Verifies that CSS telemetry coordinates (1920x1080) are multiplied by deviceScaleFactor (2.0) for 4K canvas (3840x2160)",
+        "command": "node scripts/verify_coordinate_scaling.js --telemetry={TELEMETRY_JSON} --scale=2",
+        "fail_action": "abort"
+      },
+      {
+        "id": "redaction_bounding_box_dilation_guard",
+        "description": "Enforces minimum 12px dilation safety padding on all PII redaction bounding boxes to prevent sub-pixel font bleed",
+        "command": "node scripts/verify_redaction_dilation.js --trace={TRACE_FILE} --min-padding=12",
         "fail_action": "abort"
       },
       {

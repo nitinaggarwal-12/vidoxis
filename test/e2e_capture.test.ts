@@ -86,7 +86,7 @@ export async function runE2ECaptureSuite(): Promise<string[]> {
 
     // 03. Enter Endpoint Name and Configuration
     console.log("📸 [03] Typing endpoint configuration into form fields...");
-    const nameInput = await page.$("[data-test-id='input-endpoint-name']");
+    const nameInput = await page.$("pantheon-deploy-drawer >>> [data-test-id='input-endpoint-name']");
     if (nameInput) {
       await nameInput.click({ clickCount: 3 });
       await page.keyboard.press("Backspace");
@@ -100,12 +100,13 @@ export async function runE2ECaptureSuite(): Promise<string[]> {
 
     // 04. Confirm and Deploy (Wait for Active DOM Mutation)
     console.log("📸 [04] Clicking 'Confirm and Deploy' and waiting for Active status...");
-    const confirmBtn = await page.$("[data-test-id='btn-confirm-deploy']");
+    const confirmBtn = await page.$("pantheon-deploy-drawer >>> [data-test-id='btn-confirm-deploy']");
     if (confirmBtn) await confirmBtn.click();
 
-    // Condition gate: wait for Active status badge
+    // Condition gate: wait for Active status badge inside shadow root
     await page.waitForFunction(() => {
-      const badge = document.querySelector("#deploy-badge");
+      const drawer = document.getElementById('pantheon-drawer-component');
+      const badge = drawer?.shadowRoot?.querySelector('#deploy-badge');
       return badge && badge.textContent && badge.textContent.includes("Active");
     }, { timeout: 5000 });
 

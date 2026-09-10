@@ -316,3 +316,27 @@ To deliver an engaging, humanized visual explanation of complex topologies befor
 </WhiteboardStage>
 ```
 
+---
+
+## 12. 12px Dilation Kernel Geometry for PII Redaction Blurs
+
+To eliminate the risk of sensitive billing IDs (`01XXXX-XXXXXX-XXXXXX`), internal `@google.com` LDAPs, or project hashes leaking through font anti-aliasing edges:
+
+### 12.1 The Sub-Pixel Kerning Bleed Problem
+Raw element bounding boxes returned by `element.getBoundingClientRect()` hug the inner CSS content box. Glyph ascenders, descenders, drop shadows, and anti-aliasing edge filters spill 1–3 pixels beyond this box. Under high-resolution 4K playback, unblurred pixel edges can allow OCR models to reconstruct character shapes.
+
+### 12.2 The 12px Dilation Kernel Formula
+All bounding boxes flagged with `redactPii: true` must pass through the **Dilation Kernel Transformer** before being emitted to telemetry or shader pipelines:
+$$\begin{aligned}
+x_{\text{dilated}} &= \max(0, x - 12) \\
+y_{\text{dilated}} &= \max(0, y - 12) \\
+width_{\text{dilated}} &= width + 24 \\
+height_{\text{dilated}} &= height + 24
+\end{aligned}$$
+
+### 12.3 Shader Blur Execution Parameters
+- **Blur Radius:** $\sigma = 16\text{px}$ Gaussian blur.
+- **Pass Count:** 3-pass separable box-blur approximation for WebGL / Remotion performance.
+- **Edge Feathering:** 4px linear alpha feathering to prevent harsh rectangular cut-outs, blending naturally into surrounding console chrome.
+
+

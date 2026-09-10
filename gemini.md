@@ -40,6 +40,11 @@
    - Always configure CDP to auto-attach to targets (`Target.setAutoAttach`).
    - Use deep-piercing selectors (`pierce/`) or normalized canvas coordinates for terminal canvases (xterm.js).
 
+5. **Deterministic Action State Machine & Fallback Semantics:**
+   - When executing `action: "type"`, if element resolution fell back to BBox coordinates (handle is null), the replayer **must first dispatch a physical mouse click** to the bounding box center before typing.
+   - Text clearing/selection commands must be platform-aware (`Meta+A` on macOS, `Control+A` on Linux/Cloudtop).
+   - Redaction targets must expand raw element bounding boxes by a **12px dilation safety margin** before blur shader processing.
+
 ---
 
 ## 3. Confidentiality, NDA & Legal Quality Gates

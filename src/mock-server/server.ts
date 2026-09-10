@@ -133,84 +133,133 @@ export function createMockConsoleHtml(pathname: string, searchParams: URLSearchP
       ${renderServicePageContent(pathname, projectId)}
     </main>
 
-    <!-- Vertex AI Deploy Drawer -->
-    <div id="deploy-drawer" class="slide-drawer" role="dialog" aria-modal="true" aria-label="Deploy model to endpoint" data-test-id="deploy-model-drawer">
-      <div class="drawer-header">
-        <h3 style="font-size: 18px; font-weight: 500;">Deploy model to endpoint</h3>
-        <button id="btn-close-drawer" class="btn-secondary" style="padding: 4px 8px; font-size: 12px;" aria-label="Close drawer">✕</button>
-      </div>
-      <form id="endpoint-deploy-form" onsubmit="event.preventDefault(); window.submitDeployment();">
-        <div class="form-group">
-          <label class="form-label" for="endpoint-name-input">Endpoint name</label>
-          <input type="text" id="endpoint-name-input" class="form-input" role="textbox" aria-label="Endpoint name" data-test-id="input-endpoint-name" value="gemini-2-flash-prod" required />
-        </div>
-        <div class="form-group">
-          <label class="form-label" for="region-select">Region</label>
-          <select id="region-select" class="form-select" role="combobox" aria-label="Region" data-test-id="select-region">
-            <option value="us-central1" selected>us-central1 (Iowa)</option>
-            <option value="us-east4">us-east4 (N. Virginia)</option>
-            <option value="europe-west4">europe-west4 (Netherlands)</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label class="form-label" for="min-replicas-input">Minimum replicas</label>
-          <input type="number" id="min-replicas-input" class="form-input" role="spinbutton" aria-label="Min replicas" data-test-id="input-min-replicas" value="1" min="1" max="10" />
-        </div>
-        <div class="form-group">
-          <label class="form-label" for="max-replicas-input">Maximum replicas</label>
-          <input type="number" id="max-replicas-input" class="form-input" role="spinbutton" aria-label="Max replicas" data-test-id="input-max-replicas" value="5" min="1" max="20" />
-        </div>
-        <div class="form-group">
-          <label class="form-label" for="service-account-input">Service account</label>
-          <input type="email" id="service-account-input" class="form-input" role="textbox" aria-label="Service account" data-test-id="input-service-account" value="sa-vertex-runner@${projectId}.iam.gserviceaccount.com" />
-        </div>
-        <div style="display: flex; gap: 12px; margin-top: 24px;">
-          <button type="submit" id="btn-submit-deploy" class="btn-primary" role="button" aria-label="Confirm and Deploy" data-test-id="btn-confirm-deploy">Deploy</button>
-          <button type="button" id="btn-cancel-deploy" class="btn-secondary" role="button" aria-label="Cancel">Cancel</button>
-        </div>
-      </form>
-      <div id="deployment-status-panel" style="display: none; margin-top: 20px;" data-test-id="deployment-status-panel">
-        <div class="status-badge pending" id="deploy-badge">Deploying model...</div>
-      </div>
-    </div>
+    <!-- Vertex AI Deploy Drawer Custom Element (Shadow DOM Piercing Test Fixture) -->
+    <pantheon-deploy-drawer id="pantheon-drawer-component"></pantheon-deploy-drawer>
   </div>
 
   <script>
+    class PantheonDeployDrawer extends HTMLElement {
+      constructor() {
+        super();
+        const shadow = this.attachShadow({ mode: 'open' });
+        shadow.innerHTML = \`
+          <style>
+            * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Google Sans', 'Google Sans Flex', sans-serif; }
+            .slide-drawer {
+              position: fixed; right: -560px; top: 48px; width: 560px; height: calc(100vh - 48px);
+              background: #ffffff; border-left: 1px solid #dadce0; box-shadow: -4px 0 16px rgba(0,0,0,0.08);
+              padding: 24px; transition: right 0.25s cubic-bezier(0.25, 0.1, 0.25, 1); z-index: 50; overflow-y: auto;
+            }
+            .slide-drawer.open { right: 0; }
+            .drawer-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+            .form-group { margin-bottom: 16px; }
+            .form-label { display: block; font-size: 13px; font-weight: 500; margin-bottom: 6px; color: #202124; }
+            .form-input, .form-select {
+              width: 100%; max-width: 480px; padding: 8px 12px; border: 1px solid #dadce0;
+              border-radius: 4px; font-size: 14px; outline: none;
+            }
+            .form-input:focus, .form-select:focus { border-color: #1a73e8; box-shadow: 0 0 0 2px rgba(26, 115, 232, 0.2); }
+            .btn-primary {
+              background: #1a73e8; color: #ffffff; border: none; border-radius: 4px;
+              padding: 8px 16px; font-size: 14px; font-weight: 500; cursor: pointer;
+            }
+            .btn-secondary {
+              background: #ffffff; color: #1a73e8; border: 1px solid #dadce0;
+              border-radius: 4px; padding: 8px 16px; font-size: 14px; font-weight: 500; cursor: pointer;
+            }
+            .status-badge { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 12px; font-size: 12px; font-weight: 500; }
+            .status-badge.ready { background: #e6f4ea; color: #1e8e3e; }
+            .status-badge.pending { background: #fef7e0; color: #b06000; }
+          </style>
+          <div id="deploy-drawer" class="slide-drawer" role="dialog" aria-modal="true" aria-label="Deploy model to endpoint" data-test-id="deploy-model-drawer">
+            <div class="drawer-header">
+              <h3 style="font-size: 18px; font-weight: 500;">Deploy model to endpoint</h3>
+              <button id="btn-close-drawer" class="btn-secondary" style="padding: 4px 8px; font-size: 12px;" aria-label="Close drawer">✕</button>
+            </div>
+            <form id="endpoint-deploy-form">
+              <div class="form-group">
+                <label class="form-label" for="endpoint-name-input">Endpoint name</label>
+                <input type="text" id="endpoint-name-input" class="form-input" role="textbox" aria-label="Endpoint name" data-test-id="input-endpoint-name" value="gemini-2-flash-prod" required />
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="region-select">Region</label>
+                <select id="region-select" class="form-select" role="combobox" aria-label="Region" data-test-id="select-region">
+                  <option value="us-central1" selected>us-central1 (Iowa)</option>
+                  <option value="us-east4">us-east4 (N. Virginia)</option>
+                  <option value="europe-west4">europe-west4 (Netherlands)</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="min-replicas-input">Minimum replicas</label>
+                <input type="number" id="min-replicas-input" class="form-input" role="spinbutton" aria-label="Min replicas" data-test-id="input-min-replicas" value="1" min="1" max="10" />
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="max-replicas-input">Maximum replicas</label>
+                <input type="number" id="max-replicas-input" class="form-input" role="spinbutton" aria-label="Max replicas" data-test-id="input-max-replicas" value="5" min="1" max="20" />
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="service-account-input">Service account</label>
+                <input type="email" id="service-account-input" class="form-input" role="textbox" aria-label="Service account" data-test-id="input-service-account" value="sa-vertex-runner@${projectId}.iam.gserviceaccount.com" />
+              </div>
+              <div style="display: flex; gap: 12px; margin-top: 24px;">
+                <button type="submit" id="btn-submit-deploy" class="btn-primary" role="button" aria-label="Confirm and Deploy" data-test-id="btn-confirm-deploy">Deploy</button>
+                <button type="button" id="btn-cancel-deploy" class="btn-secondary" role="button" aria-label="Cancel">Cancel</button>
+              </div>
+            </form>
+            <div id="deployment-status-panel" style="display: none; margin-top: 20px;" data-test-id="deployment-status-panel">
+              <div class="status-badge pending" id="deploy-badge">Deploying model...</div>
+            </div>
+          </div>
+        \`;
+
+        const form = shadow.getElementById('endpoint-deploy-form');
+        form.addEventListener('submit', (e) => {
+          e.preventDefault();
+          const statusPanel = shadow.getElementById('deployment-status-panel');
+          const badge = shadow.getElementById('deploy-badge');
+          const endpointName = shadow.getElementById('endpoint-name-input').value;
+          statusPanel.style.display = 'block';
+          badge.className = 'status-badge pending';
+          badge.textContent = 'Deploying ' + endpointName + '...';
+
+          setTimeout(() => {
+            badge.className = 'status-badge ready';
+            badge.textContent = 'Endpoint Active: ' + endpointName;
+            const tableBody = document.getElementById('endpoints-table-body');
+            if (tableBody) {
+              const row = document.createElement('tr');
+              row.innerHTML = '<td style="padding: 12px; font-weight: 500;">' + endpointName + '</td><td style="padding: 12px;">us-central1</td><td style="padding: 12px;"><span class="status-badge ready">Active</span></td>';
+              tableBody.prepend(row);
+            }
+          }, 400);
+        });
+
+        shadow.getElementById('btn-close-drawer').addEventListener('click', () => this.close());
+        shadow.getElementById('btn-cancel-deploy').addEventListener('click', () => this.close());
+      }
+
+      open() {
+        this.shadowRoot.getElementById('deploy-drawer').classList.add('open');
+        this.shadowRoot.getElementById('endpoint-name-input').focus();
+      }
+
+      close() {
+        this.shadowRoot.getElementById('deploy-drawer').classList.remove('open');
+      }
+    }
+    customElements.define('pantheon-deploy-drawer', PantheonDeployDrawer);
+
     window.openDeployDrawer = function() {
-      const drawer = document.getElementById('deploy-drawer');
-      drawer.classList.add('open');
-      document.getElementById('endpoint-name-input').focus();
+      const drawerComp = document.getElementById('pantheon-drawer-component');
+      if (drawerComp) drawerComp.open();
     };
 
     window.closeDeployDrawer = function() {
-      const drawer = document.getElementById('deploy-drawer');
-      drawer.classList.remove('open');
-    };
-
-    window.submitDeployment = function() {
-      const statusPanel = document.getElementById('deployment-status-panel');
-      const badge = document.getElementById('deploy-badge');
-      const endpointName = document.getElementById('endpoint-name-input').value;
-      statusPanel.style.display = 'block';
-      badge.className = 'status-badge pending';
-      badge.textContent = 'Deploying ' + endpointName + '...';
-
-      setTimeout(() => {
-        badge.className = 'status-badge ready';
-        badge.textContent = 'Endpoint Active: ' + endpointName;
-        // Also update table in parent page
-        const tableBody = document.getElementById('endpoints-table-body');
-        if (tableBody) {
-          const row = document.createElement('tr');
-          row.innerHTML = '<td style="padding: 12px; font-weight: 500;">' + endpointName + '</td><td style="padding: 12px;">us-central1</td><td style="padding: 12px;"><span class="status-badge ready">Active</span></td>';
-          tableBody.prepend(row);
-        }
-      }, 500);
+      const drawerComp = document.getElementById('pantheon-drawer-component');
+      if (drawerComp) drawerComp.close();
     };
 
     document.getElementById('btn-open-deploy')?.addEventListener('click', window.openDeployDrawer);
-    document.getElementById('btn-close-drawer')?.addEventListener('click', window.closeDeployDrawer);
-    document.getElementById('btn-cancel-deploy')?.addEventListener('click', window.closeDeployDrawer);
   </script>
 </body>
 </html>`;

@@ -72,7 +72,7 @@ export async function compileWhiteboardManifest(
   let currentDrawFrame = 30; // Start after 0.5s cold open hook
   const nodeDurationFrames = 45; // 0.75s per node unwinding
 
-  const elements: WhiteboardElement[] = (layoutedGraph.children || []).map((child, idx) => {
+  const elements: WhiteboardElement[] = (layoutedGraph.children || []).map((child: ElkNode, idx: number) => {
     const rawNode = contract.architectureGraph.nodes.find(n => n.id === child.id)!;
     const category = rawNode.category;
     const flow = category === "client" ? "user_flow" : (category === "storage" || category === "ai" ? "data_flow" : "process_flow");

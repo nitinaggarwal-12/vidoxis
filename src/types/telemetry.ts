@@ -15,7 +15,7 @@ export const TelemetryEventSchema = z.object({
   cursor: z.object({
     x: z.number(),
     y: z.number(),
-    state: z.enum(["moving", "dwell", "clicking", "idle"])
+    state: z.enum(["moving", "overshoot", "dwell", "clicking", "idle"])
   }),
   targetElement: z.object({
     role: z.string().optional(),

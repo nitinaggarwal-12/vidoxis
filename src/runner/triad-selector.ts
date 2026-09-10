@@ -2,7 +2,7 @@ import { Page, ElementHandle } from "puppeteer";
 import { TriadSelector } from "../types/trace.js";
 
 export interface ResolvedElementTarget {
-  handle: ElementHandle<Element> | null;
+  handle: ElementHandle<any> | null;
   methodUsed: "primary_aria" | "secondary_testid" | "fallback_bbox" | "failed";
   bbox: { x: number; y: number; width: number; height: number };
   center: { x: number; y: number };

@@ -1,6 +1,7 @@
 import { testContractValidation } from "./topology_contract.test.js";
 import { testWhiteboardCompilation } from "./whiteboard_compiler.test.js";
 import { testRehearsalMatrix } from "./rehearsal_matrix.test.js";
+import { testHookExecutionEngine } from "./hooks_execution.test.js";
 
 async function main() {
   console.log("======================================================================");
@@ -14,7 +15,7 @@ async function main() {
   results.push({ suite: "Canonical Topology Contract Validation", passed: r1 });
   console.log("");
 
-  // Suite 2: Progressive Whiteboard Compiler & Layout Collisions
+  // Suite 2: Progressive Whiteboard Engine (ElkJS + RoughJS)
   const r2 = await testWhiteboardCompilation();
   results.push({ suite: "Progressive Whiteboard Engine (ElkJS + RoughJS)", passed: r2 });
   console.log("");
@@ -22,6 +23,11 @@ async function main() {
   // Suite 3: CDP Headless Rehearsal Matrix & Triad Selectors
   const r3 = await testRehearsalMatrix();
   results.push({ suite: "CDP Deterministic Replay & 3x Rehearsal Matrix", passed: r3 });
+  console.log("");
+
+  // Suite 4: Trainex Hook Execution Engine (All 13 Lifecycles & 39 Hooks)
+  const r4 = await testHookExecutionEngine();
+  results.push({ suite: "Trainex Lifecycle Hooks & Quality Guard Engine (39 Hooks)", passed: r4 });
   console.log("");
 
   console.log("======================================================================");
@@ -39,7 +45,7 @@ async function main() {
     console.error("\n❌ Test harness detected one or more failures. Exiting with code 1.");
     process.exit(1);
   } else {
-    console.log("\n🎉 ALL QUALITY GATES PASSED (3/3 SUITES VERIFIED).");
+    console.log("\n🎉 ALL QUALITY GATES PASSED (4/4 SUITES VERIFIED).");
   }
 }
 

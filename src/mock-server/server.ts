@@ -44,8 +44,8 @@ export function createMockConsoleHtml(pathname: string, searchParams: URLSearchP
     /* Top Header Bar */
     .pantheon-header {
       display: flex; align-items: center; justify-content: space-between;
-      height: 48px; background: var(--gcp-header-bg); border-bottom: 1px solid var(--gcp-border);
-      padding: 0 16px; position: sticky; top: 0; z-index: 100;
+      height: 56px; background: var(--gcp-header-bg); border-bottom: 1px solid var(--gcp-border);
+      padding: 0 20px; position: sticky; top: 0; z-index: 100;
     }
     .header-left { display: flex; align-items: center; gap: 16px; }
     .logo-container { display: flex; align-items: center; gap: 8px; font-weight: 500; font-size: 16px; }
@@ -58,7 +58,7 @@ export function createMockConsoleHtml(pathname: string, searchParams: URLSearchP
     .billing-badge { background: #e8f0fe; color: var(--gcp-blue); padding: 4px 8px; border-radius: 12px; font-size: 11px; }
 
     /* Page Layout */
-    .main-container { display: flex; min-height: calc(100vh - 48px); }
+    .main-container { display: flex; min-height: calc(100vh - 56px); }
     .nav-sidebar { width: 220px; background: var(--gcp-sidebar-bg); border-right: 1px solid var(--gcp-border); padding: 16px 8px; }
     .nav-item { display: block; padding: 8px 12px; border-radius: 4px; font-size: 13px; text-decoration: none; color: var(--gcp-text); margin-bottom: 4px; }
     .nav-item.active { background: #e8f0fe; color: var(--gcp-blue); font-weight: 500; }
@@ -91,9 +91,9 @@ export function createMockConsoleHtml(pathname: string, searchParams: URLSearchP
 
     /* Deploy Slide Drawer */
     .slide-drawer {
-      position: fixed; right: -560px; top: 48px; width: 560px; height: calc(100vh - 48px);
+      position: fixed; right: -680px; top: 56px; width: 680px; height: calc(100vh - 56px);
       background: #ffffff; border-left: 1px solid var(--gcp-border); box-shadow: -4px 0 16px rgba(0,0,0,0.08);
-      padding: 24px; transition: right 0.25s cubic-bezier(0.25, 0.1, 0.25, 1); z-index: 50; overflow-y: auto;
+      padding: 28px; transition: right 0.25s cubic-bezier(0.25, 0.1, 0.25, 1); z-index: 50; overflow-y: auto;
     }
     .slide-drawer.open { right: 0; }
     .drawer-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
@@ -146,9 +146,9 @@ export function createMockConsoleHtml(pathname: string, searchParams: URLSearchP
           <style>
             * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Google Sans', 'Google Sans Flex', sans-serif; }
             .slide-drawer {
-              position: fixed; right: -560px; top: 48px; width: 560px; height: calc(100vh - 48px);
+              position: fixed; right: -680px; top: 56px; width: 680px; height: calc(100vh - 56px);
               background: #ffffff; border-left: 1px solid #dadce0; box-shadow: -4px 0 16px rgba(0,0,0,0.08);
-              padding: 24px; transition: right 0.25s cubic-bezier(0.25, 0.1, 0.25, 1); z-index: 50; overflow-y: auto;
+              padding: 28px; transition: right 0.25s cubic-bezier(0.25, 0.1, 0.25, 1); z-index: 50; overflow-y: auto;
             }
             .slide-drawer.open { right: 0; }
             .drawer-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }

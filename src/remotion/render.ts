@@ -62,7 +62,9 @@ export async function renderTrainexVideo(options: RenderOptions = {}): Promise<{
       bigquery: loadScreenshotAsDataUri("06_bigquery_studio_editor.png")
     },
     enableWatermark: true,
-    enableDisclaimer: true
+    enableDisclaimer: true,
+    enableAvatar: true,
+    enableSubtitles: true
   };
 
   const chromeMeta = inspectChromeMetadata();
@@ -130,6 +132,7 @@ export async function renderTrainexVideo(options: RenderOptions = {}): Promise<{
         inputProps,
         codec: "h264",
         crf: 18,
+        concurrency: 1,
         pixelFormat: "yuv420p",
         browserExecutable: chromeMeta.executablePath,
         chromiumOptions,

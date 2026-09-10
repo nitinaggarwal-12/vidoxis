@@ -27,7 +27,7 @@
       {
         "id": "validate_manifest_schema",
         "description": "Validates manifest against v2.json schema",
-        "command": "npx ajv-cli validate -s schemas/manifest.v2.json -d {FILE}",
+        "command": "node scripts/validate_manifest.js {FILE}",
         "fail_action": "abort"
       },
       {

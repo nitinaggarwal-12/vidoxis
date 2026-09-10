@@ -59,14 +59,14 @@ export async function compileWhiteboardManifest(
   const offsetX = Math.max(120, (width - graphWidth) / 2);
   const offsetY = Math.max(120, (height - graphHeight) / 2);
 
-  // Colors based on theme
+  // Colors based on Google Enterprise Light Palette
   const colorMap: Record<string, string> = {
-    client: "#38BDF8",      // Vibrant Sky Cyan
-    ingress: "#FBBF24",     // Amber Gold
-    compute: "#818CF8",     // Royal Indigo
-    ai: "#A78BFA",          // Purple
-    storage: "#34D399",     // Emerald Green
-    security: "#F43F5E"      // Crimson Red
+    client: "#0284C7",      // Google Sky Blue 600
+    ingress: "#D97706",     // Google Amber 600
+    compute: "#4F46E5",     // Indigo 600
+    ai: "#7C3AED",          // Deep Purple 600
+    storage: "#059669",     // Emerald Green 600
+    security: "#DC2626"     // Crimson Red 600
   };
 
   let currentDrawFrame = 30; // Start after 0.5s cold open hook

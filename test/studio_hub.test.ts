@@ -126,17 +126,39 @@ export async function runStudioHubVerification(): Promise<boolean> {
     await page.screenshot({ path: out08, fullPage: false });
     console.log(`  ✔ Captured: ${out08}`);
 
-    // 9. Scroll to Bottom (Deterministic CDP Telemetry & 39 Quality Hooks)
-    console.log("📸 [09] Capturing Bottom Grid (CDP Telemetry & 39 Quality Hooks)...");
+    // 9. Test Whiteboard Stage Zoom & Focus (1.8x Focus Mode)
+    console.log("📸 [09] Testing Whiteboard Stage Focus Mode (1.8x Zoom)...");
     await page.evaluate(() => {
-      window.scrollTo({ top: 1550, behavior: "instant" });
+      (window as any).setWhiteboardZoom("focus");
+      window.scrollTo({ top: 1250, behavior: "instant" });
     });
     await sleep(800);
-    const out09 = path.join(screenshotDir, "09_studio_hub_telemetry_and_hooks.png");
+    const out09 = path.join(screenshotDir, "09_studio_hub_whiteboard_focused_topology.png");
     await page.screenshot({ path: out09, fullPage: false });
     console.log(`  ✔ Captured: ${out09}`);
 
-    console.log("\n🎉 Trainex Studio Hub E2E Verification Succeeded (9/9 Pristine 4K Shots Captured)!");
+    // 10. Scroll to Bottom (Deterministic CDP Telemetry & 39 Quality Hooks)
+    console.log("📸 [10] Capturing Bottom Grid (CDP Telemetry & 39 Quality Hooks)...");
+    await page.evaluate(() => {
+      (window as any).setWhiteboardZoom("fit");
+      window.scrollTo({ top: 2100, behavior: "instant" });
+    });
+    await sleep(800);
+    const out10 = path.join(screenshotDir, "10_studio_hub_telemetry_and_hooks.png");
+    await page.screenshot({ path: out10, fullPage: false });
+    console.log(`  ✔ Captured: ${out10}`);
+
+    // 11. Idempotent Page Reload Verification
+    console.log("🔄 [11] Verifying Idempotent Page Reload...");
+    await page.reload({ waitUntil: "networkidle0" });
+    await sleep(800);
+    const reloadedTitle = await page.evaluate(() => document.title);
+    if (!reloadedTitle.includes("Trainex Studio")) {
+      throw new Error(`Page title after reload unexpected: ${reloadedTitle}`);
+    }
+    console.log(`  ✔ Page reload verified cleanly: "${reloadedTitle}"`);
+
+    console.log("\n🎉 Trainex Studio Hub E2E Verification Succeeded (10/10 Pristine 4K Shots Captured)!");
     return true;
   } catch (err) {
     console.error("Studio Hub test failed:", err);

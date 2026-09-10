@@ -589,7 +589,12 @@ function renderStudioHtml(): string {
           <h2 class="text-2xl font-bold text-gray-900 tracking-tight">Progressive Whiteboard Stage (ElkJS + RoughJS)</h2>
           <p class="text-sm text-gray-600 mt-1">Broadcast Studio Light Stage with 0% Bounding Box Collisions & Glowing Kinetic Particles</p>
         </div>
-        <div class="flex items-center gap-3">
+        <div class="flex items-center gap-3 flex-wrap">
+          <div class="flex items-center p-1 bg-gray-100 border border-gray-300 rounded-xl gap-1">
+            <button onclick="setWhiteboardZoom('fit')" id="wb-zoom-fit" class="wb-zoom-btn px-3 py-1.5 rounded-lg text-xs font-semibold bg-white text-blue-700 shadow-sm transition-all">Fit Canvas</button>
+            <button onclick="setWhiteboardZoom('focus')" id="wb-zoom-focus" class="wb-zoom-btn px-3 py-1.5 rounded-lg text-xs font-semibold text-gray-700 hover:text-gray-900 transition-all">Focus Topology (1.8x)</button>
+            <button onclick="setWhiteboardZoom('4k')" id="wb-zoom-4k" class="wb-zoom-btn px-3 py-1.5 rounded-lg text-xs font-semibold text-gray-700 hover:text-gray-900 transition-all">Inspect 4K (2.5x)</button>
+          </div>
           <button onclick="toggleParticles()" id="particle-btn" class="px-4 py-2 rounded-xl bg-blue-50 border border-blue-300 text-blue-700 text-xs font-semibold flex items-center gap-2 shadow-sm">
             <span class="w-2.5 h-2.5 rounded-full bg-blue-600 animate-ping"></span>
             Kinetic Particles: ON
@@ -601,8 +606,10 @@ function renderStudioHtml(): string {
       </div>
 
       <!-- Interactive SVG Whiteboard Container -->
-      <div class="w-full bg-[#F8FAFC] border border-gray-300 rounded-2xl p-6 overflow-hidden flex items-center justify-center min-h-[420px] shadow-inner">
-        <object id="whiteboard-svg-obj" data="/scratch/01_whiteboard_architecture.svg" type="image/svg+xml" class="w-full h-auto max-h-[500px] object-contain"></object>
+      <div id="whiteboard-stage-wrapper" class="w-full bg-[#F8FAFC] border border-gray-300 rounded-2xl p-6 overflow-auto flex items-center justify-center min-h-[460px] max-h-[620px] shadow-inner custom-scrollbar cursor-grab select-none">
+        <div id="whiteboard-zoom-container" class="w-full flex items-center justify-center transition-transform duration-300 origin-center">
+          <object id="whiteboard-svg-obj" data="/scratch/01_whiteboard_architecture.svg" type="image/svg+xml" class="w-full h-auto max-h-[540px] object-contain"></object>
+        </div>
       </div>
 
       <!-- Contract Nodes Telemetry Strip -->
@@ -845,7 +852,7 @@ function renderStudioHtml(): string {
         } else if (isPast) {
           html += '<span class="text-gray-900 font-semibold">' + escapeHtml(w.word) + '</span> ';
         } else {
-          html += '<span class="text-gray-400">' + escapeHtml(w.word) + '</span> ';
+          html += '<span class="text-slate-500 font-medium">' + escapeHtml(w.word) + '</span> ';
         }
       }
       textBox.innerHTML = html;
@@ -952,6 +959,34 @@ function renderStudioHtml(): string {
 
     function toggleOverlay(visible) {
       document.getElementById('telemetry-overlay').style.opacity = visible ? '1' : '0';
+    }
+
+    function setWhiteboardZoom(mode) {
+      const container = document.getElementById('whiteboard-zoom-container');
+      const obj = document.getElementById('whiteboard-svg-obj');
+      document.querySelectorAll('.wb-zoom-btn').forEach(btn => {
+        btn.classList.remove('bg-white', 'text-blue-700', 'shadow-sm');
+        btn.classList.add('text-gray-700');
+      });
+      const activeBtn = document.getElementById('wb-zoom-' + mode);
+      if (activeBtn) {
+        activeBtn.classList.add('bg-white', 'text-blue-700', 'shadow-sm');
+        activeBtn.classList.remove('text-gray-700');
+      }
+
+      if (mode === 'focus') {
+        container.style.transform = 'scale(1.8)';
+        container.style.minWidth = '180%';
+        obj.style.maxHeight = '800px';
+      } else if (mode === '4k') {
+        container.style.transform = 'scale(2.5)';
+        container.style.minWidth = '250%';
+        obj.style.maxHeight = '1100px';
+      } else {
+        container.style.transform = 'scale(1)';
+        container.style.minWidth = '100%';
+        obj.style.maxHeight = '540px';
+      }
     }
 
     function toggleParticles() {

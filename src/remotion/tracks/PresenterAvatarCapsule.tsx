@@ -148,7 +148,7 @@ export const PresenterAvatarCapsule: React.FC<PresenterAvatarCapsuleProps> = ({
         >
           <div style={{ width: 4, height: wave1, backgroundColor: "#34A853", borderRadius: 2 }} />
           <div style={{ width: 4, height: wave2, backgroundColor: "#4285F4", borderRadius: 2 }} />
-          <div style={{ width: 4, height: wave3, backgroundColor: "#FBBC04", borderRadius: 2 }} />
+          <div style={{ width: 4, height: wave3, backgroundColor: "#D97706", borderRadius: 2 }} />
           <div style={{ width: 4, height: wave4, backgroundColor: "#EA4335", borderRadius: 2 }} />
         </div>
       </div>

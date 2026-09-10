@@ -16,17 +16,17 @@ export function exportWhiteboardToSvg(manifest: WhiteboardManifest): string {
               filter="url(#card-shadow-${el.id})" />
         
         <!-- Flow Type Pill -->
-        <rect x="18" y="16" width="96" height="22" rx="11" fill="#F1F5F9" stroke="#E2E8F0" stroke-width="1" />
-        <text x="66" y="31" fill="${flowBadgeColor}" font-size="10" font-weight="700" font-family="'Google Sans Flex', -apple-system, sans-serif" text-anchor="middle" letter-spacing="0.5">${flowBadgeText}</text>
+        <rect x="18" y="16" width="105" height="24" rx="12" fill="#F1F5F9" stroke="#E2E8F0" stroke-width="1.5" />
+        <text x="70" y="32" fill="${flowBadgeColor}" font-size="11" font-weight="800" font-family="'Google Sans Flex', -apple-system, sans-serif" text-anchor="middle" letter-spacing="0.5">${flowBadgeText}</text>
         
         <!-- Primary Label (High Contrast Dark Slate) -->
-        <text x="18" y="74" fill="#0F172A" font-size="20" font-weight="700" font-family="'Google Sans Flex', -apple-system, sans-serif">${escapeXml(el.label)}</text>
+        <text x="18" y="76" fill="#0F172A" font-size="22" font-weight="800" font-family="'Google Sans Flex', -apple-system, sans-serif">${escapeXml(el.label)}</text>
         
         <!-- Secondary Description / Type -->
-        <text x="18" y="104" fill="#475569" font-size="13" font-weight="500" font-family="'Roboto Mono', monospace">${escapeXml(el.subLabel || el.type)}</text>
+        <text x="18" y="106" fill="#334155" font-size="14" font-weight="600" font-family="'Roboto Mono', monospace">${escapeXml(el.subLabel || el.type)}</text>
 
         <!-- Status Light -->
-        <circle cx="${el.width - 24}" cy="24" r="5" fill="${el.color}" filter="drop-shadow(0 1px 3px ${el.color})" />
+        <circle cx="${el.width - 24}" cy="24" r="6" fill="${el.color}" filter="drop-shadow(0 1px 3px ${el.color})" />
       </g>
     `;
   }).join("\n");
@@ -53,12 +53,12 @@ export function exportWhiteboardToSvg(manifest: WhiteboardManifest): string {
       <!-- Edge: ${edge.id} (${edge.sourceId} -> ${edge.targetId}) -->
       <g id="edge-${edge.id}" class="whiteboard-edge">
         <!-- Base Path Track -->
-        <path d="${pathD}" fill="none" stroke="#E2E8F0" stroke-width="2.5" stroke-dasharray="6 6" />
+        <path d="${pathD}" fill="none" stroke="#CBD5E1" stroke-width="2.5" stroke-dasharray="6 6" />
         <!-- Glowing Data Stream Path -->
         <path d="${pathD}" fill="none" stroke="${edge.color}" stroke-width="3" stroke-linecap="round" />
         <!-- Edge Label Pill -->
-        <rect x="${(x1 + x2) / 2 - 40}" y="${(y1 + y2) / 2 - 12}" width="80" height="24" rx="12" fill="#FFFFFF" stroke="${edge.color}" stroke-width="1.5" filter="drop-shadow(0 2px 4px rgba(0,0,0,0.06))" />
-        <text x="${(x1 + x2) / 2}" y="${(y1 + y2) / 2 + 4}" fill="#0F172A" font-size="11" font-weight="700" font-family="'Roboto Mono', monospace" text-anchor="middle">${edge.protocol}</text>
+        <rect x="${(x1 + x2) / 2 - 48}" y="${(y1 + y2) / 2 - 14}" width="96" height="28" rx="14" fill="#FFFFFF" stroke="${edge.color}" stroke-width="2" filter="drop-shadow(0 2px 5px rgba(0,0,0,0.08))" />
+        <text x="${(x1 + x2) / 2}" y="${(y1 + y2) / 2 + 5}" fill="#0F172A" font-size="12" font-weight="700" font-family="'Roboto Mono', monospace" text-anchor="middle">${edge.protocol}</text>
       </g>
     `;
   }).join("\n");

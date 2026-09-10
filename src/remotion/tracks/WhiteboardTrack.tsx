@@ -73,7 +73,7 @@ const DEFAULT_NODES: WhiteboardNode[] = [
     height: 180,
     flowType: "process_flow",
     startFrame: 60,
-    color: "#FBBC04"
+    color: "#D97706"
   },
   {
     id: "vertex_model",
@@ -141,7 +141,7 @@ const DEFAULT_EDGES: WhiteboardEdge[] = [
     cp2: { x: 2380, y: 950 },
     p2: { x: 2480, y: 1010 },
     startFrame: 95,
-    color: "#FBBC04"
+    color: "#D97706"
   },
   {
     id: "edge_vertex_bq",
@@ -255,7 +255,7 @@ export const WhiteboardTrack: React.FC<WhiteboardTrackProps> = ({
           <text
             x="200"
             y="730"
-            fill="#475569"
+            fill="#334155"
             fontSize="24"
             fontWeight="700"
             letterSpacing="1px"
@@ -294,17 +294,31 @@ export const WhiteboardTrack: React.FC<WhiteboardTrackProps> = ({
                 strokeWidth="3"
                 strokeLinecap="round"
               />
-              {/* Edge Label */}
-              <text
-                x={(edge.p1.x + edge.p2.x) / 2}
-                y={(edge.p1.y + edge.p2.y) / 2 - 30}
-                fill="#CBD5E1"
-                fontSize="20"
-                fontWeight="500"
-                textAnchor="middle"
-              >
-                {edge.label}
-              </text>
+              {/* Edge Label Pill with High-Contrast Text */}
+              <g transform={`translate(${(edge.p1.x + edge.p2.x) / 2}, ${(edge.p1.y + edge.p2.y) / 2 - 32})`}>
+                <rect
+                  x="-120"
+                  y="-18"
+                  width="240"
+                  height="36"
+                  rx="18"
+                  fill="#FFFFFF"
+                  stroke={edge.color}
+                  strokeWidth="2"
+                  filter="url(#glow-filter)"
+                />
+                <text
+                  x="0"
+                  y="6"
+                  fill="#0F172A"
+                  fontSize="18"
+                  fontWeight="700"
+                  textAnchor="middle"
+                  fontFamily="'Roboto Mono', monospace"
+                >
+                  {edge.label}
+                </text>
+              </g>
             </g>
           );
         })}
@@ -420,8 +434,9 @@ export const WhiteboardTrack: React.FC<WhiteboardTrackProps> = ({
         {stylusTip.visible && (
           <g transform={`translate(${stylusTip.x}, ${stylusTip.y})`}>
             <circle r="18" fill={stylusTip.color} opacity="0.35" filter="url(#glow-filter)" />
-            <circle r="7" fill="#FFFFFF" />
-            <line x1="0" y1="0" x2="-28" y2="-48" stroke="#FFFFFF" strokeWidth="4" strokeLinecap="round" />
+            <circle r="7" fill={stylusTip.color} />
+            <line x1="0" y1="0" x2="-28" y2="-48" stroke="#1E293B" strokeWidth="5" strokeLinecap="round" />
+            <line x1="-2" y1="-3" x2="-26" y2="-45" stroke="#94A3B8" strokeWidth="2" strokeLinecap="round" />
           </g>
         )}
 
@@ -430,7 +445,7 @@ export const WhiteboardTrack: React.FC<WhiteboardTrackProps> = ({
           <text
             x="160"
             y="220"
-            fill="#FFFFFF"
+            fill="#0F172A"
             fontSize="54"
             fontWeight="800"
             letterSpacing="-0.5px"
@@ -440,9 +455,9 @@ export const WhiteboardTrack: React.FC<WhiteboardTrackProps> = ({
           <text
             x="160"
             y="280"
-            fill="#94A3B8"
+            fill="#475569"
             fontSize="26"
-            fontWeight="400"
+            fontWeight="600"
           >
             Act 2: Architecture Synthesis • User Flow ➔ Process Flow ➔ Data Flow
           </text>

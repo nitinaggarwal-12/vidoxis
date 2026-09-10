@@ -122,7 +122,7 @@ export const KaraokeSubtitleTrack: React.FC<KaraokeSubtitleTrackProps> = ({
                   ? "#92400E"
                   : isSpoken
                   ? "#0F172A"
-                  : "rgba(15, 23, 42, 0.45)",
+                  : "#64748B",
                 backgroundColor: isCurrentlyActive ? "#FEF3C7" : "transparent",
                 borderRadius: 10,
                 padding: isCurrentlyActive ? "2px 10px" : "0px",

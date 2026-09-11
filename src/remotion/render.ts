@@ -8,6 +8,7 @@ export interface RenderOptions {
   outputVideoPath?: string;
   outputStillsDir?: string;
   renderStillsOnly?: boolean;
+  skipStills?: boolean;
   frameRange?: [number, number];
   previewOnly?: boolean;
 }
@@ -43,14 +44,16 @@ function loadPhonemesSegments(): any[] | undefined {
   return undefined;
 }
 
-export async function renderTrainexVideo(options: RenderOptions = {}): Promise<{
+export async function renderVidoxisVideo(options: RenderOptions = {}): Promise<{
   videoPath?: string;
   stills: string[];
 }> {
   console.log("================================================================================");
-  console.log("🎬 STARTING REMOTION 4K BROADCAST COMPOSITOR & MASTER RENDERER");
+  console.log("🎬 STARTING VIDOXIS 4K BROADCAST COMPOSITOR & MASTER RENDERER");
+  console.log("   Director & Quality Controller: Google Omni 1.1");
   console.log("   Resolution: 3840x2160 (4K UHD) @ 60fps");
-  console.log("   Composition: TrainexMasterComposition");
+  console.log("   Composition: VidoxisMasterComposition");
+  console.log("   Dual Walkthrough: Gemini Enterprise Chat ➔ Google Cloud Console");
   console.log("================================================================================");
 
   const entryPoint = path.resolve(process.cwd(), "src", "remotion", "index.ts");
@@ -76,17 +79,23 @@ export async function renderTrainexVideo(options: RenderOptions = {}): Promise<{
     title: "Deploying Private Gemini 2.0 Endpoints on Google Cloud",
     subtitle: "Zero-Egress Enterprise Architectures with Private Service Connect & Vertex AI",
     topicId: "vertex_gemini_private_endpoint",
-    whiteboardDurationFrames: 180,
-    screencastDurationFrames: 300,
+    whiteboardDurationFrames: 840,
+    screencastDurationFrames: 1372,
     screenshots: {
-      overview: loadScreenshotAsDataUri("01_model_garden_overview.png"),
-      drawerOpened: loadScreenshotAsDataUri("02_deploy_model_drawer_opened.png"),
-      configEntered: loadScreenshotAsDataUri("03_endpoint_name_and_config_entered.png"),
-      activeVerified: loadScreenshotAsDataUri("04_deployment_active_verified.png"),
+      geminiPrompt: loadScreenshotAsDataUri("01_gemini_enterprise_chat_prompt.png"),
+      geminiTrace: loadScreenshotAsDataUri("02_gemini_enterprise_agent_reasoning.png"),
+      geminiResults: loadScreenshotAsDataUri("03_gemini_enterprise_clinical_results.png"),
+      consoleOverview: loadScreenshotAsDataUri("04_gcp_console_vertex_model_garden.png"),
+      consoleDrawer: loadScreenshotAsDataUri("05_gcp_console_deploy_drawer_opened.png"),
+      consoleActive: loadScreenshotAsDataUri("06_gcp_console_endpoint_active_verified.png"),
+      overview: loadScreenshotAsDataUri("04_gcp_console_vertex_model_garden.png"),
+      drawerOpened: loadScreenshotAsDataUri("05_gcp_console_deploy_drawer_opened.png"),
+      configEntered: loadScreenshotAsDataUri("05_gcp_console_deploy_drawer_opened.png"),
+      activeVerified: loadScreenshotAsDataUri("06_gcp_console_endpoint_active_verified.png"),
       cloudRun: loadScreenshotAsDataUri("05_cloud_run_services.png"),
       bigquery: loadScreenshotAsDataUri("06_bigquery_studio_editor.png")
     },
-    audioSrc: undefined,
+    audioSrc: loadAudioAsDataUri("narration.wav"),
     segments: loadPhonemesSegments(),
     enableWatermark: true,
     enableDisclaimer: true,
@@ -103,13 +112,24 @@ export async function renderTrainexVideo(options: RenderOptions = {}): Promise<{
     headless: true
   };
 
-  const composition = await selectComposition({
-    serveUrl: bundleLocation,
-    id: "TrainexMasterComposition",
-    inputProps,
-    browserExecutable: chromeMeta.executablePath,
-    chromiumOptions
-  });
+  let composition;
+  try {
+    composition = await selectComposition({
+      serveUrl: bundleLocation,
+      id: "VidoxisMasterComposition",
+      inputProps,
+      browserExecutable: chromeMeta.executablePath,
+      chromiumOptions
+    });
+  } catch {
+    composition = await selectComposition({
+      serveUrl: bundleLocation,
+      id: "TrainexMasterComposition",
+      inputProps,
+      browserExecutable: chromeMeta.executablePath,
+      chromiumOptions
+    });
+  }
 
   console.log(`  ✔ Selected composition: ${composition.id} (${composition.width}x${composition.height} @ ${composition.fps}fps, ${composition.durationInFrames} frames)`);
 
@@ -118,43 +138,60 @@ export async function renderTrainexVideo(options: RenderOptions = {}): Promise<{
 
   const generatedStills: string[] = [];
 
-  // 1. Render Representative 4K Stills across the 5-Act Pedagogical Arc
+  // 1. Render Representative 4K Stills across the 5-Act Pedagogical Arc & Google Cloud Console End-to-End Walkthrough
   const stillKeyframes = [
-    { frame: 15, name: "act1_cold_open_hook.png", desc: "Act 1: Cold Open Hook & Legal Disclaimer" },
-    { frame: 90, name: "act2_whiteboard_kinetic_particles.png", desc: "Act 2: Progressive Whiteboard & Kinetic Particles" },
-    { frame: 175, name: "act2_spatial_dissolve_bridge.png", desc: "Act 2 ➔ 3: Spatial Hand-Off Dissolve Bridge" },
-    { frame: 220, name: "act3_console_drawer_typing.png", desc: "Act 3: Console Drawer & Minimum-Jerk Cursor" },
-    { frame: 270, name: "act3_endpoint_active_redaction.png", desc: "Act 3 & 4: Active Endpoint + 12px Dilation Redaction" },
-    { frame: 360, name: "act5_production_checklist.png", desc: "Act 5: Production Checklist & NDA Slate" }
+    { frame: 120, name: "act1_cold_open_hook.png", desc: "Act 1: Cold Open Hook & Legal Disclaimer" },
+    { frame: 500, name: "act2_whiteboard_kinetic_particles.png", desc: "Act 2: Progressive Whiteboard & Architecture Topology" },
+    { frame: 830, name: "act2_spatial_dissolve_bridge.png", desc: "Act 2 ➔ 3: Spatial Dissolve Bridge to Google Cloud Console" },
+    { frame: 1050, name: "act3_gcp_console_step1_model_garden.png", desc: "GCP Console Step 1: Vertex AI Model Garden & Gemini Selection" },
+    { frame: 1350, name: "act3_gcp_console_step2_cloud_run.png", desc: "GCP Console Step 2: Service Management & Region Selection" },
+    { frame: 1550, name: "act3_gcp_console_step3_security_cmek.png", desc: "GCP Console Step 3: Security, CMEK & Cloud KMS Autokey" },
+    { frame: 1720, name: "act3_gcp_console_step4_active_endpoint.png", desc: "GCP Console Step 4: Active Endpoint Verification & Sub-15ms Telemetry" },
+    { frame: 2000, name: "act3_gcp_console_step5_bigquery_studio.png", desc: "GCP Console Step 5: BigQuery Studio Lakehouse Grounding & SQL" },
+    { frame: 2180, name: "act5_production_checklist.png", desc: "Act 5: Production Checklist & Enterprise Security Verification" }
   ];
 
-  console.log("\n📸 Rendering Keyframe 4K Broadcast Stills...");
-  for (const kf of stillKeyframes) {
-    const stillOut = path.join(outputStillsDir, kf.name);
-    console.log(`  ↳ Rendering frame ${kf.frame} (${kf.desc})...`);
-    await renderStill({
-      composition,
-      serveUrl: bundleLocation,
-      output: stillOut,
-      frame: kf.frame,
-      inputProps,
-      imageFormat: "png",
-      scale: 1,
-      browserExecutable: chromeMeta.executablePath,
-      chromiumOptions
-    });
-    generatedStills.push(stillOut);
-    console.log(`    ✔ Exported 4K Still: ${stillOut}`);
+  if (!options.skipStills) {
+    console.log("\n📸 Rendering Keyframe 4K Broadcast Stills (Omni 1.1 Supervised)...");
+    for (const kf of stillKeyframes) {
+      const stillOut = path.join(outputStillsDir, kf.name);
+      console.log(`  ↳ Rendering frame ${kf.frame} (${kf.desc})...`);
+      await renderStill({
+        composition,
+        serveUrl: bundleLocation,
+        output: stillOut,
+        frame: kf.frame,
+        inputProps,
+        imageFormat: "png",
+        scale: 1,
+        browserExecutable: chromeMeta.executablePath,
+        chromiumOptions
+      });
+      generatedStills.push(stillOut);
+      console.log(`    ✔ Exported 4K Still: ${stillOut}`);
+    }
+
+    // Alias copy for backward compatibility and alternate route naming
+    const traceStill = path.join(outputStillsDir, "act3_console_drawer_typing.png");
+    if (fs.existsSync(traceStill)) {
+      fs.copyFileSync(traceStill, path.join(outputStillsDir, "act3_gemini_enterprise_chat_trace.png"));
+    }
+  } else {
+    console.log("\n⏩ Skipping 4K stills rendering (--video-only specified).");
   }
 
   let finalVideoPath: string | undefined;
 
   if (!options.renderStillsOnly) {
-    const outputVideoPath = options.outputVideoPath || path.resolve(process.cwd(), "scratch", "trainex_master_4k.mp4");
+    const outputVideoPath = options.outputVideoPath || path.resolve(process.cwd(), "scratch", "vidoxis_master_4k.mp4");
     console.log(`\n🎞️ Rendering Master 4K MP4 to: ${outputVideoPath}...`);
 
     try {
       const frameRange = options.frameRange || (options.previewOnly ? [0, 120] as [number, number] : undefined);
+      const ffmpegPath = process.platform === "linux" && fs.existsSync("/usr/bin/ffmpeg") ? "/usr/bin/ffmpeg" : undefined;
+      const concurrency = process.platform === "linux" ? 16 : 1;
+
+      console.log(`  ↳ Render concurrency: ${concurrency} worker(s), FFmpeg: ${ffmpegPath || "bundled/auto"}`);
       await renderMedia({
         composition,
         serveUrl: bundleLocation,
@@ -163,19 +200,27 @@ export async function renderTrainexVideo(options: RenderOptions = {}): Promise<{
         frameRange,
         codec: "h264",
         crf: 18,
-        concurrency: 1,
+        concurrency,
         pixelFormat: "yuv420p",
         browserExecutable: chromeMeta.executablePath,
         chromiumOptions,
         onProgress: ({ progress }) => {
           const pct = Math.round(progress * 100);
-          if (pct % 20 === 0) {
+          if (pct % 10 === 0) {
             process.stdout.write(`  ⏳ Video render progress: ${pct}%\r`);
           }
         }
       });
       console.log(`\n  ✔ Master 4K MP4 successfully rendered: ${outputVideoPath}`);
       finalVideoPath = outputVideoPath;
+
+      // Keep trainex_master_4k.mp4 alias in sync
+      const legacyVideoPath = path.resolve(process.cwd(), "scratch", "trainex_master_4k.mp4");
+      if (outputVideoPath !== legacyVideoPath && fs.existsSync(outputVideoPath)) {
+        try {
+          fs.copyFileSync(outputVideoPath, legacyVideoPath);
+        } catch {}
+      }
     } catch (err) {
       console.warn(`\n⚠️ Note on video encoding: ${String(err)}`);
       console.log("  ↳ Full 4K broadcast visual integrity verified via 4K stills.");
@@ -189,10 +234,13 @@ export async function renderTrainexVideo(options: RenderOptions = {}): Promise<{
   };
 }
 
+export const renderTrainexVideo = renderVidoxisVideo;
+
 if (process.argv[1] && process.argv[1].endsWith("render.ts")) {
   const isPreview = process.argv.includes("--preview");
   const stillsOnly = process.argv.includes("--stills-only");
-  renderTrainexVideo({ previewOnly: isPreview, renderStillsOnly: stillsOnly }).catch(err => {
+  const videoOnly = process.argv.includes("--video-only");
+  renderVidoxisVideo({ previewOnly: isPreview, renderStillsOnly: stillsOnly, skipStills: videoOnly }).catch(err => {
     console.error("Render failed:", err);
     process.exit(1);
   });

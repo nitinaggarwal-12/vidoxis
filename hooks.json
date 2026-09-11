@@ -84,7 +84,7 @@
     "on_whiteboard_sequence_compiled": [
       {
         "id": "whiteboard_bbox_collision_audit",
-        "description": "Verifies 0% node and label collision with 30px safety padding on progressive whiteboard layout",
+        "description": "Verifies 0% node and label collision with 30px safety padding across the 5-tier Executive Agentic Whiteboard topology",
         "command": "node scripts/audit_whiteboard_layout.js --manifest={WHITEBOARD_MANIFEST}",
         "fail_action": "abort"
       },
@@ -101,9 +101,15 @@
         "fail_action": "abort"
       },
       {
-        "id": "whiteboard_wcag_aaa_neon_contrast",
-        "description": "Ensures neon chalk strokes and card backings on Obsidian Glass maintain WCAG AAA contrast ratio (>= 7:1)",
+        "id": "whiteboard_wcag_aaa_contrast",
+        "description": "Ensures Google Sans and Roboto Mono strokes and component card backings on Studio White (#FFFFFF / #F8FAFC) maintain WCAG AAA contrast ratio (>= 7:1)",
         "command": "node scripts/audit_wcag_contrast.js --whiteboard={WHITEBOARD_MANIFEST} --ratio=7.0",
+        "fail_action": "abort"
+      },
+      {
+        "id": "whiteboard_drawio_parity_guard",
+        "description": "Verifies 1:1 dual artifact parity between compiled whiteboard sequence and editable Draw.io (.drawio) XML schema",
+        "command": "node scripts/verify_drawio_parity.js --whiteboard={WHITEBOARD_MANIFEST}",
         "fail_action": "abort"
       }
     ],

@@ -424,63 +424,55 @@ Slides and demo traces are dual mathematical projections derived from a single s
 
 ---
 
-## 10. Progressive Whiteboard Engine Architecture: Multi-Flow Synthesis & Spatial Bridge
+## 10. Progressive Whiteboard Engine Architecture: Executive Agentic Template & Spatial Bridge
 
-To bridge the cognitive gap between high-level architectural concepts and low-level cloud console execution, the **Progressive Whiteboard Engine** dynamically illustrates and connects the system topology prior to entering the live demo take.
+To bridge the cognitive gap between high-level architectural concepts and low-level cloud console execution, the **Progressive Whiteboard Engine** dynamically illustrates and connects the system topology prior to entering the live demo take, adhering to the canonical **Executive Agentic Whiteboard Standard** (modeled after the enterprise Google Cloud Agentic AI reference architecture).
 
 ```
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                    PROGRESSIVE WHITEBOARD ENGINE (ACT 2)                    │
-│                                                                             │
-│   [ 1. User Flow ]       ──────►    [ 2. Process Flow ]      ──────►        │
-│   (Actor & Auth Journey)             (State Machine & Steps)                │
-│                                                                             │
-│   [ 3. Data Flow ]       ──────►    [ 4. Spatial Camera Zoom ] ──► [ Demo ] │
-│   (Particle Streams & Payloads)      (200% Focus into Target Node)          │
-└─────────────────────────────────────────────────────────────────────────────┘
+┌────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
+│                                      EXECUTIVE AGENTIC WHITEBOARD TOPOLOGY (ACT 2)                                     │
+│                                                                                                                        │
+│   [ Tier 1: Ingress ]     [ Tier 2: Orchestration ]    [ Tier 3: Agentic Tools ]   [ Tier 4: Core & Data ] [ Tier 5 ]  │
+│   Clinical Researchers ──► Multi-Agent Hub          ──► Search & RAG Agent      ──► Vertex AI Search    ──► Enterprise  │
+│   Healthcare Pros      ──► Gemini 2.5 Flash / Pro   ──► Clinical Knowledge      ──► BigQuery Lakehouse  ──► Core / ERP  │
+│   API Gateway / Apigee                                Regulatory & Compliance       Cloud Storage           PubMed/NCBI │
+│                                                        Code & Data Analysis         Cloud SQL / AlloyDB                 │
+└────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
 ```
 
-### 10.1 The Three Unified Flow Abstractions
+### 10.1 The 5-Tier Executive Layout Hierarchy
+The whiteboard engine compiles architecture topologies into five distinct, vertically aligned functional columns:
+1. **Tier 1: Experience & Ingress ($x \approx 60$):** User personas, web/mobile frontends, and API ingress security gates (Apigee / Cloud Armor).
+2. **Tier 2: Orchestration & Intelligence Hub ($x \approx 390$):** Multi-agent supervisory routing (LangGraph / Vertex AI Reasoning Engine) and foundation LLMs (Gemini 2.5 Pro / Flash).
+3. **Tier 3: Agentic Reasoning Engine & Specialized Tools ($x \approx 720$):** Autonomous specialized agents (Search & RAG, Clinical Knowledge, Regulatory Compliance, Code Execution).
+4. **Tier 4: Enterprise Core & Grounding ($x \approx 1050$):** Managed enterprise knowledge bases, BigQuery clinical data lakehouses, Cloud Storage unstructured vaults, and transactional databases.
+5. **Tier 5: Enterprise Systems & Ecosystem Fabric ($x \approx 1380$):** Legacy ERP / SAP / LIMS monoliths and external biomedical ontologies (PubMed, NCBI).
+
+### 10.2 Intentional Semantic Shape & Stencil Standard
+- **Gemini Foundation Models:** Represented as rounded capsule / pill terminators (`shape=mxgraph.flowchart.terminator;` or `rounded=1;arcSize=50;`).
+- **Databases & Data Lakes:** Rendered exclusively as modern 3D cylinders (`shape=cylinder3;whiteSpace=wrap;html=1;size=14;`). Legacy flat cylinders (`shape=cylinder;`) are strictly forbidden.
+- **Enterprise Legacy Systems:** Rendered as tall monolithic pillars (`shape=rectangle;rounded=0;fillColor=#F8FAFC;strokeColor=#475569;strokeWidth=2;`).
+- **Ambient Cloud Boundary:** Scalloped dashed cloud boundaries (`shape=cloud;dashed=1;`) wrap the bottom data plane ($x \ge 730$) without overlapping text or node boundaries.
+
+### 10.3 The Three Unified Flow Abstractions
 Before demonstrating any tool, project, or feature, the engine synthesizes three progressive, interconnected layers:
+1. **User Flow (Actor Journey):** Renders client actors and unwinds auth handshakes (OAuth2, OIDC, IAM token minting, MTLS).
+2. **Process Flow (System State Machine):** Illustrates orchestrations, agentic tool dispatching, conditional retries, and dead-letter handling.
+3. **Data Flow (Dynamic Particle Physics):** Overlays directional bezier paths carrying glowing kinetic particles (`ParticleStreamShader`) representing live payloads and grounding queries.
 
-1. **User Flow (Actor Journey):**
-   - Renders client actors (browser, mobile app, API caller, admin operator).
-   - Unwinds auth handshakes (OAuth2, OIDC, IAM token minting, MTLS).
-   - Maps user expectations, latency targets, and terminal responses.
-2. **Process Flow (System State Machine):**
-   - Illustrates orchestrations, branching logic, conditional retries, and dead-letter handling.
-   - Outlines worker pools, load balancer ingress, and microservice boundaries.
-   - Visualizes exact operational milestones (e.g., *Validating Request* $\rightarrow$ *Enforcing Rate Limit* $\rightarrow$ *Querying Cache* $\rightarrow$ *Model Inference*).
-3. **Data Flow (Dynamic Particle Physics):**
-   - Overlays directional bezier paths carrying glowing kinetic particles (`ParticleStreamShader`).
-   - Particle velocity and density proportionally represent throughput (e.g., 5,000 QPS vs. 50 QPS batch sync).
-   - Distinguishes control plane signals (amber pulses) from data plane payloads (cyan/blue pulses).
+### 10.4 1:1 Dual-Artifact Parity Guard (`.drawio` + 4K Broadcast Raster)
+Every compiled whiteboard sequence enforces strict dual-artifact synchronization:
+- **Broadcast 4K Raster (Remotion / SVG / PNG):** Line-by-line phoneme-synchronized vector stroke unwinding with optical stylus bloom and Bezier particle flows.
+- **Editable Draw.io XML (`.drawio`):** Production-ready, fully editable mxGraph XML file mirroring the exact node coordinates $(x, y, w, h)$, connection routing ports, and semantic callout cards. Verified by the `whiteboard_drawio_parity_guard` lifecycle hook.
 
-### 10.2 The Hybrid Layout & Sketching Pipeline (`elkjs` + `roughjs`)
-1. **Mathematical Collision-Free Layout:**
-   - Topology definitions are first routed through `elkjs` using layered hierarchical layout rules (`elk.layered`).
-   - Bounding boxes are guaranteed a minimum **30px safety padding** to prevent label or edge collisions.
-2. **Procedural Organic Aesthetic:**
-   - Node boundaries, arrows, and enclosures are transformed via `roughjs` into hand-drawn, architect-quality sketch strokes.
-   - Supports two master enterprise visual themes:
-     - **Digital Glassboard (Dark):** Obsidian glass canvas `#0B0F19`, glowing neon chalk strokes (`#38BDF8`, `#818CF8`, `#34D399`), luminous diffuse drop-shadows.
-     - **Google Paper (Light):** Pure studio white `#FFFFFF`, drafting grid `#E2E8F0`, fountain ink lines `#1E293B`, pastel accent badges.
+### 10.5 Google Studio Paper Aesthetic & AAA Contrast
+- **Canvas:** Studio White (`#FFFFFF` or `#F8FAFC`) with subtle drafting guide lines (`#E2E8F0`).
+- **Typography:** Google Sans Flex for headers and callout badges; Roboto Mono for parameters and model names.
+- **Palette & Contrast:** Slate Black (`#0F172A`), Google Deep Navy (`#00205B`), Google Blue (`#1A73E8`), and Agent Violet (`#7C3AED`), maintaining $\ge 7.0:1$ WCAG AAA contrast across all elements.
 
-### 10.3 Phoneme-Synchronized Progressive Stroke Unwinding
-- Nodes and edges do **not** appear statically; they are drawn on screen line-by-line as the voice explains each element.
-- Each vector path has its `stroke-dasharray` and `stroke-dashoffset` mathematically bound to the master audio track's phoneme timestamps:
-  $$\text{Progress}(t) = \text{clamp}\left(\frac{t - t_{\text{phoneme\_start}}}{t_{\text{phoneme\_end}} - t_{\text{phoneme\_start}}}, 0, 1\right)$$
-- An optical stylus glow (`glow_head`) leads the stroke trajectory at the exact instantaneous tangent vector.
-
-### 10.4 Digital Glassboard Presenter Interaction
-- When the DeepMind Veo 2 talking avatar is present, the composition renders in **Digital Glassboard Mode**:
-  - The glassboard plane sits between the viewer and the presenter (`z-index: 20`).
-  - The presenter's eyeline tracks the stylus glow coordinates $(X_{\text{stroke}}, Y_{\text{stroke}})$.
-  - Subtle hand gestures frame the active subsystem before pointing directly toward the target node.
-
-### 10.5 The Kinetic Spatial Bridge to Live Console
-When the concept explanation concludes:
-1. All three flows coalesce into the unified system topology diagram.
-2. The virtual camera initiates a **200% focal zoom** into the specific component about to be demonstrated (e.g., the Cloud Run container or Vertex AI Endpoint).
+### 10.6 The Kinetic Spatial Bridge to Live Console
+When the architecture briefing concludes:
+1. The 5-tier topology coalesces into the unified active state.
+2. The virtual camera initiates a **200% focal zoom** into the specific target node to be demonstrated (e.g., the Vertex AI Reasoning Engine or BigQuery Lakehouse).
 3. The bounding box of the whiteboard node morphs seamlessly into the live cloud console window, ensuring 100% cognitive continuity.
 

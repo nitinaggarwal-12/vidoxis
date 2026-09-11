@@ -34,7 +34,7 @@ export const FIVE_ACT_SCRIPT = [
   {
     actId: "act1_hook",
     actName: "Act 1: Cold Open Hook",
-    text: "Welcome to Trainex. Today we architect zero-egress Gemini 2.0 private endpoints on Google Cloud.",
+    text: "Welcome to Vidoxis. Today we architect zero-egress Gemini 2.0 private endpoints on Google Cloud.",
     durationMs: 2500
   },
   {

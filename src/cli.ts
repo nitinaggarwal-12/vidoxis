@@ -9,7 +9,7 @@ import { exportWhiteboardToSvg } from "./whiteboard/whiteboard-svg-exporter.js";
 import { startMockServer } from "./mock-server/server.js";
 import { runRehearsalMatrix } from "./runner/rehearsal-runner.js";
 import { StepTrace } from "./types/trace.js";
-import { renderTrainexVideo } from "./remotion/render.js";
+import { renderVidoxisVideo } from "./remotion/render.js";
 
 async function main() {
   const { values, positionals } = parseArgs({
@@ -29,10 +29,11 @@ async function main() {
   if (values.help || command === "help") {
     console.log(`
 ================================================================================
-TRAINEX AUTONOMOUS CLOUD DEMO & TRAINING STUDIO CLI
+VIDOXIS AUTONOMOUS CLOUD DEMO & TRAINING STUDIO CLI
 ================================================================================
 Usage:
-  npx trainex generate [options]
+  npx vidoxis generate [options]
+  (alias: npx trainex generate [options])
 
 Options:
   -t, --topic <string>     Training topic and architecture title
@@ -45,7 +46,7 @@ Options:
   }
 
   console.log("================================================================================");
-  console.log("🚀 TRAINEX AUTONOMOUS CLOUD STUDIO — END-TO-END GENERATION PIPELINE");
+  console.log("🚀 VIDOXIS AUTONOMOUS CLOUD STUDIO — END-TO-END GENERATION PIPELINE");
   console.log(`   Topic: "${values.topic}"`);
   console.log("================================================================================\n");
 
@@ -196,14 +197,14 @@ Options:
 
   // Step 3: Remotion 4K Broadcast Compositing
   console.log("\n🎬 [Phase 3: Remotion 4K Broadcast Compositor]");
-  const renderResult = await renderTrainexVideo({
+  const renderResult = await renderVidoxisVideo({
     outputStillsDir: path.join(outputDir, "rendered_stills"),
-    outputVideoPath: path.join(outputDir, "trainex_master_4k.mp4"),
+    outputVideoPath: path.join(outputDir, "vidoxis_master_4k.mp4"),
     renderStillsOnly: Boolean(values["stills-only"])
   });
 
   console.log("\n================================================================================");
-  console.log("🎉 TRAINEX STUDIO PIPELINE COMPLETED SUCCESSFULLY!");
+  console.log("🎉 VIDOXIS STUDIO PIPELINE COMPLETED SUCCESSFULLY!");
   console.log("================================================================================");
   console.log("Generated Broadcast Artifacts:");
   console.log(`  • Whiteboard 4K SVG: file://${svgOutput}`);

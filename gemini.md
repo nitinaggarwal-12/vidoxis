@@ -1,4 +1,4 @@
-# Trainex Agent Operating Manual & Engineering Constitution
+# Vidoxis Agent Operating Manual & Engineering Constitution
 **Role:** Google Senior Principal Technical Evangelist & DeepMind Multimodal AI Architect  
 **Mission:** Automate the end-to-end creation of world-class, broadcast-quality technical training and live cloud demos.
 
@@ -113,4 +113,29 @@
 
 3. **Micro-Version Audit & Telemetry:**
    - Every execution phase (rehearsal, replay, E2E capture, video render) must extract and report the active micro-version (e.g., `Google Chrome 153.0.8010.36`), confirming Google LLC cryptographic signature before launching sessions.
+
+---
+
+## 8. Executive Agentic Whiteboard Template & Draw.io Parity Constitution
+
+1. **The Executive 5-Tier Reference Standard:**
+   - Every whiteboard sequence generated during Act 2 must follow the 5-Tier topology:
+     - **Tier 1 (Experience & Ingress):** User actors, client apps, and API Gateway / Apigee ingress.
+     - **Tier 2 (Intelligence Hub):** Multi-Agent Orchestrator (LangGraph / Vertex Reasoning Engine) and Gemini 2.5 Flash / Pro models.
+     - **Tier 3 (Agentic Engine & Tools):** Specialized tool agents (Search & RAG, Clinical/Domain Knowledge, Compliance, Code/Analysis).
+     - **Tier 4 (Data & Enterprise Core):** Vertex AI Search, BigQuery Lakehouse, Cloud Storage buckets, Cloud SQL / AlloyDB.
+     - **Tier 5 (Ecosystem Fabric):** Monolithic ERP/EHR cores, LIMS, and external biomedical APIs.
+
+2. **Semantic Shape Rules:**
+   - Foundation models MUST be represented as rounded capsules / pills (`shape=mxgraph.flowchart.terminator;` or `rounded=1;arcSize=50;`).
+   - Database and lakehouse nodes MUST use modern 3D cylinders (`shape=cylinder3;whiteSpace=wrap;html=1;size=14;`). Never use legacy `shape=cylinder;`.
+   - Enterprise cores MUST use monolithic vertical pillars (`shape=rectangle;rounded=0;`).
+   - Ambient cloud bounds (`shape=cloud;dashed=1;`) must cleanly enclose only data plane nodes ($x \ge 730$).
+
+3. **Studio White Canvas & Contrast Standard:**
+   - Visual themes default to Google Studio White (`#FFFFFF` / `#F8FAFC`).
+   - Typography strictly utilizes Google Sans Flex and Roboto Mono with WCAG AAA contrast ratios ($\ge 7.0:1$) against white canvas backgrounds.
+
+4. **1:1 Dual-Artifact Output Mandate:**
+   - The whiteboard compiler must guarantee dual output parity: every sequence produces both a broadcast visual raster and an editable `.drawio` XML artifact with identical node geometry and connection routing.
 

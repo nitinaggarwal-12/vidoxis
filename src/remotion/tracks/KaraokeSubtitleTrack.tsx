@@ -24,7 +24,7 @@ const DEFAULT_SEGMENTS: SubtitleSegment[] = [
     words: [
       { word: "Welcome", startFrame: 0, endFrame: 15 },
       { word: "to", startFrame: 15, endFrame: 25 },
-      { word: "Trainex.", startFrame: 25, endFrame: 45 },
+      { word: "Vidoxis.", startFrame: 25, endFrame: 45 },
       { word: "Today", startFrame: 45, endFrame: 60 },
       { word: "we", startFrame: 60, endFrame: 70 },
       { word: "architect", startFrame: 70, endFrame: 90 }

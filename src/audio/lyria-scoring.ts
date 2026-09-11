@@ -7,6 +7,7 @@ export interface LyriaScoreOptions {
   sampleRate?: number;
   phonemesManifestPath?: string;
   outputDir?: string;
+  duckingDb?: number;
 }
 
 export async function generateLyriaMusicBedAndMasterMix(
@@ -27,14 +28,16 @@ export async function generateLyriaMusicBedAndMasterMix(
   const sampleRate = options.sampleRate || 48000;
   const totalDurationMs = options.totalDurationMs || (manifest ? manifest.totalDurationMs : 12500);
   const totalSamples = Math.round((totalDurationMs / 1000) * sampleRate);
+  const duckingDb = options.duckingDb !== undefined ? options.duckingDb : -18;
+  const targetDuckedGain = duckingDb <= -60 ? 0.0 : Math.pow(10, duckingDb / 20);
 
   console.log("================================================================================");
-  console.log("🎵 LYRIA NEURAL MUSIC SCORING & DYNAMIC -18dB DUCKING ENGINE");
+  console.log(`🎵 LYRIA NEURAL MUSIC SCORING & DYNAMIC ${duckingDb}dB DUCKING ENGINE`);
   console.log(`   Duration: ${(totalDurationMs / 1000).toFixed(1)}s (${totalSamples} samples @ 48kHz)`);
-  console.log("   Ducking Profile: -18dB speech ducking envelope with 300ms smooth cross-fades");
+  console.log(`   Ducking Profile: ${duckingDb}dB speech ducking envelope (gain: ${targetDuckedGain.toFixed(3)}) with 300ms smooth cross-fades`);
   console.log("================================================================================");
 
-  // 1. Calculate speech ducking envelope (1.0 = full music, 0.125 = -18dB ducked)
+  // 1. Calculate speech ducking envelope (1.0 = full music, targetDuckedGain = ducked)
   const duckingGain = new Float32Array(totalSamples);
   duckingGain.fill(0.7); // Baseline unducked music level
 
@@ -47,13 +50,13 @@ export async function generateLyriaMusicBedAndMasterMix(
       const rampOutSamples = Math.round(0.4 * sampleRate); // 400ms release
 
       for (let s = startSample; s < endSample; s++) {
-        let gain = 0.125; // -18dB ducked
+        let gain = targetDuckedGain;
         if (s < startSample + rampInSamples) {
           const p = (s - startSample) / rampInSamples;
-          gain = 0.7 * (1 - p) + 0.125 * p;
+          gain = 0.7 * (1 - p) + targetDuckedGain * p;
         } else if (s > endSample - rampOutSamples) {
           const p = (endSample - s) / rampOutSamples;
-          gain = 0.7 * (1 - p) + 0.125 * p;
+          gain = 0.7 * (1 - p) + targetDuckedGain * p;
         }
         duckingGain[s] = Math.min(duckingGain[s], gain);
       }

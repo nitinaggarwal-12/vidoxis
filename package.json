@@ -1,9 +1,10 @@
 {
-  "name": "trainex",
+  "name": "vidoxis",
   "version": "3.3.0",
   "description": "Autonomous Broadcast-Quality Cloud Demo & Enterprise Training Studio",
   "main": "dist/index.js",
   "bin": {
+    "vidoxis": "./src/cli.ts",
     "trainex": "./src/cli.ts"
   },
   "type": "module",

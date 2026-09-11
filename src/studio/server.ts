@@ -1,7 +1,9 @@
 import http from "node:http";
 import fs from "node:fs";
 import path from "node:path";
-import { TrainexHookRunner } from "../hooks/runner.js";
+import { execSync } from "node:child_process";
+import { VidoxisHookRunner, TrainexHookRunner } from "../hooks/runner.js";
+import { VOICE_PRESETS, generateNaturalNarratorAndLyriaAudio } from "../audio/synthesize-natural-audio.js";
 
 const PORT = parseInt(process.env.PORT || "8085", 10);
 const SCRATCH_DIR = path.resolve(process.cwd(), "scratch");
@@ -93,6 +95,59 @@ export function createStudioServer() {
       return;
     }
 
+    if (pathname === "/api/voice-presets") {
+      res.writeHead(200, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
+      res.end(JSON.stringify({ presets: VOICE_PRESETS }));
+      return;
+    }
+
+    if (pathname === "/api/synthesize-voice" && req.method === "POST") {
+      let body = "";
+      req.on("data", chunk => { body += chunk; });
+      req.on("end", async () => {
+        try {
+          const payload = body ? JSON.parse(body) : {};
+          const result = await generateNaturalNarratorAndLyriaAudio({
+            voiceName: payload.voiceName || "en-US-Journey-F",
+            speakingRate: parseFloat(payload.speakingRate || 1.05),
+            duckingDb: parseInt(payload.duckingDb !== undefined ? payload.duckingDb : -18, 10)
+          });
+          const trackChoice = payload.targetTrack || "narration";
+          const sourceFile = trackChoice === "narration" ? "narration.wav" : (trackChoice === "music" ? "music_bed.wav" : "master_audio.wav");
+          try {
+            execSync(`rsync -avz scratch/*.wav scratch/phonemes.json nitinagga.c.googlers.com:Documents/trainex/scratch/ && ssh nitinagga.c.googlers.com "ffmpeg -y -i Documents/trainex/scratch/trainex_master_4k.mp4 -i Documents/trainex/scratch/${sourceFile} -map 0:v:0 -map 1:a:0 -c:v copy -c:a aac -b:a 320k -shortest Documents/trainex/scratch/trainex_master_4k_muxed.mp4 && mv Documents/trainex/scratch/trainex_master_4k_muxed.mp4 Documents/trainex/scratch/trainex_master_4k.mp4" && rsync -avz nitinagga.c.googlers.com:Documents/trainex/scratch/trainex_master_4k.mp4 scratch/trainex_master_4k.mp4 && cp -f scratch/trainex_master_4k.mp4 scratch/vidoxis_master_4k.mp4`, { stdio: "pipe" });
+          } catch (e: any) {
+            console.warn("Cloudtop remux warning:", e.message);
+          }
+          res.writeHead(200, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
+          res.end(JSON.stringify({ success: true, result }));
+        } catch (err: any) {
+          res.writeHead(500, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
+          res.end(JSON.stringify({ error: String(err.message) }));
+        }
+      });
+      return;
+    }
+
+    if (pathname === "/api/select-video-audio" && req.method === "POST") {
+      let body = "";
+      req.on("data", chunk => { body += chunk; });
+      req.on("end", async () => {
+        try {
+          const payload = body ? JSON.parse(body) : {};
+          const track = payload.track || "narration";
+          const sourceFile = track === "narration" ? "narration.wav" : (track === "music" ? "music_bed.wav" : "master_audio.wav");
+          execSync(`rsync -avz scratch/${sourceFile} nitinagga.c.googlers.com:Documents/trainex/scratch/ && ssh nitinagga.c.googlers.com "ffmpeg -y -i Documents/trainex/scratch/trainex_master_4k.mp4 -i Documents/trainex/scratch/${sourceFile} -map 0:v:0 -map 1:a:0 -c:v copy -c:a aac -b:a 320k -shortest Documents/trainex/scratch/trainex_master_4k_muxed.mp4 && mv Documents/trainex/scratch/trainex_master_4k_muxed.mp4 Documents/trainex/scratch/trainex_master_4k.mp4" && rsync -avz nitinagga.c.googlers.com:Documents/trainex/scratch/trainex_master_4k.mp4 scratch/trainex_master_4k.mp4 && cp -f scratch/trainex_master_4k.mp4 scratch/vidoxis_master_4k.mp4`, { stdio: "pipe" });
+          res.writeHead(200, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
+          res.end(JSON.stringify({ success: true, track, sourceFile }));
+        } catch (err: any) {
+          res.writeHead(500, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
+          res.end(JSON.stringify({ error: String(err.message) }));
+        }
+      });
+      return;
+    }
+
     // API endpoints
     if (pathname === "/api/contract") {
       const contractPath = path.join(SCHEMAS_DIR, "contract.v1.json");
@@ -131,7 +186,7 @@ export function createStudioServer() {
 
     if (pathname === "/api/hooks") {
       try {
-        const runner = new TrainexHookRunner();
+        const runner = new VidoxisHookRunner();
         const hooksConfig = JSON.parse(fs.readFileSync(path.resolve(process.cwd(), "hooks.json"), "utf-8"));
         res.writeHead(200, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
         res.end(JSON.stringify(hooksConfig));
@@ -139,6 +194,45 @@ export function createStudioServer() {
         res.writeHead(500, { "Content-Type": "application/json" });
         res.end(JSON.stringify({ error: String(err.message) }));
       }
+      return;
+    }
+
+    // Draw.io API & Dedicated Full-Screen Editor
+    if (pathname === "/api/drawio/xml") {
+      const drawioPath = path.join(SCRATCH_DIR, "gcp_merck_agentic_ai_architecture.drawio");
+      if (fs.existsSync(drawioPath)) {
+        const xml = fs.readFileSync(drawioPath, "utf-8");
+        res.writeHead(200, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
+        res.end(JSON.stringify({ xml }));
+      } else {
+        res.writeHead(404, { "Content-Type": "application/json" });
+        res.end(JSON.stringify({ error: "drawio file not found" }));
+      }
+      return;
+    }
+
+    if (pathname === "/api/drawio/save" && req.method === "POST") {
+      let body = "";
+      req.on("data", chunk => { body += chunk; });
+      req.on("end", async () => {
+        try {
+          const { xml } = JSON.parse(body);
+          if (!xml) throw new Error("Missing xml in payload");
+          const drawioPath = path.join(SCRATCH_DIR, "gcp_merck_agentic_ai_architecture.drawio");
+          fs.writeFileSync(drawioPath, xml, "utf-8");
+          res.writeHead(200, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
+          res.end(JSON.stringify({ success: true, savedAt: new Date().toISOString() }));
+        } catch (err: any) {
+          res.writeHead(400, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
+          res.end(JSON.stringify({ error: err.message }));
+        }
+      });
+      return;
+    }
+
+    if (pathname === "/whiteboard/editor") {
+      res.writeHead(200, { "Content-Type": "text/html; charset=utf-8" });
+      res.end(renderWhiteboardEditorHtml());
       return;
     }
 
@@ -162,7 +256,7 @@ function renderStudioHtml(): string {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Trainex Studio Hub — Broadcast Cloud Demo & Training Suite</title>
+  <title>Vidoxis Studio Hub — Broadcast Cloud Demo & Training Suite</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -217,7 +311,7 @@ function renderStudioHtml(): string {
               <polygon points="5 3 19 12 5 21 5 3"></polygon>
             </svg>
           </div>
-          <span class="text-2xl font-bold tracking-tight text-gray-900">Trainex <span class="text-blue-600 font-mono font-medium text-lg">Studio</span></span>
+          <span class="text-2xl font-bold tracking-tight text-gray-900">Vidoxis <span class="text-blue-600 font-mono font-medium text-lg">Studio</span></span>
         </div>
 
         <div class="hidden lg:flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-gray-100 border border-gray-200 text-xs font-mono text-gray-700">
@@ -264,18 +358,25 @@ function renderStudioHtml(): string {
             <span class="px-2.5 py-1 rounded-md bg-amber-50 border border-amber-300 text-amber-900 font-mono text-xs font-bold">60 FPS</span>
           </div>
 
-          <!-- Aspect Ratio Toggle Pills -->
-          <div class="flex items-center gap-1.5 bg-gray-100 p-1 rounded-xl border border-gray-200 text-xs font-semibold">
-            <button onclick="setAspectRatio('16:9')" class="aspect-btn active px-3 py-1.5 rounded-lg bg-blue-600 text-white font-semibold shadow-sm" data-ratio="16:9">16:9</button>
-            <button onclick="setAspectRatio('4:3')" class="aspect-btn px-3 py-1.5 rounded-lg text-gray-600 hover:text-gray-900 font-semibold" data-ratio="4:3">4:3</button>
-            <button onclick="setAspectRatio('1:1')" class="aspect-btn px-3 py-1.5 rounded-lg text-gray-600 hover:text-gray-900 font-semibold" data-ratio="1:1">1:1</button>
-            <button onclick="setAspectRatio('9:16')" class="aspect-btn px-3 py-1.5 rounded-lg text-gray-600 hover:text-gray-900 font-semibold" data-ratio="9:16">9:16</button>
+          <!-- Playback Mode & Aspect Ratio Toggle Pills -->
+          <div class="flex items-center gap-3 flex-wrap">
+            <button onclick="toggleVideoPlaybackMode()" id="toggle-video-mode-btn" class="px-3.5 py-1.5 rounded-xl bg-purple-100 hover:bg-purple-200 border border-purple-300 text-purple-900 text-xs font-bold flex items-center gap-1.5 shadow-sm transition-all">
+              <span>▶️</span>
+              <span>Watch Master 4K Video</span>
+            </button>
+            <div class="flex items-center gap-1.5 bg-gray-100 p-1 rounded-xl border border-gray-200 text-xs font-semibold">
+              <button onclick="setAspectRatio('16:9')" class="aspect-btn active px-3 py-1.5 rounded-lg bg-blue-600 text-white font-semibold shadow-sm" data-ratio="16:9">16:9</button>
+              <button onclick="setAspectRatio('4:3')" class="aspect-btn px-3 py-1.5 rounded-lg text-gray-600 hover:text-gray-900 font-semibold" data-ratio="4:3">4:3</button>
+              <button onclick="setAspectRatio('1:1')" class="aspect-btn px-3 py-1.5 rounded-lg text-gray-600 hover:text-gray-900 font-semibold" data-ratio="1:1">1:1</button>
+              <button onclick="setAspectRatio('9:16')" class="aspect-btn px-3 py-1.5 rounded-lg text-gray-600 hover:text-gray-900 font-semibold" data-ratio="9:16">9:16</button>
+            </div>
           </div>
         </div>
 
         <!-- Viewport Canvas Container -->
         <div id="viewport-frame" class="w-full aspect-video rounded-2xl bg-white border border-gray-300 relative overflow-hidden flex items-center justify-center neon-border-blue transition-all duration-300 shadow-sm">
           <img id="active-screen-img" src="/scratch/rendered_stills/act2_whiteboard_kinetic_particles.png" alt="Broadcast Viewport" class="w-full h-full object-contain">
+          <video id="active-video-player" src="/scratch/vidoxis_master_4k.mp4" controls class="w-full h-full object-contain hidden" playsinline preload="auto"></video>
 
           <!-- Telemetry Minimum-Jerk BBox Overlay Layer -->
           <div id="telemetry-overlay" class="absolute inset-0 pointer-events-none transition-opacity duration-200">
@@ -318,8 +419,8 @@ function renderStudioHtml(): string {
           <!-- Scrubber Range -->
           <div class="flex items-center gap-4">
             <span class="text-xs font-mono text-gray-600 font-semibold">00:00</span>
-            <input id="timeline-slider" type="range" min="0" max="750" value="90" class="flex-1 accent-blue-600 cursor-pointer h-2 bg-gray-200 rounded-lg" oninput="onScrubFrame(this.value)">
-            <span class="text-xs font-mono text-gray-600 font-semibold">00:12.5</span>
+            <input id="timeline-slider" type="range" min="0" max="2212" value="120" class="flex-1 accent-blue-600 cursor-pointer h-2 bg-gray-200 rounded-lg" oninput="onScrubFrame(this.value)">
+            <span class="text-xs font-mono text-gray-600 font-semibold">00:36.9</span>
           </div>
 
           <!-- Control Buttons Bar -->
@@ -338,14 +439,17 @@ function renderStudioHtml(): string {
               </button>
             </div>
 
-            <!-- Middle: Quick Keyframe Selector Across All 5 Acts -->
+            <!-- Middle: Quick Keyframe Selector Across All 5 Acts (Synchronized with Phonemes) -->
             <div class="flex items-center gap-1.5 text-xs font-mono flex-wrap">
-              <button onclick="seekFrame(15)" class="px-2.5 py-1.5 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-700 border border-gray-300 font-semibold transition-all">F15 Hook</button>
-              <button onclick="seekFrame(90)" class="px-2.5 py-1.5 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-700 border border-gray-300 font-semibold transition-all">F90 Whiteboard</button>
-              <button onclick="seekFrame(175)" class="px-2.5 py-1.5 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-700 border border-gray-300 font-semibold transition-all">F175 Bridge</button>
-              <button onclick="seekFrame(220)" class="px-2.5 py-1.5 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-700 border border-gray-300 font-semibold transition-all">F220 Drawer</button>
-              <button onclick="seekFrame(270)" class="px-2.5 py-1.5 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-700 border border-gray-300 font-semibold transition-all">F270 Redact</button>
-              <button onclick="seekFrame(360)" class="px-2.5 py-1.5 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-700 border border-gray-300 font-semibold transition-all">F360 Checklist</button>
+              <button onclick="seekFrame(120)" class="px-2.5 py-1.5 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-700 border border-gray-300 font-semibold transition-all">F120 Hook</button>
+              <button onclick="seekFrame(500)" class="px-2.5 py-1.5 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-700 border border-gray-300 font-semibold transition-all">F500 Whiteboard</button>
+              <button onclick="seekFrame(830)" class="px-2.5 py-1.5 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-700 border border-gray-300 font-semibold transition-all">F830 Bridge</button>
+              <button onclick="seekFrame(1050)" class="px-2.5 py-1.5 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-700 border border-gray-300 font-semibold transition-all">F1050 Model Garden</button>
+              <button onclick="seekFrame(1350)" class="px-2.5 py-1.5 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-700 border border-gray-300 font-semibold transition-all">F1350 Cloud Run</button>
+              <button onclick="seekFrame(1550)" class="px-2.5 py-1.5 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-700 border border-gray-300 font-semibold transition-all">F1550 KMS Autokey</button>
+              <button onclick="seekFrame(1720)" class="px-2.5 py-1.5 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-700 border border-gray-300 font-semibold transition-all">F1720 Active PSC</button>
+              <button onclick="seekFrame(2000)" class="px-2.5 py-1.5 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-700 border border-gray-300 font-semibold transition-all">F2000 BigQuery</button>
+              <button onclick="seekFrame(2180)" class="px-2.5 py-1.5 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-700 border border-gray-300 font-semibold transition-all">F2180 Checklist</button>
             </div>
 
             <!-- Right: Playback Speed & Telemetry Toggle -->
@@ -373,88 +477,136 @@ function renderStudioHtml(): string {
         <audio id="audio-narration" src="/scratch/narration.wav" preload="auto"></audio>
         <audio id="audio-music" src="/scratch/music_bed.wav" preload="auto"></audio>
 
-        <!-- Audio Mixer Card -->
+        <!-- Audio Mixer & Voice Customization Card -->
         <div class="glass-panel p-6 rounded-2xl flex flex-col gap-5">
           <div class="flex items-center justify-between">
             <div class="flex items-center gap-2">
               <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"></path></svg>
-              <h3 class="text-base font-bold text-gray-900 tracking-tight">Multi-Track Audio Engine</h3>
+              <h3 class="text-base font-bold text-gray-900 tracking-tight">Audio Track & Voice Customizer</h3>
             </div>
             <div class="flex items-center gap-2">
-              <span id="audio-engine-mode" class="px-2 py-0.5 rounded bg-blue-50 border border-blue-200 text-blue-700 font-mono text-[11px] font-bold">MASTER STEREO</span>
-              <span class="px-2 py-0.5 rounded bg-emerald-50 border border-emerald-200 text-emerald-700 font-mono text-[11px] font-bold">48 kHz</span>
+              <span id="audio-engine-mode" class="px-2 py-0.5 rounded bg-emerald-50 border border-emerald-200 text-emerald-700 font-mono text-[11px] font-bold">ISOLATED VOICE</span>
+              <span class="px-2 py-0.5 rounded bg-blue-50 border border-blue-200 text-blue-700 font-mono text-[11px] font-bold">48 kHz</span>
             </div>
           </div>
 
-          <!-- Track 1: Narration (TTS) -->
-          <div class="flex flex-col gap-2 p-3.5 rounded-xl bg-gray-50 border border-gray-200">
-            <div class="flex items-center justify-between text-xs">
-              <div class="flex items-center gap-1.5">
-                <span class="font-bold text-gray-900">Narration Voice</span>
-                <span class="text-[10px] text-gray-600 font-mono">(Dr. Maya Lin)</span>
+          <!-- Section 1: Choose Active Audio Track for Training Video -->
+          <div class="flex flex-col gap-2.5">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold text-gray-900 uppercase tracking-wider">Choose Active Audio Track</span>
+              <span class="text-[10px] text-gray-500 font-mono">1-Click Live Switch</span>
+            </div>
+            
+            <!-- Option 1: Isolated Natural Trainer Voice (Recommended) -->
+            <div id="track-opt-narration" onclick="switchActiveTrack('narration')" class="p-3 rounded-xl border-2 border-emerald-500 bg-emerald-50/50 cursor-pointer transition-all flex items-start justify-between gap-3 shadow-sm hover:shadow">
+              <div class="flex items-start gap-2.5">
+                <input type="radio" name="active-track-radio" id="radio-narration" checked class="mt-0.5 accent-emerald-600">
+                <div class="flex flex-col">
+                  <div class="flex items-center gap-2">
+                    <span class="text-xs font-bold text-gray-900">Isolated Natural Trainer Voice</span>
+                    <span class="px-1.5 py-0.2 rounded bg-emerald-100 text-emerald-800 text-[10px] font-bold font-mono">RECOMMENDED</span>
+                  </div>
+                  <span class="text-[11px] text-gray-600 mt-0.5">Clean 48kHz voice only (<code class="text-emerald-700">narration.wav</code>) • Zero BGM distractions for technical training</span>
+                </div>
               </div>
-              <span class="font-mono text-gray-800 font-bold" id="vol-narration-val">100% (0 dB)</span>
+              <span class="text-xs font-mono font-bold text-emerald-700">ACTIVE</span>
             </div>
-            <div class="flex items-center gap-3">
-              <input id="slider-vol-narration" type="range" min="0" max="100" value="100" class="flex-1 accent-blue-600 h-1.5 bg-gray-200 rounded cursor-pointer" oninput="updateAudioVol('narration', this.value)">
-              <button id="btn-mute-narration" onclick="toggleMute('narration')" class="px-2.5 py-1 rounded bg-white hover:bg-gray-100 border border-gray-300 text-[10px] font-mono font-bold text-gray-700 shadow-sm transition-all">MUTE</button>
-            </div>
-          </div>
 
-          <!-- Track 2: Lyria Dynamic Music Bed with -18dB Ducking Envelope -->
-          <div class="flex flex-col gap-2 p-3.5 rounded-xl bg-blue-50/60 border border-blue-200">
-            <div class="flex items-center justify-between text-xs">
-              <div class="flex items-center gap-1.5">
-                <span class="font-bold text-blue-900">Lyria Music Bed</span>
-                <span id="ducking-indicator" class="px-2 py-0.5 rounded bg-blue-100 text-blue-800 border border-blue-300 text-[10px] font-mono font-bold transition-colors duration-200">-18dB DUCKED</span>
+            <!-- Option 2: Master Broadcast Mix -->
+            <div id="track-opt-master" onclick="switchActiveTrack('master')" class="p-3 rounded-xl border border-gray-200 bg-white cursor-pointer transition-all flex items-start justify-between gap-3 hover:border-blue-300 hover:bg-gray-50/80">
+              <div class="flex items-start gap-2.5">
+                <input type="radio" name="active-track-radio" id="radio-master" class="mt-0.5 accent-blue-600">
+                <div class="flex flex-col">
+                  <div class="flex items-center gap-2">
+                    <span class="text-xs font-bold text-gray-900">Master Broadcast Mix</span>
+                    <span class="px-1.5 py-0.2 rounded bg-blue-100 text-blue-800 text-[10px] font-bold font-mono">KEYNOTE</span>
+                  </div>
+                  <span class="text-[11px] text-gray-600 mt-0.5">Natural Trainer Voice + Ducked Lyria Music Bed (<code class="text-blue-700">master_audio.wav</code>)</span>
+                </div>
               </div>
-              <span class="font-mono text-blue-700 font-bold" id="vol-music-val">25% (-18 dB)</span>
+              <span class="text-xs font-mono text-gray-400">SELECT</span>
             </div>
-            <div class="flex items-center gap-3">
-              <input id="slider-vol-music" type="range" min="0" max="100" value="25" class="flex-1 accent-blue-600 h-1.5 bg-gray-200 rounded cursor-pointer" oninput="updateAudioVol('music', this.value)">
-              <button id="btn-mute-music" onclick="toggleMute('music')" class="px-2.5 py-1 rounded bg-white hover:bg-gray-100 border border-gray-300 text-[10px] font-mono font-bold text-gray-700 shadow-sm transition-all">MUTE</button>
+
+            <!-- Option 3: Lyria Ambient Music Bed Only -->
+            <div id="track-opt-music" onclick="switchActiveTrack('music')" class="p-3 rounded-xl border border-gray-200 bg-white cursor-pointer transition-all flex items-start justify-between gap-3 hover:border-purple-300 hover:bg-gray-50/80">
+              <div class="flex items-start gap-2.5">
+                <input type="radio" name="active-track-radio" id="radio-music" class="mt-0.5 accent-purple-600">
+                <div class="flex flex-col">
+                  <div class="flex items-center gap-2">
+                    <span class="text-xs font-bold text-gray-900">Lyria Ambient Music Bed Only</span>
+                    <span class="px-1.5 py-0.2 rounded bg-purple-100 text-purple-800 text-[10px] font-bold font-mono">BGM</span>
+                  </div>
+                  <span class="text-[11px] text-gray-600 mt-0.5">Procedural keynote score without speech (<code class="text-purple-700">music_bed.wav</code>)</span>
+                </div>
+              </div>
+              <span class="text-xs font-mono text-gray-400">SELECT</span>
             </div>
-            <!-- Ducking Envelope Animated Waveform Visualizer -->
-            <div id="wave-bars-container" class="h-6 w-full flex items-end gap-1 px-1 bg-white border border-blue-200 rounded-lg overflow-hidden py-1">
-              <div class="w-1.5 bg-blue-600 h-2 rounded-sm transition-all duration-75"></div>
-              <div class="w-1.5 bg-blue-600 h-3 rounded-sm transition-all duration-75"></div>
-              <div class="w-1.5 bg-blue-600 h-4 rounded-sm transition-all duration-75"></div>
-              <div class="w-1.5 bg-blue-600 h-2.5 rounded-sm transition-all duration-75"></div>
-              <div class="w-1.5 bg-blue-600 h-5 rounded-sm transition-all duration-75"></div>
-              <div class="w-1.5 bg-blue-600 h-3.5 rounded-sm transition-all duration-75"></div>
-              <div class="w-1.5 bg-blue-600 h-2 rounded-sm transition-all duration-75"></div>
-              <div class="w-1.5 bg-blue-600 h-4.5 rounded-sm transition-all duration-75"></div>
-              <div class="w-1.5 bg-blue-600 h-3 rounded-sm transition-all duration-75"></div>
-              <div class="w-1.5 bg-blue-600 h-2.5 rounded-sm transition-all duration-75"></div>
-              <div class="w-1.5 bg-blue-600 h-4 rounded-sm transition-all duration-75"></div>
-              <div class="w-1.5 bg-blue-600 h-2 rounded-sm transition-all duration-75"></div>
-            </div>
+
+            <!-- 1-Click Mux into 4K Video -->
+            <button id="btn-mux-audio" onclick="muxTrackToVideo()" class="w-full mt-1 py-2.5 px-4 rounded-xl bg-gray-900 hover:bg-black text-white font-semibold text-xs shadow-sm transition-all flex items-center justify-center gap-2">
+              <svg class="w-3.5 h-3.5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+              <span>⚡ Mux Selected Track into Master 4K Video</span>
+            </button>
           </div>
 
-          <!-- Master LUFS Broadcast Peak Meter -->
-          <div class="flex flex-col gap-1.5 pt-2 border-t border-gray-200">
-            <div class="flex items-center justify-between text-xs font-mono">
-              <span class="text-gray-600 font-semibold">Master Broadcast LUFS</span>
-              <span id="lufs-val" class="text-emerald-700 font-bold">-14.2 LUFS (Target: -14.0)</span>
+          <!-- Section 2: Voice Persona & Customization Controls -->
+          <div class="p-4 rounded-xl bg-gray-50 border border-gray-200 flex flex-col gap-3.5">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold text-gray-900 uppercase tracking-wider">Customize Voice & Pacing</span>
+              <span class="text-[10px] text-blue-700 font-mono font-bold">GOOGLE NEURAL CORE</span>
             </div>
-            <div class="h-2.5 w-full bg-gray-200 rounded-full overflow-hidden flex">
-              <div id="meter-bar-green" class="bg-emerald-500 w-[72%] h-full transition-all duration-100"></div>
-              <div id="meter-bar-yellow" class="bg-amber-400 w-[12%] h-full transition-all duration-100"></div>
-              <div id="meter-bar-red" class="bg-rose-500 w-[0%] h-full transition-all duration-100"></div>
-            </div>
-          </div>
-        </div>
 
-        <!-- Presenter Avatar Information Card -->
-        <div class="glass-panel p-6 rounded-2xl flex items-center gap-5">
-          <div class="relative w-16 h-16 rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center shadow-md shadow-blue-500/20">
-            <svg class="w-9 h-9 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="7" r="4"></circle><path d="M6 21v-2a4 4 0 014-4h4a4 4 0 014 4v2"></path></svg>
-            <span class="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-emerald-500 border-2 border-white animate-pulse"></span>
+            <!-- Voice Persona Dropdown -->
+            <div class="flex flex-col gap-1">
+              <label class="text-[11px] font-semibold text-gray-700">Voice Persona</label>
+              <select id="select-voice-persona" class="bg-white border border-gray-300 rounded-lg px-3 py-2 text-xs font-semibold text-gray-800 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <option value="en-US-Journey-F" selected>Dr. Maya Lin (Google Cloud AI Evangelist • Natural Female)</option>
+                <option value="en-US-Journey-D">Alex Chen (Principal Solutions Architect • Natural Male)</option>
+                <option value="en-US-Journey-O">Elena Vance (Executive Keynote Presenter • Dynamic Female)</option>
+                <option value="en-US-Studio-O">Sarah Jenkins (Cloud Engineering Lead • Studio Master)</option>
+                <option value="en-US-Studio-Q">David Ross (Infrastructure Director • Enterprise Baritone)</option>
+              </select>
+            </div>
+
+            <!-- Speaking Rate & Ducking in 2 columns -->
+            <div class="grid grid-cols-2 gap-3">
+              <div class="flex flex-col gap-1">
+                <label class="text-[11px] font-semibold text-gray-700">Speaking Pace</label>
+                <select id="select-voice-speed" class="bg-white border border-gray-300 rounded-lg px-2.5 py-1.5 text-xs font-semibold text-gray-800 shadow-sm">
+                  <option value="0.95">0.95x (Deep Dive)</option>
+                  <option value="1.05" selected>1.05x (Standard)</option>
+                  <option value="1.15">1.15x (Brisk Technical)</option>
+                </select>
+              </div>
+
+              <div class="flex flex-col gap-1">
+                <label class="text-[11px] font-semibold text-gray-700">Lyria Ducking Depth</label>
+                <select id="select-ducking-db" class="bg-white border border-gray-300 rounded-lg px-2.5 py-1.5 text-xs font-semibold text-gray-800 shadow-sm">
+                  <option value="-99">Muted (Voice Only)</option>
+                  <option value="-24">-24 dB (Subtle Whisper)</option>
+                  <option value="-18" selected>-18 dB (Keynote Standard)</option>
+                  <option value="-12">-12 dB (Prominent BGM)</option>
+                </select>
+              </div>
+            </div>
+
+            <button id="btn-synthesize-voice" onclick="applyVoiceCustomization()" class="w-full py-2.5 px-4 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs shadow-sm shadow-blue-500/20 transition-all flex items-center justify-center gap-2">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 100-6 3 3 0 000 6z"></path></svg>
+              <span>🎙️ Re-Synthesize Voice Persona</span>
+            </button>
           </div>
-          <div class="flex flex-col">
-            <span class="text-sm font-bold text-gray-900 tracking-tight">Dr. Maya Lin</span>
-            <span class="text-xs text-blue-700 font-semibold">Google Cloud AI Evangelist</span>
-            <span class="text-[11px] text-gray-600 font-mono mt-0.5">Veo 2 Avatar • 60fps Gaze Tracking Active</span>
+
+          <!-- Presenter Avatar Information Card -->
+          <div class="p-4 rounded-xl bg-white border border-gray-200 flex items-center gap-4">
+            <div class="relative w-12 h-12 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center shadow-md shadow-blue-500/20">
+              <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="7" r="4"></circle><path d="M6 21v-2a4 4 0 014-4h4a4 4 0 014 4v2"></path></svg>
+              <span class="absolute -bottom-1 -right-1 w-3.5 h-3.5 rounded-full bg-emerald-500 border-2 border-white animate-pulse"></span>
+            </div>
+            <div class="flex flex-col">
+              <span id="avatar-name" class="text-sm font-bold text-gray-900 tracking-tight">Dr. Maya Lin</span>
+              <span id="avatar-role" class="text-xs text-blue-700 font-semibold">Google Cloud AI Evangelist</span>
+              <span id="avatar-subtext" class="text-[11px] text-gray-500 font-mono mt-0.5">Veo 2 Avatar • 60fps Gaze Tracking Active</span>
+            </div>
           </div>
         </div>
 
@@ -474,6 +626,24 @@ function renderStudioHtml(): string {
       </div>
 
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+        <!-- Asset 0: Master 4K Broadcast MP4 -->
+        <div class="p-5 rounded-2xl bg-purple-50/70 border-2 border-purple-300 hover:border-purple-500 hover:shadow-md transition-all flex flex-col justify-between gap-4">
+          <div class="flex items-start justify-between">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-xl bg-purple-600 text-white flex items-center justify-center font-bold text-xs shadow-sm">4K MP4</div>
+              <div>
+                <h4 class="text-sm font-bold text-gray-900">Master 4K Broadcast Reel</h4>
+                <p class="text-xs text-gray-600">3840×2160 @ 60fps • 10.0s • H.264</p>
+              </div>
+            </div>
+            <span class="text-[11px] font-mono text-purple-800 font-bold bg-purple-100 px-2 py-0.5 rounded border border-purple-200">27 MB</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <a href="/scratch/vidoxis_master_4k.mp4" download class="flex-1 py-2 px-3 rounded-xl bg-purple-600 hover:bg-purple-700 text-white text-xs font-semibold text-center transition-all shadow-sm">Download 4K MP4</a>
+            <button onclick="playMasterVideo()" class="py-2 px-3 rounded-xl bg-white hover:bg-purple-100 text-purple-900 border border-purple-300 text-xs font-mono font-bold shadow-sm transition-all">Watch Now ▶</button>
+          </div>
+        </div>
+
         <!-- Asset 1: Master Audio -->
         <div class="p-5 rounded-2xl bg-gray-50 border border-gray-200 hover:border-blue-400 hover:shadow-md transition-all flex flex-col justify-between gap-4">
           <div class="flex items-start justify-between">
@@ -545,20 +715,21 @@ function renderStudioHtml(): string {
           </div>
         </div>
 
-        <!-- Asset 5: Whiteboard SVG Architecture -->
+        <!-- Asset 5: Executive Agentic Draw.io Architecture -->
         <div class="p-5 rounded-2xl bg-gray-50 border border-gray-200 hover:border-blue-400 hover:shadow-md transition-all flex flex-col justify-between gap-4">
           <div class="flex items-start justify-between">
             <div class="flex items-center gap-3">
-              <div class="w-10 h-10 rounded-xl bg-cyan-100 text-cyan-800 flex items-center justify-center font-bold text-xs">SVG</div>
+              <div class="w-10 h-10 rounded-xl bg-blue-100 text-blue-800 flex items-center justify-center font-bold text-xs">DRAW.IO</div>
               <div>
-                <h4 class="text-sm font-bold text-gray-900">Whiteboard Architecture</h4>
-                <p class="text-xs text-gray-600">ElkJS + RoughJS • 0% BBox Collisions</p>
+                <h4 class="text-sm font-bold text-gray-900">Executive Agentic Architecture</h4>
+                <p class="text-xs text-gray-600">5-Tier Enterprise Standard • Draw.io Parity</p>
               </div>
             </div>
-            <span class="text-[11px] font-mono text-gray-600 font-medium">13.6 KB</span>
+            <span class="text-[11px] font-mono text-gray-600 font-medium">17.8 KB</span>
           </div>
           <div class="flex items-center gap-2">
-            <a href="/scratch/01_whiteboard_architecture.svg" target="_blank" class="flex-1 py-2 px-3 rounded-xl bg-white hover:bg-gray-100 border border-gray-300 text-gray-800 text-xs font-semibold text-center shadow-sm transition-all">View 4K SVG &gt;</a>
+            <a href="/scratch/gcp_merck_agentic_ai_architecture.drawio" download class="flex-1 py-2 px-3 rounded-xl bg-white hover:bg-gray-100 border border-gray-300 text-gray-800 text-xs font-semibold text-center shadow-sm transition-all">Download .drawio</a>
+            <a href="/whiteboard/editor" target="_blank" class="py-2 px-3 rounded-xl bg-blue-50 hover:bg-blue-100 border border-blue-200 text-blue-700 text-xs font-semibold shadow-sm transition-all">Open Editor &gt;</a>
           </div>
         </div>
 
@@ -568,15 +739,16 @@ function renderStudioHtml(): string {
             <div class="flex items-center gap-3">
               <div class="w-10 h-10 rounded-xl bg-rose-100 text-rose-800 flex items-center justify-center font-bold text-xs">PNG</div>
               <div>
-                <h4 class="text-sm font-bold text-gray-900">6x 4K Broadcast Stills</h4>
-                <p class="text-xs text-gray-600">3840×2160 • All 5 Acts Mastered</p>
+                <h4 class="text-sm font-bold text-gray-900">9x 4K Broadcast Stills</h4>
+                <p class="text-xs text-gray-600">3840×2160 • Real Argolis & Cloudtop Mastered</p>
               </div>
             </div>
-            <span class="text-[11px] font-mono text-gray-600 font-medium">6 Shots</span>
+            <span class="text-[11px] font-mono text-gray-600 font-medium">9 Shots</span>
           </div>
-          <div class="flex items-center gap-2">
-            <a href="/scratch/rendered_stills/act1_cold_open_hook.png" target="_blank" class="flex-1 py-2 px-3 rounded-xl bg-white hover:bg-gray-100 border border-gray-300 text-gray-800 text-xs font-semibold text-center shadow-sm transition-all">Open Still F15 &gt;</a>
-            <a href="/scratch/rendered_stills/act5_production_checklist.png" target="_blank" class="flex-1 py-2 px-3 rounded-xl bg-white hover:bg-gray-100 border border-gray-300 text-gray-800 text-xs font-semibold text-center shadow-sm transition-all">Open Still F360 &gt;</a>
+          <div class="flex items-center gap-2 flex-wrap">
+            <a href="/scratch/rendered_stills/act3_console_drawer_typing.png" target="_blank" class="flex-1 py-2 px-3 rounded-xl bg-white hover:bg-gray-100 border border-gray-300 text-gray-800 text-xs font-semibold text-center shadow-sm transition-all">Gemini Chat &gt;</a>
+            <a href="/scratch/rendered_stills/act3_gcp_console_model_garden.png" target="_blank" class="flex-1 py-2 px-3 rounded-xl bg-white hover:bg-gray-100 border border-gray-300 text-gray-800 text-xs font-semibold text-center shadow-sm transition-all">Model Garden &gt;</a>
+            <a href="/scratch/rendered_stills/act3_endpoint_active_redaction.png" target="_blank" class="flex-1 py-2 px-3 rounded-xl bg-white hover:bg-gray-100 border border-gray-300 text-gray-800 text-xs font-semibold text-center shadow-sm transition-all">Active PSC &gt;</a>
           </div>
         </div>
       </div>
@@ -586,29 +758,52 @@ function renderStudioHtml(): string {
     <div class="glass-panel p-8 rounded-3xl flex flex-col gap-6">
       <div class="flex items-center justify-between flex-wrap gap-4">
         <div>
-          <h2 class="text-2xl font-bold text-gray-900 tracking-tight">Progressive Whiteboard Stage (ElkJS + RoughJS)</h2>
-          <p class="text-sm text-gray-600 mt-1">Broadcast Studio Light Stage with 0% Bounding Box Collisions & Glowing Kinetic Particles</p>
+          <h2 class="text-2xl font-bold text-gray-900 tracking-tight">Progressive Whiteboard Stage & Architecture Visualizer</h2>
+          <p class="text-sm text-gray-600 mt-1">Broadcast Studio Light Stage with 0% Bounding Box Collisions, Draw.io 5-Tier Parity & Glowing Kinetic Particles</p>
         </div>
         <div class="flex items-center gap-3 flex-wrap">
-          <div class="flex items-center p-1 bg-gray-100 border border-gray-300 rounded-xl gap-1">
+          <!-- Executive Agentic Standard Badge -->
+          <div class="flex items-center px-3.5 py-1.5 bg-blue-50 border border-blue-200 rounded-xl gap-2 text-xs font-bold text-blue-800 shadow-sm">
+            <span class="w-2 h-2 rounded-full bg-blue-600"></span>
+            <span>Executive Agentic Architecture (Draw.io)</span>
+          </div>
+
+          <!-- Edit Controls (Inline & Separate Tab) -->
+          <div class="flex items-center p-1 bg-amber-50 border border-amber-200 rounded-xl gap-1">
+            <button onclick="toggleInlineDrawioEditor()" id="wb-btn-inline-edit" class="px-3 py-1.5 rounded-lg text-xs font-semibold text-amber-900 bg-white hover:bg-amber-100 shadow-sm transition-all flex items-center gap-1.5">
+              <span>✏️</span>
+              <span id="wb-inline-text">Edit Inline</span>
+            </button>
+            <a href="/whiteboard/editor" target="_blank" class="px-3 py-1.5 rounded-lg text-xs font-semibold text-amber-900 hover:bg-amber-100 transition-all flex items-center gap-1.5">
+              <span>↗️</span>
+              <span>Edit on Separate Tab</span>
+            </a>
+          </div>
+
+          <div class="flex items-center p-1 bg-gray-100 border border-gray-300 rounded-xl gap-1" id="wb-zoom-controls-group">
             <button onclick="setWhiteboardZoom('fit')" id="wb-zoom-fit" class="wb-zoom-btn px-3 py-1.5 rounded-lg text-xs font-semibold bg-white text-blue-700 shadow-sm transition-all">Fit Canvas</button>
-            <button onclick="setWhiteboardZoom('focus')" id="wb-zoom-focus" class="wb-zoom-btn px-3 py-1.5 rounded-lg text-xs font-semibold text-gray-700 hover:text-gray-900 transition-all">Focus Topology (1.8x)</button>
-            <button onclick="setWhiteboardZoom('4k')" id="wb-zoom-4k" class="wb-zoom-btn px-3 py-1.5 rounded-lg text-xs font-semibold text-gray-700 hover:text-gray-900 transition-all">Inspect 4K (2.5x)</button>
+            <button onclick="setWhiteboardZoom('focus')" id="wb-zoom-focus" class="wb-zoom-btn px-3 py-1.5 rounded-lg text-xs font-semibold text-gray-700 hover:text-gray-900 transition-all">Focus (1.8x)</button>
+            <button onclick="setWhiteboardZoom('4k')" id="wb-zoom-4k" class="wb-zoom-btn px-3 py-1.5 rounded-lg text-xs font-semibold text-gray-700 hover:text-gray-900 transition-all">4K (2.5x)</button>
           </div>
           <button onclick="toggleParticles()" id="particle-btn" class="px-4 py-2 rounded-xl bg-blue-50 border border-blue-300 text-blue-700 text-xs font-semibold flex items-center gap-2 shadow-sm">
             <span class="w-2.5 h-2.5 rounded-full bg-blue-600 animate-ping"></span>
             Kinetic Particles: ON
           </button>
-          <a href="/scratch/01_whiteboard_architecture.svg" target="_blank" class="px-4 py-2 rounded-xl bg-white hover:bg-gray-100 text-gray-700 text-xs font-semibold flex items-center gap-2 border border-gray-300 shadow-sm transition-all">
-            Open Raw 4K SVG &gt;
+          <a id="wb-open-link" href="/scratch/gcp_merck_agentic_ai_architecture.png" target="_blank" class="px-4 py-2 rounded-xl bg-white hover:bg-gray-100 text-gray-700 text-xs font-semibold flex items-center gap-2 border border-gray-300 shadow-sm transition-all">
+            Open High-Res PNG &gt;
           </a>
         </div>
       </div>
 
-      <!-- Interactive SVG Whiteboard Container -->
-      <div id="whiteboard-stage-wrapper" class="w-full bg-[#F8FAFC] border border-gray-300 rounded-2xl p-6 overflow-auto flex items-center justify-center min-h-[460px] max-h-[620px] shadow-inner custom-scrollbar cursor-grab select-none">
+      <!-- Interactive SVG / Draw.io Whiteboard Container -->
+      <div id="whiteboard-stage-wrapper" class="w-full bg-[#F8FAFC] border border-gray-300 rounded-2xl p-6 overflow-auto flex items-center justify-center min-h-[460px] max-h-[750px] shadow-inner custom-scrollbar cursor-grab select-none relative">
+        <div id="whiteboard-inline-status" class="hidden absolute top-4 right-6 z-20 flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-800 border border-emerald-200 shadow-sm">
+          <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+          <span id="whiteboard-inline-status-text">🟢 Draw.io Live Inline Editor • Autosaving to scratch/</span>
+        </div>
         <div id="whiteboard-zoom-container" class="w-full flex items-center justify-center transition-transform duration-300 origin-center">
-          <object id="whiteboard-svg-obj" data="/scratch/01_whiteboard_architecture.svg" type="image/svg+xml" class="w-full h-auto max-h-[540px] object-contain"></object>
+          <img id="whiteboard-drawio-img" src="/scratch/gcp_merck_agentic_ai_architecture.png" alt="Executive Agentic Architecture Diagram" class="w-full h-auto max-h-[580px] object-contain" />
+          <iframe id="whiteboard-inline-iframe" class="w-full h-[660px] rounded-xl border-0 hidden" src="about:blank"></iframe>
         </div>
       </div>
 
@@ -717,15 +912,18 @@ function renderStudioHtml(): string {
   <!-- Interactive JavaScript Engine -->
   <script>
     const STILLS_MAP = {
-      15: '/scratch/rendered_stills/act1_cold_open_hook.png',
-      90: '/scratch/rendered_stills/act2_whiteboard_kinetic_particles.png',
-      175: '/scratch/rendered_stills/act2_spatial_dissolve_bridge.png',
-      220: '/scratch/rendered_stills/act3_console_drawer_typing.png',
-      270: '/scratch/rendered_stills/act3_endpoint_active_redaction.png',
-      360: '/scratch/rendered_stills/act5_production_checklist.png'
+      120: '/scratch/rendered_stills/act1_cold_open_hook.png',
+      500: '/scratch/rendered_stills/act2_whiteboard_kinetic_particles.png',
+      830: '/scratch/rendered_stills/act2_spatial_dissolve_bridge.png',
+      1050: '/scratch/rendered_stills/act3_gcp_console_step1_model_garden.png',
+      1350: '/scratch/rendered_stills/act3_gcp_console_step2_cloud_run.png',
+      1550: '/scratch/rendered_stills/act3_gcp_console_step3_security_cmek.png',
+      1720: '/scratch/rendered_stills/act3_gcp_console_step4_active_endpoint.png',
+      2000: '/scratch/rendered_stills/act3_gcp_console_step5_bigquery_studio.png',
+      2180: '/scratch/rendered_stills/act5_production_checklist.png'
     };
 
-    let currentFrame = 90;
+    let currentFrame = 120;
     let isPlaying = false;
     let phonemesData = null;
     let activeAudio = null;
@@ -748,10 +946,145 @@ function renderStudioHtml(): string {
     const masterAudio = document.getElementById('audio-master');
     const narrationAudio = document.getElementById('audio-narration');
     const musicAudio = document.getElementById('audio-music');
-    activeAudio = masterAudio;
+    activeAudio = narrationAudio; // Default to Isolated Natural Trainer Voice as requested
+    let currentActiveTrack = 'narration';
+
+    function switchActiveTrack(track) {
+      currentActiveTrack = track;
+      const optNarr = document.getElementById('track-opt-narration');
+      const optMaster = document.getElementById('track-opt-master');
+      const optMusic = document.getElementById('track-opt-music');
+      const radioNarr = document.getElementById('radio-narration');
+      const radioMaster = document.getElementById('radio-master');
+      const radioMusic = document.getElementById('radio-music');
+      const modeBadge = document.getElementById('audio-engine-mode');
+
+      if (track === 'narration') {
+        activeAudio = narrationAudio;
+        radioNarr.checked = true;
+        modeBadge.textContent = 'ISOLATED VOICE';
+        modeBadge.className = 'px-2 py-0.5 rounded bg-emerald-50 border border-emerald-200 text-emerald-700 font-mono text-[11px] font-bold';
+        optNarr.className = 'p-3 rounded-xl border-2 border-emerald-500 bg-emerald-50/50 cursor-pointer transition-all flex items-start justify-between gap-3 shadow-sm';
+        optMaster.className = 'p-3 rounded-xl border border-gray-200 bg-white cursor-pointer transition-all flex items-start justify-between gap-3 hover:border-blue-300';
+        optMusic.className = 'p-3 rounded-xl border border-gray-200 bg-white cursor-pointer transition-all flex items-start justify-between gap-3 hover:border-purple-300';
+      } else if (track === 'master') {
+        activeAudio = masterAudio;
+        radioMaster.checked = true;
+        modeBadge.textContent = 'MASTER STEREO';
+        modeBadge.className = 'px-2 py-0.5 rounded bg-blue-50 border border-blue-200 text-blue-700 font-mono text-[11px] font-bold';
+        optMaster.className = 'p-3 rounded-xl border-2 border-blue-500 bg-blue-50/50 cursor-pointer transition-all flex items-start justify-between gap-3 shadow-sm';
+        optNarr.className = 'p-3 rounded-xl border border-gray-200 bg-white cursor-pointer transition-all flex items-start justify-between gap-3 hover:border-emerald-300';
+        optMusic.className = 'p-3 rounded-xl border border-gray-200 bg-white cursor-pointer transition-all flex items-start justify-between gap-3 hover:border-purple-300';
+      } else if (track === 'music') {
+        activeAudio = musicAudio;
+        radioMusic.checked = true;
+        modeBadge.textContent = 'LYRIA BGM ONLY';
+        modeBadge.className = 'px-2 py-0.5 rounded bg-purple-50 border border-purple-200 text-purple-700 font-mono text-[11px] font-bold';
+        optMusic.className = 'p-3 rounded-xl border-2 border-purple-500 bg-purple-50/50 cursor-pointer transition-all flex items-start justify-between gap-3 shadow-sm';
+        optNarr.className = 'p-3 rounded-xl border border-gray-200 bg-white cursor-pointer transition-all flex items-start justify-between gap-3 hover:border-emerald-300';
+        optMaster.className = 'p-3 rounded-xl border border-gray-200 bg-white cursor-pointer transition-all flex items-start justify-between gap-3 hover:border-blue-300';
+      }
+      if (isPlaying && activeAudio) {
+        activeAudio.currentTime = currentFrame / 60;
+        activeAudio.play().catch(() => {});
+      }
+    }
+
+    async function muxTrackToVideo() {
+      const btn = document.getElementById('btn-mux-audio');
+      btn.disabled = true;
+      btn.innerHTML = '<span class="animate-spin">⏳</span> Muxing ' + currentActiveTrack.toUpperCase() + ' to 4K Video...';
+      try {
+        const res = await fetch('/api/select-video-audio', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ track: currentActiveTrack })
+        });
+        const data = await res.json();
+        if (data.success) {
+          btn.innerHTML = '✔ 4K Video Muxed with ' + currentActiveTrack.toUpperCase();
+          btn.className = 'w-full mt-1 py-2.5 px-4 rounded-xl bg-emerald-600 text-white font-semibold text-xs shadow-sm transition-all flex items-center justify-center gap-2';
+          const videoPlayer = document.getElementById('active-video-player');
+          if (videoPlayer) {
+            videoPlayer.src = '/scratch/vidoxis_master_4k.mp4?t=' + Date.now();
+          }
+          setTimeout(() => {
+            btn.disabled = false;
+            btn.innerHTML = '<svg class="w-3.5 h-3.5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg><span>⚡ Mux Selected Track into Master 4K Video</span>';
+            btn.className = 'w-full mt-1 py-2.5 px-4 rounded-xl bg-gray-900 hover:bg-black text-white font-semibold text-xs shadow-sm transition-all flex items-center justify-center gap-2';
+          }, 3500);
+        } else {
+          btn.innerHTML = 'Mux Failed: ' + (data.error || 'Server error');
+          btn.disabled = false;
+        }
+      } catch (err) {
+        btn.innerHTML = 'Error: ' + err.message;
+        btn.disabled = false;
+      }
+    }
+
+    async function applyVoiceCustomization() {
+      const btn = document.getElementById('btn-synthesize-voice');
+      const voiceSelect = document.getElementById('select-voice-persona');
+      const rateSelect = document.getElementById('select-voice-speed');
+      const duckingSelect = document.getElementById('select-ducking-db');
+      
+      btn.disabled = true;
+      btn.innerHTML = '<span class="animate-spin">🎙️</span> Synthesizing Neural Voice & Ducking...';
+      
+      try {
+        const res = await fetch('/api/synthesize-voice', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            voiceName: voiceSelect.value,
+            speakingRate: parseFloat(rateSelect.value),
+            duckingDb: parseInt(duckingSelect.value, 10),
+            targetTrack: currentActiveTrack
+          })
+        });
+        const data = await res.json();
+        if (data.success) {
+          btn.innerHTML = '✔ Voice & Score Synthesized';
+          btn.className = 'w-full py-2.5 px-4 rounded-xl bg-emerald-600 text-white font-semibold text-xs shadow-sm transition-all flex items-center justify-center gap-2';
+          
+          masterAudio.src = '/scratch/master_audio.wav?t=' + Date.now();
+          narrationAudio.src = '/scratch/narration.wav?t=' + Date.now();
+          musicAudio.src = '/scratch/music_bed.wav?t=' + Date.now();
+          masterAudio.load();
+          narrationAudio.load();
+          musicAudio.load();
+          
+          await loadPhonemes();
+          
+          if (data.result && data.result.voiceMetadata) {
+            document.getElementById('avatar-name').textContent = data.result.voiceMetadata.name;
+            document.getElementById('avatar-role').textContent = data.result.voiceMetadata.role;
+            document.getElementById('avatar-subtext').textContent = data.result.voiceMetadata.style;
+          }
+          
+          const videoPlayer = document.getElementById('active-video-player');
+          if (videoPlayer) {
+            videoPlayer.src = '/scratch/vidoxis_master_4k.mp4?t=' + Date.now();
+          }
+          
+          setTimeout(() => {
+            btn.disabled = false;
+            btn.innerHTML = '<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 100-6 3 3 0 000 6z"></path></svg><span>🎙️ Re-Synthesize Voice Persona</span>';
+            btn.className = 'w-full py-2.5 px-4 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs shadow-sm shadow-blue-500/20 transition-all flex items-center justify-center gap-2';
+          }, 3500);
+        } else {
+          btn.innerHTML = 'Failed: ' + (data.error || 'API error');
+          btn.disabled = false;
+        }
+      } catch (err) {
+        btn.innerHTML = 'Error: ' + err.message;
+        btn.disabled = false;
+      }
+    }
 
     function seekFrame(frameNum) {
-      currentFrame = Math.max(0, Math.min(750, parseInt(frameNum, 10)));
+      currentFrame = Math.max(0, Math.min(2212, parseInt(frameNum, 10)));
       document.getElementById('timeline-slider').value = currentFrame;
       const targetSec = currentFrame / 60;
       if (activeAudio) {
@@ -778,44 +1111,64 @@ function renderStudioHtml(): string {
     }
 
     function updateFrameDisplay() {
-      document.getElementById('current-frame-badge').textContent = 'FRAME ' + currentFrame + ' / 750';
+      document.getElementById('current-frame-badge').textContent = 'FRAME ' + currentFrame + ' / 2212';
       const seconds = (currentFrame / 60);
       const mins = Math.floor(seconds / 60).toString().padStart(2, '0');
       const remSecs = (seconds % 60).toFixed(3).padStart(6, '0');
       document.getElementById('current-timestamp-badge').textContent = mins + ':' + remSecs;
-      document.getElementById('subtitle-timing-badge').textContent = mins + ':' + remSecs + ' / 00:12.500';
+      document.getElementById('subtitle-timing-badge').textContent = mins + ':' + remSecs + ' / 00:36.866';
 
-      // Select closest rendered still
+      // Select closest rendered still across the 5 acts
       const img = document.getElementById('active-screen-img');
       const cursorHalo = document.getElementById('cursor-halo');
       const redactionBox = document.getElementById('redaction-box');
 
-      if (currentFrame < 50) {
-        img.src = STILLS_MAP[15] || STILLS_MAP[90];
+      if (currentFrame < 340) {
+        img.src = STILLS_MAP[120] || STILLS_MAP[500];
         cursorHalo.classList.add('hidden');
         redactionBox.classList.add('hidden');
-      } else if (currentFrame < 140) {
-        img.src = STILLS_MAP[90];
+      } else if (currentFrame < 820) {
+        img.src = STILLS_MAP[500];
         cursorHalo.classList.add('hidden');
         redactionBox.classList.add('hidden');
-      } else if (currentFrame < 200) {
-        img.src = STILLS_MAP[175];
+      } else if (currentFrame < 840) {
+        img.src = STILLS_MAP[830];
         cursorHalo.classList.remove('hidden');
         cursorHalo.style.left = '48%';
         cursorHalo.style.top = '36%';
         redactionBox.classList.add('hidden');
-      } else if (currentFrame < 250) {
-        img.src = STILLS_MAP[220];
+      } else if (currentFrame < 1270) {
+        img.src = STILLS_MAP[1050];
         cursorHalo.classList.remove('hidden');
-        cursorHalo.style.left = '75%';
-        cursorHalo.style.top = '40%';
+        cursorHalo.style.left = '52%';
+        cursorHalo.style.top = '48%';
         redactionBox.classList.add('hidden');
-      } else if (currentFrame < 340) {
-        img.src = STILLS_MAP[270];
-        cursorHalo.classList.add('hidden');
+      } else if (currentFrame < 1470) {
+        img.src = STILLS_MAP[1350];
+        cursorHalo.classList.remove('hidden');
+        cursorHalo.style.left = '55%';
+        cursorHalo.style.top = '42%';
+        redactionBox.classList.add('hidden');
+      } else if (currentFrame < 1650) {
+        img.src = STILLS_MAP[1550];
+        cursorHalo.classList.remove('hidden');
+        cursorHalo.style.left = '67%';
+        cursorHalo.style.top = '33%';
+        redactionBox.classList.add('hidden');
+      } else if (currentFrame < 1810) {
+        img.src = STILLS_MAP[1720];
+        cursorHalo.classList.remove('hidden');
+        cursorHalo.style.left = '86%';
+        cursorHalo.style.top = '14%';
         redactionBox.classList.remove('hidden');
+      } else if (currentFrame < 2050) {
+        img.src = STILLS_MAP[2000];
+        cursorHalo.classList.remove('hidden');
+        cursorHalo.style.left = '45%';
+        cursorHalo.style.top = '48%';
+        redactionBox.classList.add('hidden');
       } else {
-        img.src = STILLS_MAP[360] || STILLS_MAP[270];
+        img.src = STILLS_MAP[2180] || STILLS_MAP[2000];
         cursorHalo.classList.add('hidden');
         redactionBox.classList.add('hidden');
       }
@@ -880,13 +1233,13 @@ function renderStudioHtml(): string {
           if (!isPlaying) return;
           if (activeAudio && !activeAudio.paused) {
             currentFrame = Math.round(activeAudio.currentTime * 60);
-            if (currentFrame >= 750) {
+            if (currentFrame >= 2212) {
               currentFrame = 0;
               activeAudio.currentTime = 0;
             }
           } else {
             currentFrame += 2;
-            if (currentFrame >= 750) currentFrame = 0;
+            if (currentFrame >= 2212) currentFrame = 0;
           }
           document.getElementById('timeline-slider').value = currentFrame;
           updateFrameDisplay();
@@ -913,13 +1266,15 @@ function renderStudioHtml(): string {
       });
 
       // Show ducked status when active speech is present
-      const isDucked = currentFrame < 700;
-      if (isDucked) {
-        duckBadge.textContent = '-18dB DUCKED';
-        duckBadge.className = 'px-2 py-0.5 rounded bg-blue-100 text-blue-800 border border-blue-300 text-[10px] font-mono font-bold transition-colors duration-200';
-      } else {
-        duckBadge.textContent = 'AMBIENT 0dB';
-        duckBadge.className = 'px-2 py-0.5 rounded bg-gray-100 text-gray-700 border border-gray-300 text-[10px] font-mono font-bold transition-colors duration-200';
+      if (duckBadge) {
+        const isDucked = currentFrame < 2100;
+        if (isDucked) {
+          duckBadge.textContent = '-18dB DUCKED';
+          duckBadge.className = 'px-2 py-0.5 rounded bg-blue-100 text-blue-800 border border-blue-300 text-[10px] font-mono font-bold transition-colors duration-200';
+        } else {
+          duckBadge.textContent = 'AMBIENT 0dB';
+          duckBadge.className = 'px-2 py-0.5 rounded bg-gray-100 text-gray-700 border border-gray-300 text-[10px] font-mono font-bold transition-colors duration-200';
+        }
       }
     }
 
@@ -961,9 +1316,94 @@ function renderStudioHtml(): string {
       document.getElementById('telemetry-overlay').style.opacity = visible ? '1' : '0';
     }
 
+    let inlineEditActive = false;
+    let currentDrawioXml = '';
+
+    async function toggleInlineDrawioEditor() {
+      const imgObj = document.getElementById('whiteboard-drawio-img');
+      const iframe = document.getElementById('whiteboard-inline-iframe');
+      const inlineStatus = document.getElementById('whiteboard-inline-status');
+      const inlineBtnText = document.getElementById('wb-inline-text');
+      const zoomGroup = document.getElementById('wb-zoom-controls-group');
+      const container = document.getElementById('whiteboard-zoom-container');
+      const stageWrapper = document.getElementById('whiteboard-stage-wrapper');
+
+      inlineEditActive = !inlineEditActive;
+
+      if (inlineEditActive) {
+        imgObj.classList.add('hidden');
+        iframe.classList.remove('hidden');
+        inlineStatus.classList.remove('hidden');
+        inlineBtnText.textContent = '✕ Exit Inline Edit';
+        zoomGroup.classList.add('opacity-40', 'pointer-events-none');
+        container.style.transform = 'scale(1)';
+        container.style.minWidth = '100%';
+        stageWrapper.style.minHeight = '720px';
+        stageWrapper.style.padding = '8px';
+
+        if (iframe.src === 'about:blank' || !iframe.src.includes('embed.diagrams.net')) {
+          iframe.src = 'https://embed.diagrams.net/?embed=1&ui=atlas&spin=1&proto=json&configure=1';
+        }
+      } else {
+        iframe.classList.add('hidden');
+        inlineStatus.classList.add('hidden');
+        inlineBtnText.textContent = 'Edit Inline';
+        zoomGroup.classList.remove('opacity-40', 'pointer-events-none');
+        stageWrapper.style.minHeight = '460px';
+        stageWrapper.style.padding = '24px';
+        imgObj.classList.remove('hidden');
+      }
+    }
+
+    window.addEventListener('message', async (e) => {
+      if (!e.data || typeof e.data !== 'string') return;
+      try {
+        const msg = JSON.parse(e.data);
+        const inlineIframe = document.getElementById('whiteboard-inline-iframe');
+        if (msg.event === 'configure') {
+          if (inlineIframe && inlineIframe.contentWindow) {
+            inlineIframe.contentWindow.postMessage(JSON.stringify({
+              action: 'configure',
+              config: {}
+            }), '*');
+          }
+        } else if (msg.event === 'init') {
+          if (!currentDrawioXml) {
+            const res = await fetch('/api/drawio/xml');
+            const data = await res.json();
+            currentDrawioXml = data.xml;
+          }
+          if (inlineIframe && inlineIframe.contentWindow) {
+            inlineIframe.contentWindow.postMessage(JSON.stringify({
+              action: 'load',
+              autosave: 1,
+              xml: currentDrawioXml,
+              title: 'gcp_merck_agentic_ai_architecture.drawio'
+            }), '*');
+          }
+        } else if (msg.event === 'load') {
+          const inlineStatusText = document.getElementById('whiteboard-inline-status-text');
+          if (inlineStatusText) {
+            inlineStatusText.innerHTML = '🟢 Draw.io Live Editor Active • Autosaving Enabled';
+          }
+        } else if (msg.event === 'save' || msg.event === 'autosave') {
+          currentDrawioXml = msg.xml;
+          await fetch('/api/drawio/save', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ xml: msg.xml })
+          });
+          const inlineStatusText = document.getElementById('whiteboard-inline-status-text');
+          if (inlineStatusText) {
+            inlineStatusText.innerHTML = '✔ Autosaved to workspace at ' + new Date().toLocaleTimeString();
+          }
+        }
+      } catch (err) {}
+    });
+
     function setWhiteboardZoom(mode) {
       const container = document.getElementById('whiteboard-zoom-container');
-      const obj = document.getElementById('whiteboard-svg-obj');
+      const img = document.getElementById('whiteboard-drawio-img');
       document.querySelectorAll('.wb-zoom-btn').forEach(btn => {
         btn.classList.remove('bg-white', 'text-blue-700', 'shadow-sm');
         btn.classList.add('text-gray-700');
@@ -977,15 +1417,15 @@ function renderStudioHtml(): string {
       if (mode === 'focus') {
         container.style.transform = 'scale(1.8)';
         container.style.minWidth = '180%';
-        obj.style.maxHeight = '800px';
+        img.style.maxHeight = '800px';
       } else if (mode === '4k') {
         container.style.transform = 'scale(2.5)';
         container.style.minWidth = '250%';
-        obj.style.maxHeight = '1100px';
+        img.style.maxHeight = '1100px';
       } else {
         container.style.transform = 'scale(1)';
         container.style.minWidth = '100%';
-        obj.style.maxHeight = '540px';
+        img.style.maxHeight = '580px';
       }
     }
 
@@ -1001,12 +1441,50 @@ function renderStudioHtml(): string {
       }
     }
 
+    function toggleVideoPlaybackMode() {
+      const img = document.getElementById('active-screen-img');
+      const vid = document.getElementById('active-video-player');
+      const btn = document.getElementById('toggle-video-mode-btn');
+      const telem = document.getElementById('telemetry-overlay');
+      if (vid.classList.contains('hidden')) {
+        vid.classList.remove('hidden');
+        img.classList.add('hidden');
+        if (telem) telem.classList.add('hidden');
+        btn.innerHTML = '<span>🖼️</span><span>Switch to Stills Scrubbing</span>';
+        btn.className = 'px-3.5 py-1.5 rounded-xl bg-blue-100 hover:bg-blue-200 border border-blue-300 text-blue-900 text-xs font-bold flex items-center gap-1.5 shadow-sm transition-all';
+        vid.play().catch(() => {});
+      } else {
+        vid.pause();
+        vid.classList.add('hidden');
+        img.classList.remove('hidden');
+        if (telem) telem.classList.remove('hidden');
+        btn.innerHTML = '<span>▶️</span><span>Watch Master 4K Video</span>';
+        btn.className = 'px-3.5 py-1.5 rounded-xl bg-purple-100 hover:bg-purple-200 border border-purple-300 text-purple-900 text-xs font-bold flex items-center gap-1.5 shadow-sm transition-all';
+      }
+    }
+
+    function playMasterVideo() {
+      const vid = document.getElementById('active-video-player');
+      const img = document.getElementById('active-screen-img');
+      const btn = document.getElementById('toggle-video-mode-btn');
+      const telem = document.getElementById('telemetry-overlay');
+      vid.classList.remove('hidden');
+      img.classList.add('hidden');
+      if (telem) telem.classList.add('hidden');
+      if (btn) {
+        btn.innerHTML = '<span>🖼️</span><span>Switch to Stills Scrubbing</span>';
+        btn.className = 'px-3.5 py-1.5 rounded-xl bg-blue-100 hover:bg-blue-200 border border-blue-300 text-blue-900 text-xs font-bold flex items-center gap-1.5 shadow-sm transition-all';
+      }
+      window.scrollTo({ top: 120, behavior: 'smooth' });
+      vid.play().catch(() => {});
+    }
+
     function jumpToAct(act) {
       if (act === 1) seekFrame(15);
       else if (act === 2) seekFrame(90);
       else if (act === 3) seekFrame(220);
-      else if (act === 4) seekFrame(270);
-      else if (act === 5) seekFrame(360);
+      else if (act === 4) seekFrame(430);
+      else if (act === 5) seekFrame(480);
     }
 
     function reloadAllArtifacts() {
@@ -1049,11 +1527,146 @@ function renderStudioHtml(): string {
 </html>`;
 }
 
+function renderWhiteboardEditorHtml(): string {
+  return `<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Draw.io Cloud Editor — GCP Agentic AI Merck Architecture</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Google+Sans+Flex:wght@400;500;600;700;800&family=Roboto+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Google Sans Flex', system-ui, sans-serif; }
+    .mono { font-family: 'Roboto Mono', monospace; }
+  </style>
+</head>
+<body class="h-full w-full flex flex-col bg-[#F8FAFC] overflow-hidden m-0 p-0">
+  <!-- Top Bar -->
+  <header class="h-14 bg-white border-b border-gray-200 px-6 flex items-center justify-between z-10 shadow-sm shrink-0">
+    <div class="flex items-center gap-4">
+      <a href="/" class="flex items-center gap-1.5 text-xs font-semibold text-gray-600 hover:text-blue-600 transition-all py-1.5 px-3 rounded-lg hover:bg-gray-100">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
+        Studio Hub
+      </a>
+      <div class="h-5 w-px bg-gray-200"></div>
+      <div class="flex items-center gap-2.5">
+        <div class="w-7 h-7 rounded-lg bg-orange-100 text-orange-700 flex items-center justify-center font-bold text-xs">📐</div>
+        <div>
+          <h1 class="text-sm font-bold text-gray-900 leading-tight">gcp_merck_agentic_ai_architecture.drawio</h1>
+          <p class="text-[11px] text-gray-500 mono">Executive 5-Tier Reference Architecture • Workspace Sync Active</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="flex items-center gap-3">
+      <div id="save-status" class="flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
+        <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+        Workspace Synced
+      </div>
+      <button onclick="saveDiagram()" class="px-4 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold shadow-sm transition-all flex items-center gap-1.5">
+        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"/></svg>
+        Save Workspace File
+      </button>
+      <a href="/scratch/gcp_merck_agentic_ai_architecture.png" target="_blank" class="px-3.5 py-1.5 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-semibold transition-all">
+        View PNG
+      </a>
+      <a href="/scratch/gcp_merck_agentic_ai_architecture.drawio" download class="px-3.5 py-1.5 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-semibold transition-all">
+        Download .drawio
+      </a>
+    </div>
+  </header>
+
+  <!-- Fullscreen Embedded Draw.io Iframe -->
+  <main class="flex-1 w-full h-[calc(100vh-3.5rem)] relative">
+    <iframe id="drawio-iframe" class="w-full h-full border-0" src="https://embed.diagrams.net/?embed=1&ui=atlas&spin=1&proto=json&configure=1"></iframe>
+  </main>
+
+  <script>
+    let currentXml = '';
+    const iframe = document.getElementById('drawio-iframe');
+    const statusEl = document.getElementById('save-status');
+
+    async function loadInitialXml() {
+      try {
+        const res = await fetch('/api/drawio/xml');
+        const data = await res.json();
+        currentXml = data.xml || '';
+      } catch (err) {
+        console.error('Failed to load initial XML:', err);
+      }
+    }
+    loadInitialXml();
+
+    window.addEventListener('message', async (e) => {
+      if (!e.data || typeof e.data !== 'string') return;
+      try {
+        const msg = JSON.parse(e.data);
+        if (msg.event === 'configure') {
+          iframe.contentWindow.postMessage(JSON.stringify({
+            action: 'configure',
+            config: {}
+          }), '*');
+        } else if (msg.event === 'init') {
+          if (!currentXml) {
+            const res = await fetch('/api/drawio/xml');
+            const data = await res.json();
+            currentXml = data.xml;
+          }
+          iframe.contentWindow.postMessage(JSON.stringify({
+            action: 'load',
+            autosave: 1,
+            xml: currentXml,
+            title: 'gcp_merck_agentic_ai_architecture.drawio'
+          }), '*');
+        } else if (msg.event === 'load') {
+          statusEl.innerHTML = '<span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> Workspace Synced (Draw.io Active)';
+        } else if (msg.event === 'save' || msg.event === 'autosave') {
+          await persistXml(msg.xml);
+        } else if (msg.event === 'export') {
+          if (msg.data) {
+            await persistXml(msg.data);
+          }
+        }
+      } catch (err) {}
+    });
+
+    async function persistXml(xml) {
+      statusEl.innerHTML = '<span class="w-2 h-2 rounded-full bg-amber-500 animate-spin"></span> Saving...';
+      statusEl.className = 'flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-200';
+      try {
+        const res = await fetch('/api/drawio/save', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ xml })
+        });
+        const resData = await res.json();
+        if (resData.success) {
+          const now = new Date().toLocaleTimeString();
+          statusEl.innerHTML = '<span class="w-2 h-2 rounded-full bg-emerald-500"></span> Saved at ' + now;
+          statusEl.className = 'flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200';
+        }
+      } catch (err) {
+        statusEl.innerHTML = '❌ Save Error';
+        statusEl.className = 'flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold bg-red-50 text-red-700 border border-red-200';
+      }
+    }
+
+    function saveDiagram() {
+      iframe.contentWindow.postMessage(JSON.stringify({ action: 'export', format: 'xml' }), '*');
+    }
+  </script>
+</body>
+</html>`;
+}
+
 if (process.argv[1] && process.argv[1].endsWith("server.ts")) {
   const server = createStudioServer();
   server.listen(PORT, () => {
     console.log(`================================================================================`);
-    console.log(`🎨 TRAINEX STUDIO WEB HUB RUNNING AT: http://127.0.0.1:${PORT}`);
+    console.log(`🎨 VIDOXIS STUDIO WEB HUB RUNNING AT: http://127.0.0.1:${PORT}`);
     console.log(`   Desktop Resolution Layout: max-w-1600 (Spacious Desktop Standard)`);
     console.log(`   Broadcast 4K Video Review & Multi-Track Audio Matrix Active`);
     console.log(`================================================================================`);

@@ -16,7 +16,8 @@ export const WhiteboardNodeTypeSchema = z.enum([
 export const WhiteboardFlowTypeSchema = z.enum([
   "user_flow",
   "process_flow",
-  "data_flow"
+  "data_flow",
+  "security_flow"
 ]);
 
 export const WhiteboardElementSchema = z.object({
@@ -33,7 +34,11 @@ export const WhiteboardElementSchema = z.object({
   drawDurationFrames: z.number(),
   color: z.string(),
   accentGlow: z.string().optional(),
-  cloudIcon: z.string().optional()
+  cloudIcon: z.string().optional(),
+  zone: z.string().optional(),
+  techSpec: z.string().optional(),
+  badge: z.string().optional(),
+  details: z.array(z.string()).optional()
 });
 
 export const WhiteboardEdgeSchema = z.object({

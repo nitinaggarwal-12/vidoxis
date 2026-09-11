@@ -10,11 +10,19 @@ export interface ConsoleStepKeyframe {
   cursorEnd: { x: number; y: number };
   cameraTarget: { x: number; y: number; scale: number };
   clickFrame?: number;
+  stageBadge: string;
   label: string;
+  showRedactions?: boolean;
 }
 
 export interface ConsoleScreencastTrackProps {
   screenshots?: {
+    geminiPrompt?: string;
+    geminiTrace?: string;
+    geminiResults?: string;
+    consoleOverview?: string;
+    consoleDrawer?: string;
+    consoleActive?: string;
     overview?: string;
     drawerOpened?: string;
     configEntered?: string;
@@ -32,65 +40,79 @@ export const ConsoleScreencastTrack: React.FC<ConsoleScreencastTrackProps> = ({
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
 
-  // Keyframed actions matching our CDP replayer and E2E capture sequence
+  // Step-by-Step Google Cloud Console End-to-End Walkthrough (Relative Frames 0 - 1392, Global 820 - 2212):
+  // Synchronized 1:1 with scratch/phonemes.json Audio Segments:
+  // Step 1: Vertex AI Model Garden - Foundation Model Discovery (Rel 0 - 450, Global 820 - 1270) -> Segment 3
+  // Step 2: Cloud Run Fleet & Ingress Gateway Selection (Rel 450 - 650, Global 1270 - 1470) -> Segment 4 (start)
+  // Step 3: Security, CMEK & Cloud KMS Autokey Configuration (Rel 650 - 830, Global 1470 - 1650) -> Segment 4 (mid)
+  // Step 4: Observability, Active Endpoint & Latency Telemetry (Rel 830 - 990, Global 1650 - 1810) -> Segment 4 (end)
+  // Step 5: BigQuery Studio Lakehouse Grounding & Checklist (Rel 990 - 1392, Global 1810 - 2212) -> Segment 5
   const keyframes: ConsoleStepKeyframe[] = useMemo(() => {
     return [
+      // Step 1: Google Cloud Console - Vertex AI Model Garden (Rel 0 - 450, Global 820 - 1270)
       {
         frameStart: 0,
-        frameEnd: 70,
-        imageSrc: screenshots.overview || "01_model_garden_overview.png",
-        cursorStart: { x: 960, y: 540 },
-        cursorEnd: { x: 1540, y: 140 },
-        cameraTarget: { x: 1400, y: 200, scale: 1.2 },
-        clickFrame: 65,
-        label: "Click 'Deploy Model' Button"
+        frameEnd: 450,
+        imageSrc: screenshots.consoleOverview || screenshots.overview || "04_gcp_console_vertex_model_garden.png",
+        cursorStart: { x: 550, y: 260 },
+        cursorEnd: { x: 440, y: 780 },
+        cameraTarget: { x: 440, y: 760, scale: 1.25 },
+        clickFrame: 320,
+        stageBadge: "Act 3 • Step 1: Google Cloud Console • Vertex AI Model Garden",
+        label: "Discover Foundation Models: Select Gemini 3.1 Pro for Enterprise Inference",
+        showRedactions: true
       },
+      // Step 2: Google Cloud Console - Service Management & Ingress Target (Rel 450 - 650, Global 1270 - 1470)
       {
-        frameStart: 70,
-        frameEnd: 140,
-        imageSrc: screenshots.drawerOpened || "02_deploy_model_drawer_opened.png",
-        cursorStart: { x: 1540, y: 140 },
-        cursorEnd: { x: 1650, y: 220 },
-        cameraTarget: { x: 1600, y: 300, scale: 1.35 },
-        clickFrame: 130,
-        label: "Focus Endpoint Name Input"
-      },
-      {
-        frameStart: 140,
-        frameEnd: 210,
-        imageSrc: screenshots.configEntered || "03_endpoint_name_and_config_entered.png",
-        cursorStart: { x: 1650, y: 220 },
-        cursorEnd: { x: 1510, y: 480 },
-        cameraTarget: { x: 1550, y: 400, scale: 1.3 },
-        clickFrame: 200,
-        label: "Specify Endpoint Parameters & Click Deploy"
-      },
-      {
-        frameStart: 210,
-        frameEnd: 280,
-        imageSrc: screenshots.activeVerified || "04_deployment_active_verified.png",
-        cursorStart: { x: 1510, y: 480 },
-        cursorEnd: { x: 1100, y: 350 },
-        cameraTarget: { x: 960, y: 540, scale: 1.05 },
-        label: "Endpoint Deployed & Status Verified: Active"
-      },
-      {
-        frameStart: 280,
-        frameEnd: 350,
+        frameStart: 450,
+        frameEnd: 650,
         imageSrc: screenshots.cloudRun || "05_cloud_run_services.png",
-        cursorStart: { x: 1100, y: 350 },
-        cursorEnd: { x: 400, y: 290 },
-        cameraTarget: { x: 800, y: 400, scale: 1.15 },
-        label: "Inspect Cloud Run Serverless Gateway"
+        cursorStart: { x: 440, y: 780 },
+        cursorEnd: { x: 230, y: 310 },
+        cameraTarget: { x: 300, y: 320, scale: 1.22 },
+        clickFrame: 560,
+        stageBadge: "Act 3 • Step 2: Google Cloud Console • Service Fleet Architecture",
+        label: "Select Ingress Target: a2a-gateway deployed in us-central1",
+        showRedactions: true
       },
+      // Step 3: Google Cloud Console - Security, CMEK & Cloud KMS Autokey (Rel 650 - 830, Global 1470 - 1650)
       {
-        frameStart: 350,
-        frameEnd: 420,
+        frameStart: 650,
+        frameEnd: 830,
+        imageSrc: screenshots.consoleDrawer || screenshots.drawerOpened || "05_gcp_console_deploy_drawer_opened.png",
+        cursorStart: { x: 230, y: 310 },
+        cursorEnd: { x: 650, y: 405 },
+        cameraTarget: { x: 680, y: 430, scale: 1.3 },
+        clickFrame: 770,
+        stageBadge: "Act 3 • Step 3: Google Cloud Console • Zero-Egress Security",
+        label: "Configure Customer-Managed Encryption Key (CMEK) via Cloud KMS Autokey",
+        showRedactions: true
+      },
+      // Step 4: Google Cloud Console - Active Verified Endpoint & Telemetry (Rel 830 - 990, Global 1650 - 1810)
+      {
+        frameStart: 830,
+        frameEnd: 990,
+        imageSrc: screenshots.consoleActive || screenshots.activeVerified || "06_gcp_console_endpoint_active_verified.png",
+        cursorStart: { x: 650, y: 405 },
+        cursorEnd: { x: 750, y: 450 },
+        cameraTarget: { x: 600, y: 380, scale: 1.15 },
+        clickFrame: 920,
+        stageBadge: "Act 3 • Step 4: Google Cloud Console • Active Telemetry & Observability",
+        label: "Verify Active Endpoint Health: Sub-15ms Latency & Zero Public IP Exposure",
+        showRedactions: true
+      },
+      // Step 5: Google Cloud Console - BigQuery Studio Lakehouse Grounding (Rel 990 - 1392, Global 1810 - 2212)
+      {
+        frameStart: 990,
+        frameEnd: 1392,
         imageSrc: screenshots.bigquery || "06_bigquery_studio_editor.png",
-        cursorStart: { x: 400, y: 290 },
-        cursorEnd: { x: 600, y: 450 },
-        cameraTarget: { x: 960, y: 540, scale: 1.0 },
-        label: "BigQuery Grounding & Audit Telemetry"
+        cursorStart: { x: 750, y: 450 },
+        cursorEnd: { x: 270, y: 675 },
+        cameraTarget: { x: 450, y: 480, scale: 1.18 },
+        clickFrame: 1150,
+        stageBadge: "Act 5: Google Cloud Console • BigQuery Studio Lakehouse & Production Checklist",
+        label: "Ground & Query Clinical Lakehouse: Zero-Egress SQL over Private VPC",
+        showRedactions: true
       }
     ];
   }, [screenshots]);
@@ -102,7 +124,7 @@ export const ConsoleScreencastTrack: React.FC<ConsoleScreencastTrackProps> = ({
 
   // Compute Minimum-Jerk interpolation for cursor (tau = 10*t^3 - 15*t^4 + 6*t^5)
   const cursor = useMemo(() => {
-    const kfDuration = currentKeyframe.frameEnd - currentKeyframe.frameStart;
+    const kfDuration = Math.max(1, currentKeyframe.frameEnd - currentKeyframe.frameStart);
     const rawProgress = Math.min(Math.max((frame - currentKeyframe.frameStart) / kfDuration, 0), 1);
     // Minimum-Jerk polynomial
     const tau = 10 * Math.pow(rawProgress, 3) - 15 * Math.pow(rawProgress, 4) + 6 * Math.pow(rawProgress, 5);
@@ -110,7 +132,7 @@ export const ConsoleScreencastTrack: React.FC<ConsoleScreencastTrackProps> = ({
     const curX = currentKeyframe.cursorStart.x + (currentKeyframe.cursorEnd.x - currentKeyframe.cursorStart.x) * tau;
     const curY = currentKeyframe.cursorStart.y + (currentKeyframe.cursorEnd.y - currentKeyframe.cursorStart.y) * tau;
 
-    // Check if clicking in this frame window (within 15 frames after clickFrame)
+    // Check if clicking in this frame window (within 18 frames after clickFrame)
     let isClicking = false;
     let clickProgress = 0;
     if (currentKeyframe.clickFrame && frame >= currentKeyframe.clickFrame && frame <= currentKeyframe.clickFrame + 18) {
@@ -149,7 +171,7 @@ export const ConsoleScreencastTrack: React.FC<ConsoleScreencastTrackProps> = ({
         height: 2160,
         backgroundColor: "#F8FAFC",
         overflow: "hidden",
-        fontFamily: "'Google Sans', system-ui, sans-serif"
+        fontFamily: "'Google Sans Flex', 'Google Sans', system-ui, sans-serif"
       }}
     >
       {/* Zoomable & Pannable Console Canvas */}
@@ -162,7 +184,7 @@ export const ConsoleScreencastTrack: React.FC<ConsoleScreencastTrackProps> = ({
           transition: "transform 0.1s linear"
         }}
       >
-        {/* Console Screencast Image */}
+        {/* Screencast Image */}
         <Img
           src={currentKeyframe.imageSrc}
           style={{
@@ -173,8 +195,10 @@ export const ConsoleScreencastTrack: React.FC<ConsoleScreencastTrackProps> = ({
           }}
         />
 
-        {/* 12px Dilated Compliance Redaction Layer */}
-        <ComplianceRedactionLayer redactions={redactions} />
+        {/* 12px Dilated Compliance Redaction Layer (on GCP Console views) */}
+        {currentKeyframe.showRedactions && (
+          <ComplianceRedactionLayer redactions={redactions} />
+        )}
 
         {/* Synthetic Minimum-Jerk Spline Cursor */}
         <div
@@ -238,7 +262,7 @@ export const ConsoleScreencastTrack: React.FC<ConsoleScreencastTrackProps> = ({
           position: "absolute",
           bottom: 48,
           left: 64,
-          padding: "16px 32px",
+          padding: "18px 36px",
           backgroundColor: "rgba(255, 255, 255, 0.96)",
           backdropFilter: "blur(16px)",
           WebkitBackdropFilter: "blur(16px)",
@@ -262,10 +286,10 @@ export const ConsoleScreencastTrack: React.FC<ConsoleScreencastTrackProps> = ({
           }}
         />
         <div>
-          <div style={{ fontSize: 14, color: "#475569", fontWeight: 600, letterSpacing: "1px", textTransform: "uppercase" }}>
-            Deterministic CDP Execution • Act 3: Live Console
+          <div style={{ fontSize: 13, color: "#475569", fontWeight: 700, letterSpacing: "1px", textTransform: "uppercase" }}>
+            {currentKeyframe.stageBadge}
           </div>
-          <div style={{ fontSize: 24, color: "#0F172A", fontWeight: 700, marginTop: 4 }}>
+          <div style={{ fontSize: 23, color: "#0F172A", fontWeight: 700, marginTop: 4 }}>
             {currentKeyframe.label}
           </div>
         </div>

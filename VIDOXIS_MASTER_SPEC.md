@@ -1,10 +1,9 @@
-# TRAINEX: Autonomous Enterprise AI Training & Demo Studio
+# VIDOXIS: Autonomous Enterprise AI Training & Demo Studio
 ## Complete Architectural Blueprint & Production Specification (v3.0 Master Standard)
 
 **Authors:** Google Principal Technical Evangelist & Google DeepMind Multimodal System Architects  
 **Target Platform:** Google Cloud Platform, Gemini Omni 1.1, Gemini 2.0 Pro/Flash, Veo 2, Lyria, DeepMind Emotional TTS  
-**Workspace:** `/Users/nitinagga/Documents/vidoxis` (formerly `/Users/nitinagga/Documents/trainex`)  
-> **Note:** The platform has been renamed to **Vidoxis**. See [**`VIDOXIS_MASTER_SPEC.md`**](VIDOXIS_MASTER_SPEC.md) for the active specification.
+**Workspace:** `/Users/nitinagga/Documents/vidoxis`
 
 ---
 
@@ -28,7 +27,7 @@
 
 Delivering world-class technical training to Fortune 500 enterprises and internal Google engineering teams has historically required dozens of hours of preparation: designing slides, rehearsing demo flows, setting up pristine cloud environments, recording dozens of flawed video takes, and painstakingly editing cursor jumps, lag, and audio blunders.
 
-**Trainex** automates the entire lifecycle of an enterprise-grade training session—from conceptual prompt to finished 4K/60fps interactive video—featuring:
+**Vidoxis** automates the entire lifecycle of an enterprise-grade training session—from conceptual prompt to finished 4K/60fps interactive video—featuring:
 1. **A Photorealistic AI Presenter Avatar** (Veo 2 & DeepMind Face Diffusion) delivering an engaging intro, demo narration, and conclusion in an executive Google Meet / Keynote aesthetic.
 2. **Dynamic Keynote-Quality Slides** rendered with crisp typography and subtle micro-animations (Imagen 3).
 3. **Deterministic, Flawless Live System Demos** executed on real Google Cloud environments with automated zoom-to-action camera physics, smooth Bézier cursor dynamics, and real-time PII redaction.
@@ -109,10 +108,10 @@ flowchart TB
 
 ## 3. Multi-Agent Command Hierarchy & Organizational Topology (Tiers 1–5)
 
-To guarantee carrier-grade reliability with zero agent deadlocks or conversation dilution, Trainex operates on a **strictly bounded 5-tier organizational hierarchy**. The system deploys **14 Cognitive AI Roles** commanding a horizontally scalable fleet of **4 Deterministic Zero-LLM Worker types**:
+To guarantee carrier-grade reliability with zero agent deadlocks or conversation dilution, Vidoxis operates on a **strictly bounded 5-tier organizational hierarchy**. The system deploys **14 Cognitive AI Roles** commanding a horizontally scalable fleet of **4 Deterministic Zero-LLM Worker types**:
 
 ```
-                              THE TRAINEX COMMAND HIERARCHY
+                              THE VIDOXIS COMMAND HIERARCHY
 ┌────────────────────────────────────────────────────────────────────────────────────────┐
 │ TIER 1: THE MASTER ORCHESTRATOR                                                        │
 │ └── [1] Supreme Executive Director (Google Omni 1.1)                                   │
@@ -238,7 +237,7 @@ Video In  ──┼──► [GOOGLE OMNI 1.1 NATIVE MULTIMODAL CORE] ──► 
 Text/DOM  ──┘                                                 (<200ms Instant Response)
 ```
 
-### Omni's 4 Specialized Superpowers in Trainex:
+### Omni's 4 Specialized Superpowers in Vidoxis:
 
 #### 1. The Cross-Modal Clockmaster (Pre & Post-Production)
 * **The Problem:** A text model cannot hear its own speech or see the browser loading. If Cloud Console takes 2 seconds longer to provision, text-based voiceover talks over blank screens.
@@ -376,7 +375,7 @@ await page.evaluateOnNewDocument(() => {
 ### 9.1 Segment Manifest (`manifest.v2.json`)
 ```json
 {
-  "$schema": "https://trainex.google.internal/schemas/manifest.v2.json",
+  "$schema": "https://vidoxis.google.internal/schemas/manifest.v2.json",
   "course_id": "vertex-gemini-enterprise-deploy",
   "title": "Production Deployment of Gemini 2.0 on Vertex AI",
   "target_roles": ["devops", "security", "finops", "developer"],
@@ -430,15 +429,15 @@ await page.evaluateOnNewDocument(() => {
   "trace_version": "2.0",
   "workflow": "vertex_ai_endpoint_create",
   "preconditions": {
-    "auth_profile": "gcs://trainex-vault/sessions/linux-session-v2.tar.gz",
-    "entry_url": "https://console.cloud.google.com/vertex-ai/model-garden?project=trainex-demo-sandbox",
-    "project_id": "trainex-demo-sandbox"
+    "auth_profile": "gcs://vidoxis-vault/sessions/linux-session-v2.tar.gz",
+    "entry_url": "https://console.cloud.google.com/vertex-ai/model-garden?project=vidoxis-demo-sandbox",
+    "project_id": "vidoxis-demo-sandbox"
   },
   "steps": [
     {
       "step_id": 1,
       "action": "goto",
-      "url": "https://console.cloud.google.com/vertex-ai/model-garden?project=trainex-demo-sandbox",
+      "url": "https://console.cloud.google.com/vertex-ai/model-garden?project=vidoxis-demo-sandbox",
       "wait_for": { "type": "selector_visible", "selector": "[aria-label='Model Garden search']" },
       "hold_ms": 600
     },

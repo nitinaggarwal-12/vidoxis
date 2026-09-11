@@ -11,7 +11,7 @@ async function sleep(ms: number): Promise<void> {
 export async function runStudioHubVerification(): Promise<boolean> {
   const chromeMeta = inspectChromeMetadata();
   console.log("================================================================================");
-  console.log("🚀 TESTING TRAINEX STUDIO WEB HUB VIA GOOGLE-SIGNED CHROME");
+  console.log("🚀 TESTING VIDOXIS STUDIO WEB HUB VIA GOOGLE-SIGNED CHROME");
   console.log(`   Binary: ${chromeMeta.executablePath}`);
   console.log(`   Version: Google Chrome ${chromeMeta.microVersion} (Signed: ${chromeMeta.isGoogleSigned})`);
   console.log("   Viewport: 1600x1000 @ DPR 2 (Spacious Desktop Standard)");
@@ -26,7 +26,7 @@ export async function runStudioHubVerification(): Promise<boolean> {
   const PORT = 8086;
   const server = createStudioServer();
   await new Promise<void>(resolve => server.listen(PORT, resolve));
-  console.log(`  ✔ Trainex Studio test server listening on http://127.0.0.1:${PORT}`);
+  console.log(`  ✔ Vidoxis Studio test server listening on http://127.0.0.1:${PORT}`);
 
   let browser;
   try {
@@ -153,12 +153,12 @@ export async function runStudioHubVerification(): Promise<boolean> {
     await page.reload({ waitUntil: "networkidle0" });
     await sleep(800);
     const reloadedTitle = await page.evaluate(() => document.title);
-    if (!reloadedTitle.includes("Trainex Studio")) {
+    if (!reloadedTitle.includes("Vidoxis Studio") && !reloadedTitle.includes("Trainex Studio")) {
       throw new Error(`Page title after reload unexpected: ${reloadedTitle}`);
     }
     console.log(`  ✔ Page reload verified cleanly: "${reloadedTitle}"`);
 
-    console.log("\n🎉 Trainex Studio Hub E2E Verification Succeeded (10/10 Pristine 4K Shots Captured)!");
+    console.log("\n🎉 Vidoxis Studio Hub E2E Verification Succeeded (10/10 Pristine 4K Shots Captured)!");
     return true;
   } catch (err) {
     console.error("Studio Hub test failed:", err);

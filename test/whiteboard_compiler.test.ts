@@ -50,7 +50,7 @@ export async function testWhiteboardCompilation(): Promise<boolean> {
     console.error(`❌ Found ${collisions} bounding box collisions in whiteboard layout!`);
     return false;
   }
-  console.log("  ✔ 0% Bounding box collisions confirmed across all 5 nodes.");
+  console.log(`  ✔ 0% Bounding box collisions confirmed across all ${elements.length} nodes.`);
 
   // 2. Test Kinetic Particle Simulation
   console.log("  ↳ Simulating kinetic Bezier particle stream on data edge...");

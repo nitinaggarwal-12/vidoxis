@@ -34,7 +34,7 @@ export interface HookExecutionResult {
   durationMs: number;
 }
 
-export class TrainexHookRunner {
+export class VidoxisHookRunner {
   private config: HooksConfiguration;
   private configPath: string;
 
@@ -107,3 +107,6 @@ export class TrainexHookRunner {
     return { passed: overallPassed, results };
   }
 }
+
+export const TrainexHookRunner = VidoxisHookRunner;
+export type TrainexHookRunner = VidoxisHookRunner;

@@ -1,8 +1,8 @@
-import { TrainexHookRunner } from "../src/hooks/runner.js";
+import { VidoxisHookRunner } from "../src/hooks/runner.js";
 
 export async function testHookExecutionEngine(): Promise<boolean> {
-  console.log("▶ [Test 4] Testing Trainex Hook Execution Engine across all lifecycle events...");
-  const runner = new TrainexHookRunner();
+  console.log("▶ [Test 4] Testing Vidoxis Hook Execution Engine across all lifecycle events...");
+  const runner = new VidoxisHookRunner();
   const lifecycles = runner.getAvailableLifecycles();
   console.log(`  ↳ Found ${lifecycles.length} registered lifecycle events in hooks.json.`);
 

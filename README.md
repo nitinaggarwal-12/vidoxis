@@ -1,14 +1,17 @@
-# TRAINEX: Autonomous Enterprise AI Training & Demo Studio
+# VIDOXIS: Autonomous Enterprise AI Training & Demo Studio
 
 > **"Authoring is agentic and happens once; recording is deterministic and happens every time."**
 
-Trainex is an enterprise-grade AI production platform that completely automates the creation of broadcast-quality 4K/60fps technical training videos, keynote presentation decks, and live cloud demos executed on real Google Cloud, AWS, Azure, and enterprise SaaS environments.
+Vidoxis is an enterprise-grade AI production platform that completely automates the creation of broadcast-quality 4K/60fps technical training videos, keynote presentation decks, and live cloud demos executed on real Google Cloud, AWS, Azure, and enterprise SaaS environments.
 
 ---
 
 ## 🚀 Key Platform Capabilities
 
-1. **Executive Keynote Presentations (Stage 1):** Generates 16:9 keynote slide decks using **PromptCanvas Pipeline V2** with official cloud vendor icons (GCP, AWS, Azure) and 100% collision-free `elkjs` layouts.
+1. **Executive Keynote Presentations & Progressive Whiteboarding (Stage 1 & Act 2):**
+   - **Executive Agentic Whiteboard Standard:** Renders a 5-tier architecture topology (Experience & Ingress $\to$ Intelligence Hub $\to$ Agentic Engine & Tools $\to$ Data & Enterprise Core $\to$ Ecosystem Fabric) on a clean Google Studio White canvas.
+   - **1:1 Dual-Artifact Output:** Simultaneously exports 4K broadcast video/PNG (with progressive phoneme-synchronized vector stroke unwinding and kinetic particles) and fully editable Draw.io (`.drawio`) XML files.
+   - **Keynote Slide Decks:** Integrates **PromptCanvas Pipeline V2** with official cloud vendor icons (GCP, AWS, Azure) and 100% collision-free `elkjs` layouts.
 2. **Deterministic Live Console Screencasting (Stage 2):** Executes verified step traces against real Google Cloud Console, AWS, or Azure environments via Chrome DevTools Protocol (CDP) at 60fps with zero LLMs in the recording take.
 3. **DeepMind Multimodal Studio Mastering (Stage 3):**
    - **Presenter Avatar (DeepMind Veo 2):** Photorealistic talking-head video in Google executive attire with BBox-directed gaze vector steering.
@@ -49,7 +52,7 @@ Trainex is an enterprise-grade AI production platform that completely automates 
 | :--- | :--- |
 | [**`BUSINESS_STRATEGY_100M.md`**](BUSINESS_STRATEGY_100M.md) | The $100M ARR GTM Playbook, Moats, & Hybrid Enterprise Pricing Model |
 | [**`PRODUCTION_ARCHITECTURE_PLAN.md`**](PRODUCTION_ARCHITECTURE_PLAN.md) | Cloud Infrastructure, FinOps Cost Models, 5 Loopholes, & 7 Quality Gates |
-| [**`TRAINEX_MASTER_SPEC.md`**](TRAINEX_MASTER_SPEC.md) | The Master Product Specification, 6 Frontier Breakthroughs, & Core Models |
+| [**`VIDOXIS_MASTER_SPEC.md`**](VIDOXIS_MASTER_SPEC.md) | The Master Product Specification, 6 Frontier Breakthroughs, & Core Models |
 | [**`architecture.md`**](architecture.md) | Distributed Topology, Cross-Repo Leverage Map, & 5-Tier Command Hierarchy |
 | [**`design.md`**](design.md) | Remotion 4K Stage, Minimum-Jerk Motion Math, & React Component Tree |
 | [**`gemini.md`**](gemini.md) | Engineering Constitution, "Path B" Axioms, & Agent Operating Manual |

@@ -3,7 +3,7 @@ import { StepTrace } from "../types/trace.js";
 import { TelemetryStream } from "../types/telemetry.js";
 import { WhiteboardManifest } from "../types/whiteboard.js";
 
-export interface TrainexMasterCompositionProps {
+export interface VidoxisMasterCompositionProps {
   manifest: MasterSegmentManifest;
   whiteboardManifest: WhiteboardManifest;
   trace: StepTrace;
@@ -15,6 +15,8 @@ export interface TrainexMasterCompositionProps {
     lyriaScoreUri?: string;
   };
 }
+
+export type TrainexMasterCompositionProps = VidoxisMasterCompositionProps;
 
 export interface CompositionLayerConfig {
   name: string;

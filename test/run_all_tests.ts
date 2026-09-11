@@ -5,7 +5,7 @@ import { testHookExecutionEngine } from "./hooks_execution.test.js";
 
 async function main() {
   console.log("======================================================================");
-  console.log("             TRAINEX ENTERPRISE TEST & VERIFICATION HARNESS            ");
+  console.log("             VIDOXIS ENTERPRISE TEST & VERIFICATION HARNESS            ");
   console.log("======================================================================\n");
 
   const results: { suite: string; passed: boolean }[] = [];
@@ -25,9 +25,9 @@ async function main() {
   results.push({ suite: "CDP Deterministic Replay & 3x Rehearsal Matrix", passed: r3 });
   console.log("");
 
-  // Suite 4: Trainex Hook Execution Engine (All 13 Lifecycles & 39 Hooks)
+  // Suite 4: Vidoxis Hook Execution Engine (All 13 Lifecycles & 39 Hooks)
   const r4 = await testHookExecutionEngine();
-  results.push({ suite: "Trainex Lifecycle Hooks & Quality Guard Engine (39 Hooks)", passed: r4 });
+  results.push({ suite: "Vidoxis Lifecycle Hooks & Quality Guard Engine (39 Hooks)", passed: r4 });
   console.log("");
 
   console.log("======================================================================");

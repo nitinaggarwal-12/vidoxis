@@ -246,32 +246,44 @@ To eliminate visual and acoustic jarring during the transition from slide presen
 
 ## 11. Progressive Whiteboard Visual Engine & Kinetic Physics
 
-To deliver an engaging, humanized visual explanation of complex topologies before diving into live demos, the Whiteboard Engine combines hand-drawn procedural vector aesthetics with real-time particle simulation in Remotion.
+To deliver an engaging, humanized visual explanation of complex topologies before diving into live demos, the Whiteboard Engine combines hand-drawn procedural vector aesthetics with real-time particle simulation in Remotion, standardized on the **Executive Agentic Whiteboard Standard**.
 
-### 11.1 Master Visual Themes
+### 11.1 Master Visual Themes & Semantic Stencils
 
-1. **Digital Glassboard Theme (Default / Dark Mode):**
+1. **Executive Studio Paper Theme (Canonical Default / Light Mode):**
+   - **Canvas Background:** Pure Studio White `#FFFFFF` (or `#F8FAFC`) with subtle 24px drafting grid `#E2E8F0`.
+   - **Card Enclosures:** Translucent white panels (`fillColor=#FFFFFF;strokeColor=#CBD5E1;strokeWidth=2;shadow=1;`) with high-contrast text.
+   - **Semantic Color Tokens:**
+     - Ingress / Client Layer: Sky Blue (`#0284C7` / `#E0F2FE`)
+     - Orchestration & Intelligence Hub: Google Blue (`#1A73E8` / `#00205B`)
+     - Agentic Reasoning Tools: Royal Violet (`#7C3AED` / `#EDE9FE`)
+     - Data Lakehouse & Databases: Emerald & Teal (`#059669` / `#0D9488`)
+     - Enterprise Core & Monoliths: Slate Gray (`#475569` / `#F1F5F9`)
+     - Security & Ingress Gates: Amber Gold (`#D97706` / `#FEF3C7`)
+   - **Semantic Shape Taxonomy:**
+     - **Capsule / Pill:** Foundation LLMs (`shape=mxgraph.flowchart.terminator;` or `rounded=1;arcSize=50;`).
+     - **3D Storage Cylinder:** Modern database cylinder (`shape=cylinder3;whiteSpace=wrap;html=1;size=14;`). Legacy flat cylinders (`shape=cylinder;`) are prohibited.
+     - **Monolithic Pillar:** Enterprise legacy cores (`shape=rectangle;rounded=0;`).
+     - **Cloud Enclosure:** Scalloped boundary (`shape=cloud;dashed=1;`) enclosing data plane tiers.
+
+2. **Digital Glassboard Theme (Alternative / Dark Mode):**
    - **Canvas Background:** Obsidian Glass `#080C14` with a subtle 32px isometric dot grid at `rgba(255, 255, 255, 0.05)`.
-   - **Chalk / Neon Strokes:**
-     - User / Client Layer: Vibrant Sky Cyan `#38BDF8` (`filter: drop-shadow(0 0 8px rgba(56, 189, 248, 0.6))`)
-     - Process / Logic Layer: Royal Indigo `#818CF8` (`filter: drop-shadow(0 0 8px rgba(129, 140, 248, 0.6))`)
-     - Data / Storage Layer: Emerald Green `#34D399` (`filter: drop-shadow(0 0 8px rgba(52, 211, 153, 0.6))`)
-     - Ingress / Security Boundary: Amber Gold `#FBBF24`
-   - **Card Enclosures:** Frosted glass panels with `background: rgba(15, 23, 42, 0.6)`, `backdrop-filter: blur(12px)`, and hand-drawn sketched borders (`roughjs` roughness: 1.2, bowing: 1.5).
+   - **Chalk / Neon Strokes:** Glowing neon chalk (`#38BDF8`, `#818CF8`, `#34D399`).
 
-2. **Studio Blueprint Theme (Light Mode):**
-   - **Canvas Background:** Pure Engineering White `#FFFFFF` with 24px subtle drafting lines `#E2E8F0`.
-   - **Ink Strokes:** Heavy fountain ink `#0F172A` with watercolor fill accents (`fillWeight: 0.8`, `hachureAngle: 60deg`).
+### 11.2 1:1 Dual-Artifact Parity & Draw.io Export
+The whiteboard engine enforces a strict dual-artifact contract:
+- **Broadcast Render Canvas:** 3840×2160 (4K UHD) @ 60fps in Remotion.
+- **Editable Draw.io Schema (`.drawio`):** Production XML matching node IDs, geometric coordinates, labels, and orthogonal stepped connectors.
 
-### 11.2 Progressive Vector Stroke Unwinding Math
+### 11.3 Progressive Vector Stroke Unwinding Math
 - Vector elements unwind progressively rather than popping in.
 - For an SVG `<path>` with length $L$:
   $$\text{strokeDasharray} = L$$
   $$\text{strokeDashoffset} = L \times (1 - \text{interpolate}(frame, [start, end], [0, 1], \{\text{easing: Easing.bezier}(0.25, 0.1, 0.25, 1)\}))$$
-- **Stylus Glow Dot:** A 12px circular bloom (`#FFFFFF` core, colored halo) tracks the instantaneous tip coordinate:
+- **Stylus Glow Dot:** A 12px circular bloom tracks the instantaneous tip coordinate:
   $$(X_{\text{tip}}, Y_{\text{tip}}) = \text{pathElement.getPointAtLength}(L \times \text{progress})$$
 
-### 11.3 Particle Physics Simulation (`ParticleStreamShader`)
+### 11.4 Particle Physics Simulation (`ParticleStreamShader`)
 - Edges carrying data emit kinetic glowing particles along cubic Bezier curves $\mathbf{B}(t)$:
   $$\mathbf{B}(t) = (1-t)^3 \mathbf{P}_0 + 3(1-t)^2 t \mathbf{P}_1 + 3(1-t) t^2 \mathbf{P}_2 + t^3 \mathbf{P}_3$$
 - **Parameters:**
@@ -279,27 +291,26 @@ To deliver an engaging, humanized visual explanation of complex topologies befor
   - **Velocity:** $v = 1.8\text{px/frame}$ for standard requests; $v = 4.5\text{px/frame}$ during burst load or stress scenarios.
   - **Color Coding:** Amber pulses represent control-plane commands (IAM check, TLS handshake); cyan pulses represent live user data payloads.
 
-### 11.4 Remotion Component Tree for Whiteboarding
+### 11.5 Remotion Component Tree for Whiteboarding
 ```tsx
-<WhiteboardStage width={3840} height={2160}>
-  {/* Layer 1: Isometric Grid Background */}
-  <IsometricDotGrid spacing={32} opacity={0.05} />
+<WhiteboardStage width={3840} height={2160} theme="studio_paper">
+  {/* Layer 1: Studio Drafting Grid Background */}
+  <DraftingGrid spacing={24} stroke="#E2E8F0" />
 
-  {/* Layer 2: Hand-Drawn Bounding Containers */}
-  <RoughBoundaryBox
-    label="VPC Private Network"
-    bounds={{ x: 600, y: 300, width: 2640, height: 1560 }}
-    roughness={1.1}
-    stroke="#FBBF24"
-    startFrame={30}
-    durationFrames={40}
+  {/* Layer 2: Cloud Boundary Enclosures */}
+  <ScallopedCloudBoundary
+    label="Google Cloud Data Plane"
+    bounds={{ x: 730, y: 340, width: 780, height: 490 }}
+    dashed={true}
+    stroke="#94A3B8"
   />
 
-  {/* Layer 3: Progressive Process Nodes */}
+  {/* Layer 3: Progressive 5-Tier Sketch Nodes */}
   {nodes.map(node => (
     <ProgressiveSketchNode
       key={node.id}
       data={node}
+      shape={node.semanticShape}
       startFrame={node.drawStartFrame}
       durationFrames={node.drawDurationFrames}
     />
@@ -318,7 +329,7 @@ To deliver an engaging, humanized visual explanation of complex topologies befor
   ))}
 
   {/* Layer 5: Optical Stylus Glow Tracker */}
-  <OpticalStylusHead activeStrokeCoordinates={activeTip} color="#38BDF8" />
+  <OpticalStylusHead activeStrokeCoordinates={activeTip} color="#1A73E8" />
 </WhiteboardStage>
 ```
 

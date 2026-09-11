@@ -1,13 +1,13 @@
-# Trainex System Architecture & Distributed Engineering Specification
+# Vidoxis System Architecture & Distributed Engineering Specification
 **Version:** 3.0 (Master Production Standard)  
 **Authors:** Google Principal Technical Evangelist & Google DeepMind Multimodal System Architects  
-**Workspace:** `/Users/nitinagga/Documents/trainex`
+**Workspace:** `/Users/nitinagga/Documents/vidoxis`
 
 ---
 
 ## 1. System Overview & The "Path B" Axiom
 
-Trainex is an autonomous enterprise AI studio that generates broadcast-quality technical training videos, keynote slide decks, and live system demos using real cloud environments.
+Vidoxis is an autonomous enterprise AI studio that generates broadcast-quality technical training videos, keynote slide decks, and live system demos using real cloud environments.
 
 ### The Core Architectural Axiom: "Path B" Determinism
 ```
@@ -29,7 +29,7 @@ Step Trace ──► Rehearsal Matrix ──► CDP Screencast Replayer ──�
 ```mermaid
 flowchart TB
     subgraph CLIENT["Client & API Layer"]
-        CLI["Trainex Studio CLI / Web UI"]
+        CLI["Vidoxis Studio CLI / Web UI"]
         API["Cloud Run Studio Gateway (FastAPI)"]
         A2A["A2A Protocol Broker (from a2a-enterprise-gateway)"]
         QUEUE["Cloud Tasks Job Dispatcher"]
@@ -127,17 +127,17 @@ To eliminate Santa endpoint security blocking (`Killed: 9` on unnotarized binari
 
 ## 3. Multi-Agent Command Hierarchy (Tiers 1–5)
 
-To eliminate agent deadlocks and conversational dilution, Trainex enforces strict vertical delegation across **14 Cognitive AI Roles** commanding **4 Deterministic Compute Worker types**:
+To eliminate agent deadlocks and conversational dilution, Vidoxis enforces strict vertical delegation across **14 Cognitive AI Roles** commanding **4 Deterministic Compute Worker types**:
 
 ```
-                              THE TRAINEX COMMAND HIERARCHY
+                              THE VIDOXIS COMMAND HIERARCHY
 ┌────────────────────────────────────────────────────────────────────────────────────────┐
 │ TIER 1: THE MASTER ORCHESTRATOR                                                        │
 │ └── [1] Supreme Executive Director (Google Omni 1.1)                                   │
 │         - Master Cross-Modal Clock & Global State Machine Conductor                    │
 ├────────────────────────────────────────────────────────────────────────────────────────┤
 │ TIER 2: SPECIALIZED PLANNERS & ARCHITECTS                                              │
-│ ├── [2] Pedagogical & Syllabus Planner (Gemini 2.0 Pro) ──► Manifest & Timing Budgets │
+│ ├── [2] Pedagogical & Syllabus Planner (Gemini 2.5 Pro) ──► Manifest & Timing Budgets │
 │ ├── [3] Cloud Infrastructure Architect (Gemini Code Engine) ──► Terraform & Sandboxes  │
 │ └── [4] Creative & Visual Director (DeepMind Creative Architect) ──► Slides & Tokens   │
 ├────────────────────────────────────────────────────────────────────────────────────────┤
@@ -147,9 +147,9 @@ To eliminate agent deadlocks and conversational dilution, Trainex enforces stric
 │ └── [7] Compliance & Screening Room Supervisor (Red Team - Omni 1.1) ──► Unilateral Veto│
 ├────────────────────────────────────────────────────────────────────────────────────────┤
 │ TIER 4: SPECIALIZED AUTONOMOUS AGENTS & SUBAGENTS                                      │
-│ ├── [8]  Console Pilot Agent (Gemini 2.0 Flash CUA) ──► Shadow DOM & Triad Selectors  │
-│ ├── [9]  Chaos Injection Subagent (Gemini 2.0 Flash) ──► 403 / Quota Failure Pedagogy  │
-│ ├── [10] Rehearsal Flake Healer (Gemini 2.0 Flash Vision) ──► Auto-Reanchoring        │
+│ ├── [8]  Console Pilot Agent (Gemini 2.5 Flash CUA) ──► Shadow DOM & Triad Selectors  │
+│ ├── [9]  Chaos Injection Subagent (Gemini 2.5 Flash) ──► 403 / Quota Failure Pedagogy  │
+│ ├── [10] Rehearsal Flake Healer (Gemini 2.5 Flash Vision) ──► Auto-Reanchoring        │
 │ ├── [11] Voice Talent Agent (DeepMind Emotional TTS) ──► 5-Band Formants & Phonemes   │
 │ ├── [12] Avatar Cinematographer (DeepMind Veo 2) ──► Gaze-Steered (-15° Azimuth) PiP   │
 │ ├── [13] Score & Sound Design Agent (DeepMind Lyria) ──► Lookahead -18dB Ducking       │
@@ -167,7 +167,7 @@ To eliminate agent deadlocks and conversational dilution, Trainex enforces stric
 
 ## 4. Cross-Repository Subsystem Leverage Map
 
-Trainex strategically integrates proven modules from existing sister repositories in `/Users/nitinagga/Documents/`:
+Vidoxis strategically integrates proven modules from existing sister repositories in `/Users/nitinagga/Documents/`:
 
 ```
 ┌──────────────────────────────────────────────────────────────────────────────────────────────────┐
@@ -184,7 +184,7 @@ Trainex strategically integrates proven modules from existing sister repositorie
 │              │                           │                       │                    │          │
 │              ▼                           ▼                       ▼                    ▼          │
 │   ┌──────────────────────────────────────────────────────────────────────────────────────────┐   │
-│   │                           TRAINEX PRODUCTION CORE ENGINE                                 │   │
+│   │                           VIDOXIS PRODUCTION CORE ENGINE                                 │   │
 │   └──────────────────────────────────────────────────────────────────────────────────────────┘   │
 └──────────────────────────────────────────────────────────────────────────────────────────────────┘
 ```
@@ -206,7 +206,7 @@ Trainex strategically integrates proven modules from existing sister repositorie
 
 ### 4.2 From `PromptCanvas` (Keynote Slide Architecture Engine)
 1. **Pipeline V2 (Graph-then-Layout Engine):**
-   - Trainex's **Creative Director (Agent #4)** delegates slide architecture diagramming directly to PromptCanvas:
+   - Vidoxis's **Creative Director (Agent #4)** delegates slide architecture diagramming directly to PromptCanvas:
      - Step 1: Gemini emits logical graph (`WHAT nodes exist and HOW they connect`).
      - Step 2: `elkjs` computes 100% collision-free $(x, y, w, h)$ coordinates with layer hierarchy.
      - Step 3: mxGraph renderer exports high-contrast, vector-grade SVG/XML containing **official Google Cloud vendor logos** (Cloud Armor, Vertex AI, Cloud Run, Cloud SQL, BigQuery).
@@ -232,7 +232,7 @@ Trainex strategically integrates proven modules from existing sister repositorie
 │ Production Loophole                  │ Fatal Failure Scenario                   │ Hardened Architectural Fix               │
 ├──────────────────────────────────────┼──────────────────────────────────────────┼──────────────────────────────────────────┤
 │ 1. Sandbox Teardown Blast-Radius     │ Typo in env var triggers `terraform      │ Immutable Regex Project Name Guardrail:  │
-│    (Accidental Production Deletion)  │ destroy` against a real corporate project│ `^trainex-(sandbox|ephem)-[a-z0-9]{4,8}$`│
+│    (Accidental Production Deletion)  │ destroy` against a real corporate project│ `^(?:vidoxis|trainex)-(sandbox|ephem)-`  │
 ├──────────────────────────────────────┼──────────────────────────────────────────┼──────────────────────────────────────────┤
 │ 2. Linux vs. Mac Font Metric Drift   │ Missing Google Sans in Ubuntu causes 4%  │ Bit-for-bit bundled TTF font package in  │
 │    (Text-Wrap Coordinate Shifts)     │ text reflow; button wraps; clicks miss.  │ Docker container + fontconfig pinning.   │
@@ -251,7 +251,7 @@ Trainex strategically integrates proven modules from existing sister repositorie
 ### 5.1 Sandbox Teardown Blast-Radius Firewall
 ```typescript
 export function assertSafeSandboxProject(projectId: string): void {
-  const SAFE_SANDBOX_REGEX = /^trainex-(sandbox|ephem)-[a-z0-9]{4,8}$/;
+  const SAFE_SANDBOX_REGEX = /^(?:vidoxis|trainex)-(sandbox|ephem)-[a-z0-9]{4,8}$/;
   if (!SAFE_SANDBOX_REGEX.test(projectId)) {
     throw new Error(
       `FATAL SECURITY VIOLATION: Refusing to execute operations on project '${projectId}'. ` +
@@ -360,7 +360,7 @@ await page.evaluateOnNewDocument(() => {
 
 ## 8. Universal Console Driver Architecture & Git-Native PR Diff Engine
 
-To power Trainex's $100M enterprise expansion across multi-cloud and continuous Git workflows:
+To power Vidoxis's $100M enterprise expansion across multi-cloud and continuous Git workflows:
 
 ### 8.1 Universal Console Drivers
 The core "Path B" architecture (URL-first navigation + Triad Selectors + CDP replay + minimum-jerk physics) is decoupled from Google Cloud via an abstract driver interface:
@@ -381,7 +381,7 @@ export interface ConsoleDriver {
   1. A GitHub Actions webhook triggers `on_github_pr_opened` in `hooks.json`.
   2. The runner extracts the modified step diff, re-runs rehearsal, and re-records the changed 3-second delta.
   3. Remotion renders a side-by-side **Visual Video Diff MP4** (Baseline vs PR Revision).
-  4. The Trainex GitHub bot comments directly on the PR with an embedded video player before human review.
+  4. The Vidoxis GitHub bot comments directly on the PR with an embedded video player before human review.
 
 ---
 
@@ -393,10 +393,10 @@ To eliminate Slide-to-Demo drift where the presentation promises one configurati
 Slides and demo traces are dual mathematical projections derived from a single schema:
 ```json
 {
-  "$schema": "https://trainex.google.internal/schemas/contract.v1.json",
+  "$schema": "https://vidoxis.google.internal/schemas/contract.v1.json",
   "topic_id": "vertex_gemini_private_endpoint",
   "global_parameters": {
-    "project_id": "trainex-sandbox-8f2a",
+    "project_id": "vidoxis-sandbox-8f2a",
     "region": "us-central1",
     "vpc_network": "vpc-prod-private"
   },
@@ -404,14 +404,14 @@ Slides and demo traces are dual mathematical projections derived from a single s
     "nodes": [
       { "id": "cloud_armor", "label": "Cloud Armor WAF" },
       { "id": "alb", "label": "Internal App Load Balancer" },
-      { "id": "vertex_endpoint", "label": "Gemini 2.0 Flash Endpoint" }
+      { "id": "vertex_endpoint", "label": "Gemini 2.5 Flash Endpoint" }
     ]
   },
   "demo_action_parameters": {
     "endpoint_display_name": "gemini-2-flash-prod",
     "min_replica_count": 1,
     "max_replica_count": 5,
-    "service_account": "sa-vertex-runner@trainex-sandbox-8f2a.iam.gserviceaccount.com"
+    "service_account": "sa-vertex-runner@vidoxis-sandbox-8f2a.iam.gserviceaccount.com"
   }
 }
 ```

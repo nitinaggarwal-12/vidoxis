@@ -1,6 +1,6 @@
 # Vidoxis Multi-Agent Protocol & Pair-Programming Guidelines
 **Target Audience:** Autonomous Coding Agents (Antigravity, Gemini Omni, Gemini 2.0 Flash) & Pair Programmers  
-**Workspace:** `/Users/nitinagga/Documents/vidoxis` (formerly `/Users/nitinagga/Documents/trainex`)  
+**Workspace:** `/Users/nitinagga/Documents/vidoxis`  
 
 ---
 
@@ -9,16 +9,16 @@
 When operating within the Vidoxis codebase, agents must strictly follow the **5-Tier Command Hierarchy**:
 
 ```
-[ Tier 1: Master Orchestrator (Omni 1.1) ]
+[ Tier 1: Master Orchestrator (Omni 1.1 / Gemini 2.5 Pro) ]
                   │
                   ▼
-[ Tier 2: Planners & Architects (Gemini 2.0 Pro) ]
+[ Tier 2: Planners & Architects (Gemini 2.5 Pro) ]
                   │
                   ▼
 [ Tier 3: Domain Supervisors (Quality Firewalls) ]
                   │
                   ▼
-[ Tier 4: Autonomous Subagents (Specialized Tools) ]
+[ Tier 4: Autonomous Subagents (Gemini 2.5 Flash / Specialized Tools) ]
                   │
                   ▼
 [ Tier 5: Deterministic Compute Workers (Zero-LLM) ]
@@ -36,6 +36,9 @@ When operating within the Vidoxis codebase, agents must strictly follow the **5-
 > **"Authoring is agentic and happens once; recording is deterministic and happens every time."**
 
 * **Never introduce an LLM into the recording loop.** The recording runner executes frozen step traces via Chrome DevTools Protocol (CDP).
+* **Stage Partitioning Rule (Stage 2 vs. Stage 6):**
+  - **Stage 2 (Master Screencast Take):** Strictly zero-LLM deterministic CDP replay ("Path B").
+  - **Stage 6 (Interactive 'Take the Wheel' & Socratic Proctoring):** The only phase that engages the live WebRTC Gemini Multimodal Live API.
 * **Condition Gates over Static Sleep:** Never write `await sleep(3000)`. Always wait on explicit DOM mutations or network idle events.
 * **URL-First Navigation:** When scripting Google Cloud Console workflows, navigate directly to canonical deep-links (`https://console.cloud.google.com/{service}?project={PROJECT_ID}`). Never click hamburger menus or sidebars.
 
@@ -51,8 +54,8 @@ When operating within the Vidoxis codebase, agents must strictly follow the **5-
 ## 4. File Link & Markdown Conventions
 
 * All references to workspace files must use clickable Markdown links with the `file://` scheme:
-  - Example: `[architecture.md](file:///Users/nitinagga/Documents/trainex/architecture.md)`
-* Store all scratch scripts, test automation tools, and visual screenshots inside the workspace (`scratch/` or subdirectories inside `/Users/nitinagga/Documents/trainex`).
+  - Example: `[architecture.md](file:///Users/nitinagga/Documents/vidoxis/architecture.md)`
+* Store all scratch scripts, test automation tools, and visual screenshots inside the workspace (`scratch/` or subdirectories inside `/Users/nitinagga/Documents/vidoxis`).
 
 ---
 

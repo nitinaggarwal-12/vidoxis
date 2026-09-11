@@ -13,6 +13,9 @@
   1. The agent explores the sandbox once to discover the path and emit a **Step Trace JSON**.
   2. The rehearsal runner validates that trace 3–5 times against a freshly reset cloud tenant.
   3. The recorder executes the frozen trace deterministically using Chrome DevTools Protocol (CDP). **No LLM is present in the recording loop.**
+* **Stage Partitioning Standard:**
+  - **Stage 2 (Master Screencasting):** Strictly deterministic zero-LLM CDP replay ("Path B").
+  - **Stage 6 (Interactive 'Take the Wheel' & Socratic Mentoring):** The only phase that engages the live WebRTC Gemini Multimodal Live API.
 
 ---
 

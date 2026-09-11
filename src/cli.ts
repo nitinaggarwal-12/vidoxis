@@ -68,7 +68,7 @@ Options:
     topicId: "vertex_gemini_private_endpoint",
     title: values.topic || "Deploying Private Gemini 2.0 Endpoints on Google Cloud",
     globalParameters: {
-      projectId: "trainex-sandbox-8f2a",
+      projectId: "vidoxis-sandbox-8f2a",
       region: "us-central1",
       zone: "us-central1-a",
       vpcNetwork: "vpc-prod-private",
@@ -122,7 +122,7 @@ Options:
         act: "act3_live_console",
         intent: "Navigate to Vertex AI Model Garden deep link",
         action: "navigate",
-        targetUrl: "https://console.cloud.google.com/vertex-ai/models?project=trainex-sandbox-8f2a",
+        targetUrl: "https://console.cloud.google.com/vertex-ai/models?project=vidoxis-sandbox-8f2a",
         dwellTimeMs: 150,
         redactPii: false,
         cameraFocus: false

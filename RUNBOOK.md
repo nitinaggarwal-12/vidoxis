@@ -1,6 +1,6 @@
-# Trainex Operations Runbook & SRE Guide
+# Vidoxis Operations Runbook & SRE Guide
 **Target Audience:** DevOps Engineers, Cloud SREs, and Autonomous Coding Agents  
-**Workspace:** `/Users/nitinagga/Documents/trainex`
+**Workspace:** `/Users/nitinagga/Documents/vidoxis`
 
 ---
 
@@ -11,33 +11,33 @@ To eliminate Google Identity bot-detection checkpoints, session profiles must be
 ### Step-by-Step Procedure:
 1. Spin up the dedicated Linux headful bastion in the private VPC subnet:
    ```bash
-   gcloud compute instances create trainex-session-bastion \
+   gcloud compute instances create vidoxis-session-bastion \
      --zone=us-central1-a \
-     --network=trainex-prod-vpc \
-     --subnet=trainex-private-subnet \
+     --network=vidoxis-prod-vpc \
+     --subnet=vidoxis-private-subnet \
      --machine-type=e2-standard-4 \
      --image-family=ubuntu-2404-lts \
      --image-project=ubuntu-os-cloud
    ```
 2. Connect via SSH with X11 forwarding or remote Chrome DevTools debugging:
    ```bash
-   gcloud compute ssh trainex-session-bastion -- -L 9222:localhost:9222
+   gcloud compute ssh vidoxis-session-bastion -- -L 9222:localhost:9222
    ```
 3. Launch Google Chrome with the designated training service account:
    ```bash
-   google-chrome --remote-debugging-port=9222 --user-data-dir=/tmp/trainex-seed-profile
+   google-chrome --remote-debugging-port=9222 --user-data-dir=/tmp/vidoxis-seed-profile
    ```
 4. Log into `https://console.cloud.google.com` interactively, complete 2FA, dismiss all introductory tours, and select the default Google Cloud project.
 5. Package and encrypt the profile using Google Cloud KMS:
    ```bash
-   tar -czf /tmp/profile.tar.gz -C /tmp/trainex-seed-profile .
+   tar -czf /tmp/profile.tar.gz -C /tmp/vidoxis-seed-profile .
    gcloud kms encrypt \
      --location=global \
-     --keyring=trainex-vault \
+     --keyring=vidoxis-vault \
      --key=session-encryption-key \
      --plaintext-file=/tmp/profile.tar.gz \
      --ciphertext-file=/tmp/profile.tar.gz.enc
-   gsutil cp /tmp/profile.tar.gz.enc gs://trainex-session-vault/sessions/linux-session-v1.tar.gz.enc
+   gsutil cp /tmp/profile.tar.gz.enc gs://vidoxis-session-vault/sessions/linux-session-v1.tar.gz.enc
    ```
 
 ---
@@ -51,7 +51,7 @@ Before any trace can be recorded for final video delivery, it must pass the **3x
 node scripts/run_rehearsal.js \
   --trace=traces/vertex_deploy_v2.json \
   --runs=3 \
-  --project-pool=trainex-ephemeral \
+  --project-pool=vidoxis-ephemeral \
   --auto-heal=true
 ```
 
@@ -78,7 +78,7 @@ If Run #2 or #3 flakes on a step:
   1. Check if the weekly refresh cron failed in Cloud Monitoring.
   2. Execute the background token refresh script:
      ```bash
-     node scripts/refresh_session_tokens.js --vault-uri=gs://trainex-session-vault/sessions/linux-session-v1.tar.gz.enc
+     node scripts/refresh_session_tokens.js --vault-uri=gs://vidoxis-session-vault/sessions/linux-session-v1.tar.gz.enc
      ```
   3. If refresh token is revoked, re-run Section 1 (Interactive Seeding).
 

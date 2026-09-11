@@ -11,7 +11,7 @@ export async function testHookExecutionEngine(): Promise<boolean> {
 
   for (const lc of lifecycles) {
     const { passed, results } = await runner.runLifecycle(lc, {
-      PROJECT_ID: "trainex-sandbox-8f2a",
+      PROJECT_ID: "vidoxis-sandbox-8f2a",
       TARGET_DRIVER: "gcp",
       FILE: "schemas/manifest.v2.json",
       CONTRACT_FILE: "schemas/contract.v1.json",
@@ -21,7 +21,7 @@ export async function testHookExecutionEngine(): Promise<boolean> {
       TELEMETRY_JSON: "scratch/02_telemetry_stream.json",
       RAW_VIDEO: "scratch/raw_screencast.mp4",
       AUTH_PROFILE: "default",
-      OUTPUT_MP4: "scratch/trainex_master_4k.mp4",
+      OUTPUT_MP4: "scratch/vidoxis_master_4k.mp4",
       TRANSCRIPT_JSON: "scratch/transcript.json",
       HLS_URL: "https://cdn.google.internal/live.m3u8"
     });

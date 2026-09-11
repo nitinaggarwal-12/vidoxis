@@ -1,6 +1,6 @@
-# Trainex Skills Catalog & Trigger Matrix (v3.0 Production Standard)
+# Vidoxis Skills Catalog & Trigger Matrix (v3.0 Production Standard)
 
-This document defines the complete catalog of **18 specialized enterprise skills and autonomous engines** available to the Trainex platform. Every skill has an unambiguous trigger condition, operational responsibility, CLI invocation pattern, and typed input/output contract.
+This document defines the complete catalog of **18 specialized enterprise skills and autonomous engines** available to the Vidoxis platform. Every skill has an unambiguous trigger condition, operational responsibility, CLI invocation pattern, and typed input/output contract.
 
 ---
 
@@ -70,7 +70,7 @@ This document defines the complete catalog of **18 specialized enterprise skills
 * **CLI Invocation:**
   ```bash
   node scripts/run_skill.js scorex-maturity-evaluator \
-    --project-id="trainex-sandbox-8f2a" \
+    --project-id="vidoxis-sandbox-8f2a" \
     --rubric="vertex-private-endpoint"
   ```
 * **Output Contract:**
@@ -100,7 +100,7 @@ This document defines the complete catalog of **18 specialized enterprise skills
   ```bash
   node scripts/run_skill.js terraform-sandbox-manager \
     --action="reset" \
-    --target-project="trainex-sandbox-8f2a"
+    --target-project="vidoxis-sandbox-8f2a"
   ```
 
 ### 2.6 `session-vault-manager`
@@ -108,8 +108,8 @@ This document defines the complete catalog of **18 specialized enterprise skills
 * **CLI Invocation:**
   ```bash
   node scripts/run_skill.js session-vault-manager \
-    --vault-uri="gs://trainex-vault/sessions/linux-session.tar.gz" \
-    --kms-key="projects/trainex-prod/locations/global/keyRings/vault/cryptoKeys/session" \
+    --vault-uri="gs://vidoxis-vault/sessions/linux-session.tar.gz" \
+    --kms-key="projects/vidoxis-prod/locations/global/keyRings/vault/cryptoKeys/session" \
     --mount-point="/dev/shm/chrome-profile"
   ```
 
@@ -127,7 +127,7 @@ This document defines the complete catalog of **18 specialized enterprise skills
 * **CLI Invocation:**
   ```bash
   node scripts/run_skill.js veo-neural-inpainter \
-    --master-video="gs://trainex-media-prod/master_vertex.mp4" \
+    --master-video="gs://vidoxis-media-prod/master_vertex.mp4" \
     --delta-screencast="scratch/patch_01/delta.mp4" \
     --start-frame=480 \
     --end-frame=660
@@ -176,7 +176,7 @@ This document defines the complete catalog of **18 specialized enterprise skills
   ```bash
   node scripts/run_skill.js git-pr-video-differ \
     --pr-diff=scratch/pr_diffs/pr_124.patch \
-    --base-video=gs://trainex-media-prod/master_v1.mp4
+    --base-video=gs://vidoxis-media-prod/master_v1.mp4
   ```
 
 ### 2.14 `socratic-certificate-minter`
@@ -186,7 +186,7 @@ This document defines the complete catalog of **18 specialized enterprise skills
   node scripts/run_skill.js socratic-certificate-minter \
     --learner-id="usr_99120" \
     --evaluation-id="eval_8f2a9c" \
-    --signing-key="projects/trainex-prod/locations/global/keyRings/compliance/cryptoKeys/cert-signer"
+    --signing-key="projects/vidoxis-prod/locations/global/keyRings/compliance/cryptoKeys/cert-signer"
   ```
 
 ### 2.15 `slide-demo-alignment-auditor`

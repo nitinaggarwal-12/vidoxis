@@ -36,8 +36,8 @@ Vidoxis is an enterprise-grade AI production platform that completely automates 
 ## 🛠️ Architecture & Tech Stack
 
 - **Master Orchestrator:** Google Omni 1.1 (Central Nervous System & Master Cross-Modal Clock)
-- **Planning & Syllabus:** Gemini 2.0 Pro
-- **Console Pathfinder:** Gemini 2.0 Flash (Computer-Use Agent)
+- **Planning & Syllabus:** Gemini 2.5 Pro / Gemini 2.0 Pro
+- **Console Pathfinder & Healer:** Gemini 2.5 Flash / Gemini 2.0 Flash (Computer-Use Agent & Vision)
 - **Generative Media:** DeepMind Veo 2, Imagen 3, Lyria, Emotional TTS
 - **Compositing Engine:** Remotion (React 19 + TypeScript + WebGL Shaders)
 - **Compute Infrastructure:** Google Cloud Run (Jobs & Services) + NVIDIA L4 GPU acceleration

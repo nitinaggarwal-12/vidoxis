@@ -1,15 +1,15 @@
-# TRAINEX: Enterprise Production Architecture & Engineering Plan (v1.0 Production Standard)
+# VIDOXIS: Enterprise Production Architecture & Engineering Plan (v1.0 Production Standard)
 
 **Authors:** Google Principal Technical Evangelist & Google DeepMind Multimodal Architects  
 **Target Environment:** Google Cloud Platform (Enterprise Production Tier)  
 **Classification:** Google Cloud & Alphabet Confidential / Enterprise Partner Grade  
-**Workspace:** `/Users/nitinagga/Documents/trainex`
+**Workspace:** `/Users/nitinagga/Documents/vidoxis`
 
 ---
 
 ## Executive Production Blueprint
 
-This document defines the complete, battle-tested, carrier-grade **Production Architecture and Engineering Plan** to take Trainex from architecture specifications to a globally distributed, resilient cloud platform on Google Cloud.
+This document defines the complete, battle-tested, carrier-grade **Production Architecture and Engineering Plan** to take Vidoxis from architecture specifications to a globally distributed, resilient cloud platform on Google Cloud.
 
 ```
 ┌──────────────────────────────────────────────────────────────────────────────────────────────────┐
@@ -38,15 +38,15 @@ This document defines the complete, battle-tested, carrier-grade **Production Ar
 │ ┌─────────────┐ ┌─────────────┐ ┌─────────────┐  (VPC Connector + Cloud NAT)                    │
 │ │ Authoring   │ │ CDP Replay  │ │ Studio GPU  │  (Static Enterprise Egress IP Pool)             │
 │ │ Cloud Run   │ │ Cloud Run   │ │ Cloud Run   │  (NVIDIA L4 24GB Accelerator)                   │
-│ └──────┬──────┘ └──────┬──────┘ └──────┬──────┘                                                 │
+│ │ └──────┬──────┘ └──────┬──────┘ └──────┬──────┘                                               │
 │        │               │               │                                                        │
 │        └───────────────┼───────────────┘                                                        │
 │                        ▼                                                                        │
 │         ┌─────────────────────────────┐                                                         │
 │         │ Google Cloud Storage (GCS)  │ (CMEK Encrypted, Multi-Regional)                         │
-│         │   - gs://trainex-vault      │                                                         │
-│         │   - gs://trainex-media-raw  │                                                         │
-│         │   - gs://trainex-media-prod │                                                         │
+│         │   - gs://vidoxis-vault      │                                                         │
+│         │   - gs://vidoxis-media-raw  │                                                         │
+│         │   - gs://vidoxis-media-prod │                                                         │
 │         └──────────────┬──────────────┘                                                         │
 │                        │                                                                        │
 │                        ▼                                                                        │
@@ -67,7 +67,7 @@ This document defines the complete, battle-tested, carrier-grade **Production Ar
   - Web Application Firewall (WAF) rules inspecting SQLi, XSS, and payload anomalies.
   - Geo-fencing capabilities for regional compliance (EU GDPR / US GovCloud).
 * **Virtual Private Cloud (VPC) & Cloud NAT:**
-  - Dedicated VPC (`trainex-prod-vpc`) with zero public IPs on backend compute workers.
+  - Dedicated VPC (`vidoxis-prod-vpc`) with zero public IPs on backend compute workers.
   - **Serverless VPC Access Connector:** Connects Cloud Run services directly to private VPC subnets.
   - **Cloud NAT + Cloud Router:** Outbound traffic from the CDP replay workers egresses through a dedicated pool of **static enterprise IP addresses** registered with Google Identity as trusted corporate automation addresses.
 
@@ -75,17 +75,17 @@ This document defines the complete, battle-tested, carrier-grade **Production Ar
 
 | Service Name | Compute Type | Container Base | Hardware Resources | Concurrency | Autoscaling |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| `trainex-api` | Cloud Run Service | Python 3.12 (FastAPI) | 2 vCPU, 4GB RAM | 80 | 1–50 instances |
-| `trainex-webrtc-proxy` | Cloud Run Service | Node.js 22 (WebSocket) | 4 vCPU, 8GB RAM | 40 | 1–30 instances |
-| `trainex-author-agent` | Cloud Run Job | Node.js 22 + Chromium | 4 vCPU, 16GB RAM | 1 (Isolated) | 0–10 jobs |
-| `trainex-cdp-runner` | Cloud Run Job | Ubuntu 24.04 + Chrome Shell | 8 vCPU, 32GB RAM | 1 (Isolated) | 0–20 jobs |
-| `trainex-gpu-render` | Cloud Run Job | Ubuntu 24.04 + FFmpeg GPU | 16 vCPU, 64GB, NVIDIA L4 (24GB) | 1 (Isolated) | 0–8 GPU jobs |
+| `vidoxis-api` | Cloud Run Service | Python 3.12 (FastAPI) | 2 vCPU, 4GB RAM | 80 | 1–50 instances |
+| `vidoxis-webrtc-proxy` | Cloud Run Service | Node.js 22 (WebSocket) | 4 vCPU, 8GB RAM | 40 | 1–30 instances |
+| `vidoxis-author-agent` | Cloud Run Job | Node.js 22 + Chromium | 4 vCPU, 16GB RAM | 1 (Isolated) | 0–10 jobs |
+| `vidoxis-cdp-runner` | Cloud Run Job | Ubuntu 24.04 + Chrome Shell | 8 vCPU, 32GB RAM | 1 (Isolated) | 0–20 jobs |
+| `vidoxis-gpu-render` | Cloud Run Job | Ubuntu 24.04 + FFmpeg GPU | 16 vCPU, 64GB, NVIDIA L4 (24GB) | 1 (Isolated) | 0–8 GPU jobs |
 
 ### 1.3 Persistence & Storage Tier
 * **Google Cloud Storage (GCS):**
-  - `gs://trainex-session-vault`: Stores KMS-encrypted Chrome profile archives (`profile.tar.gz`). Bucket has Object Versioning and strict Uniform Bucket-Level Access (UBLA).
-  - `gs://trainex-media-staging`: Ephemeral screencasts, raw audio tracks, and Remotion frame caches (Auto-deleted after 7 days via GCS Lifecycle Rules).
-  - `gs://trainex-media-deliverables`: Master 4K MP4s, HLS segmented directories (`.m3u8`, `.ts`), and VTT subtitle tracks. Multi-region redundancy.
+  - `gs://vidoxis-session-vault`: Stores KMS-encrypted Chrome profile archives (`profile.tar.gz`). Bucket has Object Versioning and strict Uniform Bucket-Level Access (UBLA).
+  - `gs://vidoxis-media-staging`: Ephemeral screencasts, raw audio tracks, and Remotion frame caches (Auto-deleted after 7 days via GCS Lifecycle Rules).
+  - `gs://vidoxis-media-deliverables`: Master 4K MP4s, HLS segmented directories (`.m3u8`, `.ts`), and VTT subtitle tracks. Multi-region redundancy.
 * **Firestore in Native Mode:**
   - Stores course generation state machines, Segment Manifests, Step Traces, and millisecond Telemetry streams with sub-millisecond query latency.
 
@@ -96,7 +96,7 @@ This document defines the complete, battle-tested, carrier-grade **Production Ar
 ### 2.1 Workload Identity Federation (No Static Service Account Keys)
 * **Zero Service Account Keys:** No service account JSON key files ever exist on disk or in repository commits.
 * **Runtime IAM Impersonation:**
-  - The Cloud Run service account (`trainex-runner-sa@...`) possesses strictly the `roles/iam.serviceAccountTokenCreator` permission.
+  - The Cloud Run service account (`vidoxis-runner-sa@...`) possesses strictly the `roles/iam.serviceAccountTokenCreator` permission.
   - When accessing demo sandbox projects, it calls Google Cloud IAM's `generateAccessToken` API to mint short-lived (15-minute) in-memory OAuth tokens.
 
 ```
@@ -111,7 +111,7 @@ This document defines the complete, battle-tested, carrier-grade **Production Ar
 
 ### 2.2 Chrome Session Vault Lifecycle & KMS Envelope Encryption
 1. **Interactive Seeding (Day 0):** A certified Google Trainer logs into the training Google Account once via an authenticated bastion inside the VPC.
-2. **KMS Encryption:** The resulting `user-data-dir` directory is compressed into an uncompressed tar stream, encrypted using Google Cloud KMS (`projects/.../cryptoKeys/trainex-session-key`), and written to `gs://trainex-session-vault`.
+2. **KMS Encryption:** The resulting `user-data-dir` directory is compressed into an uncompressed tar stream, encrypted using Google Cloud KMS (`projects/.../cryptoKeys/vidoxis-session-key`), and written to `gs://vidoxis-session-vault`.
 3. **Container Boot Unpack:**
    - The Cloud Run replay container requests decryption from Cloud KMS using its identity token.
    - The archive is unpacked directly into an in-memory `tmpfs` (RAM filesystem) mount at `/dev/shm/chrome-profile`.
@@ -194,7 +194,7 @@ stateDiagram-v2
 
 ## 4. REST & WebRTC Production API Specifications
 
-### 4.1 Course Lifecycle API (`trainex-api`)
+### 4.1 Course Lifecycle API (`vidoxis-api`)
 
 #### `POST /v1/courses/generate`
 Submits a prompt to generate an autonomous video masterclass.
@@ -215,7 +215,7 @@ Submits a prompt to generate an autonomous video masterclass.
   "course_id": "crs_8f2a9c1e",
   "status": "PLANNING",
   "estimated_duration_s": 320,
-  "status_stream_url": "https://api.trainex.google.internal/v1/courses/crs_8f2a9c1e/stream"
+  "status_stream_url": "https://api.vidoxis.google.internal/v1/courses/crs_8f2a9c1e/stream"
 }
 ```
 
@@ -235,7 +235,7 @@ Polls real-time state machine progress across segments.
 }
 ```
 
-### 4.2 WebRTC Real-Time Proxy API (`trainex-webrtc-proxy`)
+### 4.2 WebRTC Real-Time Proxy API (`vidoxis-webrtc-proxy`)
 
 #### `POST /v1/live/session/initiate`
 Establishes an authenticated session token for the in-player **Ghost Trainer** and **Socratic Screen Proctor**.
@@ -250,10 +250,10 @@ Establishes an authenticated session token for the in-player **Ghost Trainer** a
 // RESPONSE (200 OK)
 {
   "session_token": "eyJhbGciOi...",
-  "webrtc_signaling_url": "wss://live.trainex.google.internal/v1/live/ws",
+  "webrtc_signaling_url": "wss://live.vidoxis.google.internal/v1/live/ws",
   "ice_servers": [
     { "urls": "stun:stun.l.google.com:19302" },
-    { "urls": "turn:turn.trainex.google.internal:3478", "username": "...", "credential": "..." }
+    { "urls": "turn:turn.vidoxis.google.internal:3478", "username": "...", "credential": "..." }
   ]
 }
 ```
@@ -298,11 +298,11 @@ Establishes an authenticated session token for the in-player **Ghost Trainer** a
 * **PII Redaction Success:** $100\%$ zero-leakage threshold on verified frames (fail-closed build gate).
 
 ### 6.2 Cloud Monitoring & Distributed Tracing
-* **OpenTelemetry Instrumentation:** Distributed trace IDs (`x-trainex-trace-id`) flow through every API call, Cloud Task, Cloud Run job, and CDP event.
+* **OpenTelemetry Instrumentation:** Distributed trace IDs (`x-vidoxis-trace-id`) flow through every API call, Cloud Task, Cloud Run job, and CDP event.
 * **Alerting Metrics:**
-  - `trainex/rehearsal/flakiness_ratio`: Triggers alert if $>5\%$ of runs require self-healing.
-  - `trainex/gpu/render_queue_wait_ms`: Alerts if render queue latency exceeds 120 seconds.
-  - `trainex/session/auth_probe_status`: PagerDuty alert if the Google Console session cookie invalidates.
+  - `vidoxis/rehearsal/flakiness_ratio`: Triggers alert if $>5\%$ of runs require self-healing.
+  - `vidoxis/gpu/render_queue_wait_ms`: Alerts if render queue latency exceeds 120 seconds.
+  - `vidoxis/session/auth_probe_status`: PagerDuty alert if the Google Console session cookie invalidates.
 
 ---
 
@@ -310,15 +310,15 @@ Establishes an authenticated session token for the in-player **Ghost Trainer** a
 
 | Resource Component | Unit Pricing Rate | Usage per 1 Min of Video | Cost per Min |
 | :--- | :--- | :--- | :--- |
-| **Gemini 2.0 Pro (Planning)** | \$1.25 / 1M input tokens, \$5.00 / 1M out | ~40K input tokens, ~4K output tokens | **\$0.07** |
-| **Gemini 2.0 Flash (Authoring)** | \$0.075 / 1M input, \$0.30 / 1M out | ~120K tokens (DOM parsing) | **\$0.02** |
+| **Gemini 2.5 Pro (Planning)** | \$1.25 / 1M input tokens, \$5.00 / 1M out | ~40K input tokens, ~4K output tokens | **\$0.07** |
+| **Gemini 2.5 Flash (Authoring)** | \$0.075 / 1M input, \$0.30 / 1M out | ~120K tokens (DOM parsing) | **\$0.02** |
 | **DeepMind Veo 2 (Avatar)** | ~\$0.04 per second of video | 60 seconds (PiP + Hero cuts) | **\$2.40** |
 | **DeepMind Emotional TTS** | \$16.00 / 1M characters | ~900 characters of narration | **\$0.015** |
 | **Cloud Run GPU (NVIDIA L4)** | \$0.70 / GPU-hour | ~0.02 GPU-hours (parallel render) | **\$0.014** |
 | **GCS Storage & Cloud CDN** | \$0.02 / GB storage, \$0.08 / GB egress | ~300MB 4K MP4 + HLS stream | **\$0.03** |
 | **Total Production Cost** | — | — | **~\$2.55 / minute** |
 
-> **Comparative Value:** A traditional professional human videographer + cloud evangelist production costs **\$3,000 to \$7,500 per finished video**. Trainex delivers 4K broadcast quality at **\$2.55 per minute**, operating at $1,000\times$ speed.
+> **Comparative Value:** A traditional professional human videographer + cloud evangelist production costs **\$3,000 to \$7,500 per finished video**. Vidoxis delivers 4K broadcast quality at **\$2.55 per minute**, operating at $1,000\times$ speed.
 
 ---
 
@@ -366,7 +366,7 @@ The following five hardened fail-safes are enforced across all services to elimi
 To prevent automated scripts from accidentally targeting real corporate projects during teardown, all scripts validate the project ID against an immutable regex before executing destructive operations:
 ```typescript
 export function assertSafeSandboxProject(projectId: string): void {
-  const SAFE_SANDBOX_REGEX = /^trainex-(sandbox|ephem)-[a-z0-9]{4,8}$/;
+  const SAFE_SANDBOX_REGEX = /^(?:vidoxis|trainex)-(sandbox|ephem)-[a-z0-9]{4,8}$/;
   if (!SAFE_SANDBOX_REGEX.test(projectId)) {
     throw new Error(
       `FATAL SECURITY VIOLATION: Refusing to execute operations on project '${projectId}'. ` +
@@ -386,7 +386,7 @@ Before launching any recording take, the runner executes a pre-flight probe to `
 
 ### 9.4 "Take the Wheel" FinOps Guardrails & TTL Enforcers
 * **Tier 1 (Client Wasm):** Code/SDK walkthroughs fork into in-browser client-side WebContainers with zero cloud VM footprint.
-* **Tier 2 (Real Sandboxes):** Sandboxes carry an immutable label `trainex-ttl: 15m`. An automated cron cleans up abandoned sandboxes after 15 minutes, and Org Policies enforce zero external IP allocations and a 1 vCPU quota ceiling.
+* **Tier 2 (Real Sandboxes):** Sandboxes carry an immutable label `vidoxis-ttl: 15m`. An automated cron cleans up abandoned sandboxes after 15 minutes, and Org Policies enforce zero external IP allocations and a 1 vCPU quota ceiling.
 
 ### 9.5 Asynchronous Modal & Survey Interception Daemon
 A CDP Mutation Observer is injected on `Page.addScriptToEvaluateOnNewDocument` that detects and removes any survey, feedback snackbar, or feature promotion dialog within 0ms before it can intercept clicks or render on the video stream.
@@ -395,7 +395,7 @@ A CDP Mutation Observer is injected on `Page.addScriptToEvaluateOnNewDocument` t
 
 ## 10. The 7-Gate Fail-Closed Production Quality Verification System
 
-To prevent broken videos, desynchronized audio, and security leaks from ever reaching production, Trainex enforces seven mandatory, automated quality gates in `hooks.json`. Every gate is **fail-closed**—if a check fails, the pipeline halts immediately and alerts or triggers autonomous self-healing:
+To prevent broken videos, desynchronized audio, and security leaks from ever reaching production, Vidoxis enforces seven mandatory, automated quality gates in `hooks.json`. Every gate is **fail-closed**—if a check fails, the pipeline halts immediately and alerts or triggers autonomous self-healing:
 
 ```
 ┌──────────────────────────────────────────────────────────────────────────────────────────────────┐
@@ -423,7 +423,7 @@ To prevent broken videos, desynchronized audio, and security leaks from ever rea
 └──────────────────────────────────────────────────────────────────────────────────────────────────┘
 ```
 
-1. **Gate 1 (Pre-Authoring Guard):** Validates target project against the safe sandbox regex (`^trainex-(sandbox|ephem)-[a-z0-9]{4,8}$`) and verifies required GCP APIs (`aiplatform.googleapis.com`, `run.googleapis.com`, `logging.googleapis.com`) and quotas are enabled *before* the authoring agent begins discovery.
+1. **Gate 1 (Pre-Authoring Guard):** Validates target project against the safe sandbox regex (`/^(?:vidoxis|trainex)-(sandbox|ephem)-[a-z0-9]{4,8}$/`) and verifies required GCP APIs (`aiplatform.googleapis.com`, `run.googleapis.com`, `logging.googleapis.com`) and quotas are enabled *before* the authoring agent begins discovery.
 2. **Gate 2 (Slide Layout Collision Audit):** Ingests PromptCanvas architecture slides; executes a 2D bounding box intersection check with a **30px safety padding margin** to ensure zero overlapping nodes or tangled connector lines.
 3. **Gate 3 (Pre-Replay Session Liveness & Egress):** Probes internal console RPCs (`/m/services`) to confirm the authenticated session is alive, verifies the outbound IP is inside the Cloud NAT pool, and confirms `Google Sans Flex` font metrics match the authoring baseline.
 4. **Gate 4 (Post-Capture Telemetry Integrity):** Scans the raw screencast video for blank or dropped frames and verifies that every action step recorded a non-null, unambiguous bounding box `{x, y, w, h}`.
@@ -435,7 +435,7 @@ To prevent broken videos, desynchronized audio, and security leaks from ever rea
 
 ## 11. The Continuous Quality & Currency Engine (CQCE) Specification
 
-To guarantee that Trainex produces carrier-grade enterprise education without stale UI screens, deprecated CLI flags, or low-density AI slop, the platform codifies the Continuous Quality & Currency Engine:
+To guarantee that Vidoxis produces carrier-grade enterprise education without stale UI screens, deprecated CLI flags, or low-density AI slop, the platform codifies the Continuous Quality & Currency Engine:
 
 ### 11.1 The Empirical Truth Firewall
 * **Rule:** No technical demonstration may be rendered into video based on speculative LLM generation.

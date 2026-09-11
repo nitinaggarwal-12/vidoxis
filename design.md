@@ -1,4 +1,4 @@
-# Trainex Cinematic Design System & Keynote Aesthetic
+# Vidoxis Cinematic Design System & Keynote Aesthetic
 **Target Canvas:** 3840×2160 (4K UHD) @ 60fps  
 **Design Philosophy:** Steve Jobs & Google Next Keynote Craftsmanship
 
@@ -41,7 +41,7 @@ To guarantee pixel-perfect Google Sans Flex font rendering, zero sub-pixel text 
 
 ## 2. Kinetic Cursor Physics (The Minimum-Jerk Engine)
 
-Raw automated cursors move in straight, unnatural lines. Trainex implements human motor control physics via the **Minimum-Jerk Trajectory Equation**:
+Raw automated cursors move in straight, unnatural lines. Vidoxis implements human motor control physics via the **Minimum-Jerk Trajectory Equation**:
 
 $$x(t) = x_0 + (x_1 - x_0) \left( 10\left(\frac{t}{D}\right)^3 - 15\left(\frac{t}{D}\right)^4 + 6\left(\frac{t}{D}\right)^5 \right)$$
 $$y(t) = y_0 + (y_1 - y_0) \left( 10\left(\frac{t}{D}\right)^3 - 15\left(\frac{t}{D}\right)^4 + 6\left(\frac{t}{D}\right)^5 \right)$$
@@ -127,7 +127,7 @@ Lyria Keynote Score     [ -18dB Ducked ] ─────┘
 The master 4K video is assembled inside Remotion (`3840×2160 @ 60fps`) via a modular component tree:
 
 ```tsx
-<TrainexMasterComposition width={3840} height={2160} fps={60} durationInFrames={totalFrames}>
+<VidoxisMasterComposition width={3840} height={2160} fps={60} durationInFrames={totalFrames}>
   {/* Layer 1: Base Background & Ambient Glow */}
   <KeynoteStageBackground theme="google-cloud-dark" />
 
@@ -183,7 +183,7 @@ The master 4K video is assembled inside Remotion (`3840×2160 @ 60fps`) via a mo
     <Audio src={tactileSfxUri} volume={0.5} />
     <Audio src={lyriaScoreUri} volume={musicDuckingVolume} />
   </AudioMixerMaster>
-</TrainexMasterComposition>
+</VidoxisMasterComposition>
 ```
 
 ---

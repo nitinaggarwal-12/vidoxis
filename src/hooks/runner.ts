@@ -23,6 +23,27 @@ export interface HooksConfiguration {
   hooks: Record<string, HookDefinition[]>;
 }
 
+/**
+ * Vidoxis Canonical Lifecycle Context Parameter Schema.
+ * Defines the precise variables injected into hook commands for each lifecycle event.
+ */
+export const LIFECYCLE_CONTEXT_SPECS: Record<string, string[]> = {
+  pre_authoring_check: ["PROJECT_ID", "TARGET_DRIVER", "FILE"],
+  on_manifest_created: ["FILE", "CONTRACT_FILE", "PROJECT_ID"],
+  on_slides_compiled: ["SLIDE_SVG", "FILE"],
+  on_whiteboard_sequence_compiled: ["WHITEBOARD_MANIFEST", "PHONEMES_JSON"],
+  on_trace_authored: ["FILE", "CONTRACT_FILE", "SLIDE_SVG"],
+  pre_replay_check: ["PROJECT_ID", "AUTH_PROFILE"],
+  post_capture_check: ["RAW_VIDEO", "TELEMETRY_JSON"],
+  pre_composite_check: ["SLIDE_SVG", "RAW_VIDEO", "AUDIO_WAV", "PHONEMES_JSON", "TELEMETRY_JSON", "FILE"],
+  on_github_pr_opened: ["PR_DIFF_FILE"],
+  on_ui_drift_detected: ["T_START", "T_END", "NEW_CLIP"],
+  on_socratic_certification_completed: ["LEARNER_ID", "EVAL_RESULT_JSON"],
+  on_publish_ready: ["FILE", "PROJECT_ID"],
+  post_render_verify: ["OUTPUT_MP4", "TRANSCRIPT_JSON"],
+  post_publish_verify: ["HLS_URL"]
+};
+
 export interface HookExecutionResult {
   hookId: string;
   description: string;

@@ -1,28 +1,11 @@
-# TRAINEX: Autonomous Enterprise AI Training & Demo Studio
-## Complete Architectural Blueprint & Production Specification (v3.0 Master Standard)
+# TRAINEX (DEPRECATED) ➔ VIDOXIS MASTER SPECIFICATION
 
-**Authors:** Google Principal Technical Evangelist & Google DeepMind Multimodal System Architects  
-**Target Platform:** Google Cloud Platform, Gemini Omni 1.1, Gemini 2.0 Pro/Flash, Veo 2, Lyria, DeepMind Emotional TTS  
-**Workspace:** `/Users/nitinagga/Documents/vidoxis` (formerly `/Users/nitinagga/Documents/trainex`)  
-> **Note:** The platform has been renamed to **Vidoxis**. See [**`VIDOXIS_MASTER_SPEC.md`**](VIDOXIS_MASTER_SPEC.md) for the active specification.
+> [!IMPORTANT]
+> **This document is deprecated and preserved only for legacy link compatibility.**  
+> The platform has been permanently renamed to **Vidoxis**.
+> 
+> Please refer to the active, canonical master specification in [**`VIDOXIS_MASTER_SPEC.md`**](file:///Users/nitinagga/Documents/vidoxis/VIDOXIS_MASTER_SPEC.md).
 
----
-
-## Table of Contents
-1. [Executive Summary & The Core Thesis](#1-executive-summary--the-core-thesis)
-2. [Unified System Topology & Neurological Core](#2-unified-system-topology--neurological-core)
-3. [Multi-Agent Command Hierarchy & Organizational Topology (Tiers 1–5)](#3-multi-agent-command-hierarchy--organizational-topology-tiers-15)
-4. [DeepMind, Google Labs & Gemini Model Matrix](#4-deepmind-google-labs--gemini-model-matrix)
-5. [Where Omni Sits & What Omni Does](#5-where-omni-sits--what-omni-does)
-6. [The 6 Unprecedented Frontier Capabilities](#6-the-6-unprecedented-frontier-capabilities)
-7. [Hardened Production Protocols & Blindspot Remediation](#7-hardened-production-protocols--blindspot-remediation)
-8. [Google Cloud Console Tactical Playbook](#8-google-cloud-console-tactical-playbook)
-9. [Data Contracts: Segment Manifest & Step Trace Schemas](#9-data-contracts-segment-manifest--step-trace-schemas)
-10. [Studio Compositing, Audio Mastering & Visual Polish Engine](#10-studio-compositing-audio-mastering--visual-polish-engine)
-11. [Cloud Infrastructure & Distributed Container Topology](#11-cloud-infrastructure--distributed-container-topology)
-12. [Implementation Roadmap & Milestones](#12-implementation-roadmap--milestones)
-
----
 
 ## 1. Executive Summary & The Core Thesis
 

@@ -94,3 +94,18 @@ All autonomous agents authoring, synthesizing, and executing training sequences 
 * **Official GCP GitHub Repositories (`github.com/GoogleCloudPlatform`):** Code snippets, queries, and demo datasets must come from vetted official GCP repositories.
 * **Official Training Media (Google Cloud Next & Skills Boost):** Pedagogical structure, timing benchmarks, and presentation delivery must align with official Cloud Next keynote/breakout recordings and Skills Boost lab guides.
 * **Fail-Closed Verification in `hooks.json`:** Every manifest and trace must pass `google_public_docs_quickstart_grounding`, `official_gcp_github_samples_verification`, `google_architecture_center_topology_audit`, `official_training_media_and_codelab_crosscheck`, and `console_quickstart_step_parity_audit`.
+
+---
+
+## 7. Enterprise Demo Preemption, Reality Verification & Leave-Behind Protocol
+
+All autonomous agents authoring, synthesizing, and executing 30-minute enterprise training sequences must strictly adhere to the following:
+
+1. **The Stakeholder Inoculation Mandate:**
+   - Manifest narrations must preempt key enterprise stakeholder concerns (CISO CMEK/Zero-Training SLA, Lead Architect OAuth2 OBO identity, CDO In-place BigQuery Zero-ETL, FinOps Flash/Pro tiering, Ops VP HITL confirmation) in-context during Acts 2, 3, and 4.
+2. **Physical Reality Receipts:**
+   - Live console recordings must capture inspectable network receipts (real DevTools Network payloads for `discoveryengine.googleapis.com` and real BigQuery Job IDs `bqux_job_...`).
+3. **Fail-Closed Lifecycle Guardrails:**
+   - All authored traces and manifests must pass `pre_indexed_warm_data_store_guard`, `obo_identity_header_guard`, `hitl_step_up_confirmation_audit`, `parallel_tool_dispatch_resilience_check`, and `leave_behind_reproducibility_kit_validator`.
+4. **Mandatory 1-Click Leave-Behind Kit:**
+   - The compiler must automatically package an end-to-end reproducible GitHub bundle containing `main.tf`, `openapi.yaml`, `architecture.drawio`, and `eval_testset.jsonl`.

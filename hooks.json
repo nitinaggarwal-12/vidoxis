@@ -33,6 +33,12 @@
         "description": "Ensures demo sample code, PySpark/SQL scripts, and datasets are grounded in official github.com/GoogleCloudPlatform repositories",
         "command": "node scripts/verify_gcp_github_samples.js --manifest={FILE}",
         "fail_action": "abort"
+      },
+      {
+        "id": "pre_indexed_warm_data_store_guard",
+        "description": "Enforces pre-baked warm data store replicas to eliminate synchronous indexing latency during takes",
+        "command": "node scripts/verify_warm_data_store.js --manifest={FILE}",
+        "fail_action": "abort"
       }
     ],
     "on_manifest_created": [
@@ -76,6 +82,12 @@
         "id": "official_training_media_and_codelab_crosscheck",
         "description": "Cross-checks pedagogical structure and timing benchmarks against official Google Cloud Next technical sessions & Skills Boost lab guides",
         "command": "node scripts/audit_official_training_sources.js --manifest={FILE}",
+        "fail_action": "abort"
+      },
+      {
+        "id": "obo_identity_header_guard",
+        "description": "Asserts OpenAPI tool definitions include end-user OAuth2 JWT bearer token authorization pass-through",
+        "command": "node scripts/verify_obo_auth.js --contract={CONTRACT_FILE}",
         "fail_action": "abort"
       },
       {
@@ -154,6 +166,18 @@
         "id": "console_quickstart_step_parity_audit",
         "description": "Audits console step sequence against official Google Cloud Quickstarts to ensure 1:1 operational accuracy",
         "command": "node scripts/audit_quickstart_step_parity.js --trace={FILE}",
+        "fail_action": "abort"
+      },
+      {
+        "id": "hitl_step_up_confirmation_audit",
+        "description": "Verifies that all destructive API writeback steps (POST/PUT/DELETE) are preceded by a user confirmation step in the trace",
+        "command": "node scripts/audit_hitl_gates.js --trace={FILE}",
+        "fail_action": "abort"
+      },
+      {
+        "id": "parallel_tool_dispatch_resilience_check",
+        "description": "Ensures trace assertion handles concurrent function calling telemetry without failing on call order",
+        "command": "node scripts/verify_parallel_tool_telemetry.js --trace={FILE}",
         "fail_action": "abort"
       },
       {
@@ -286,6 +310,14 @@
         "id": "mint_compliance_proof_certificate",
         "description": "Issues cryptographically signed Proof-of-Competence Certificate and logs to audit ledger",
         "command": "node scripts/mint_certificate.js --learner={LEARNER_ID} --eval={EVAL_RESULT_JSON}",
+        "fail_action": "abort"
+      }
+    ],
+    "on_publish_ready": [
+      {
+        "id": "leave_behind_reproducibility_kit_validator",
+        "description": "Verifies 1-Click Day-0 Reproducibility Kit: ensures Terraform main.tf, OpenAPI spec, Draw.io diagram, and eval test set exist",
+        "command": "node scripts/validate_reproducibility_kit.js --manifest={FILE}",
         "fail_action": "abort"
       }
     ],

@@ -158,3 +158,32 @@
    - `official_training_media_and_codelab_crosscheck` (`on_manifest_created`): Audits timing and pedagogical pacing against Cloud Next & Skills Boost guides.
    - `console_quickstart_step_parity_audit` (`on_trace_authored`): Audits console trace steps against official Quickstart documentation.
 
+---
+
+## 10. The Deterministic 30-Minute Masterclass & Live Cloud Demo Constitution
+
+1. **The Pre-Baked Warm Replica Rule (Anti-Indexing Latency):**
+   - Never execute raw synchronous document parsing or vector embedding on camera or in live recording takes.
+   - Traces must demonstrate UI configuration on live buckets, but immediately switch query execution to a pre-indexed warm replica (`pre_indexed_warm_data_store_guard`).
+
+2. **The OAuth2 On-Behalf-Of (OBO) Identity Delegation Mandate:**
+   - Writeback tools (Cloud Run / OpenAPI / SAP) must propagate the end-user's authenticated JWT bearer token (`obo_identity_header_guard`).
+   - Generic service account writebacks that obscure user audit trails (SOX / 21 CFR Part 11) are strictly prohibited.
+
+3. **The Step-Up Human-in-the-Loop (HITL) Confirmation Gate:**
+   - Any agent tool invocation with financial or state-altering impact (e.g., `create_rma`, `issue_refund`, `delete_resource`) MUST be preceded by an explicit user confirmation step (`hitl_step_up_confirmation_audit`).
+
+4. **Resilient Parallel Tool Dispatch:**
+   - Traces and evaluation harnesses must natively handle Gemini 2.5 Pro's concurrent multi-tool execution (`tool_choice: AUTO`), verifying outputs without failing on non-deterministic tool call order (`parallel_tool_dispatch_resilience_check`).
+
+5. **The 5-Tier Click Bug Self-Healing State Machine:**
+   - When console UI elements fail to click: Accessible Name $\to$ Direct DOM dispatch (`$eval(el => el.click())`) $\to$ Synthetic event dirtying (`input/change/blur`) $\to$ Canonical 80/20 URL-first bypass (`?step=...`) $\to$ Dual-deck hot-spare cut.
+
+6. **The 1-Click Day-0 Leave-Behind Reproducibility Standard:**
+   - Every 30-minute masterclass sequence must simultaneously emit a complete, customer-reproducible GitHub bundle (`leave_behind_reproducibility_kit_validator`):
+     1. Declarative Terraform scaffolding (`main.tf`).
+     2. OpenAPI 3.0 tool service contracts (`openapi.yaml`).
+     3. Editable Draw.io architecture diagram (`.drawio`).
+     4. Deterministic CDP step replay trace (`trace.json`).
+     5. Golden benchmark evaluation dataset (`eval_testset.jsonl`).
+

@@ -1,6 +1,6 @@
 {
-  "$schema": "https://trainex.google.internal/schemas/hooks.v3.json",
-  "project_name": "trainex",
+  "$schema": "https://vidoxis.google.internal/schemas/hooks.v3.json",
+  "project_name": "vidoxis",
   "version": "3.3.0",
   "hooks": {
     "pre_authoring_check": [
@@ -135,7 +135,7 @@
       {
         "id": "headless_rehearsal_matrix",
         "description": "Replays the trace 3 consecutive times against the ephemeral sandbox pool",
-        "command": "node scripts/run_rehearsal.js --trace={FILE} --runs=3 --project-pool=trainex-ephemeral",
+        "command": "node scripts/run_rehearsal.js --trace={FILE} --runs=3 --project-pool=vidoxis-ephemeral",
         "timeout_ms": 300000,
         "diagnostic_snapshot_on_fail": true,
         "failure_snapshot_path": "scratch/failures/{FAILED_STEP}_failure.png",
@@ -156,7 +156,7 @@
       {
         "id": "cloud_nat_static_egress_ip_verify",
         "description": "Confirms outbound worker IP matches trusted enterprise IP whitelist",
-        "command": "node scripts/verify_egress_ip.js --expected-pool=trainex-enterprise-nat",
+        "command": "node scripts/verify_egress_ip.js --expected-pool=vidoxis-enterprise-nat",
         "fail_action": "abort"
       },
       {

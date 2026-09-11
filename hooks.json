@@ -197,10 +197,25 @@
         "on_flake": {
           "trigger_agent": "gemini-flash-cua",
           "prompt": "Step {FAILED_STEP} flaked on selector '{SELECTOR}'. Inspect DOM snapshot and re-resolve triad selector."
-        }
+        },
+        "max_repair_attempts": 3,
+        "circuit_breaker_timeout_ms": 600000,
+        "fallback_action": "escalate_to_human_supervisor"
       }
     ],
     "pre_replay_check": [
+      {
+        "id": "ephemeral_sandbox_state_sanitizer",
+        "description": "Purges leftover demo agents, data stores, and buckets to eliminate HTTP 409 collisions",
+        "command": "node scripts/sanitize_sandbox_tenant.js --project={PROJECT_ID}",
+        "fail_action": "abort"
+      },
+      {
+        "id": "cdp_viewport_and_dpr_integrity_guard",
+        "description": "Enforces exact 1920x1080 @ 2.0 DPR and 125% browser zoom level to prevent responsive breakpoint collapse",
+        "command": "node scripts/verify_cdp_viewport.js --width=1920 --height=1080 --dpr=2.0",
+        "fail_action": "abort"
+      },
       {
         "id": "console_session_cookie_liveness_probe",
         "description": "Probes internal console RPC; triggers background OAuth refresh if expired",
@@ -244,6 +259,12 @@
         "description": "Ensures every click and focus action has an unambiguous {x,y,w,h} bounding box",
         "command": "node scripts/validate_telemetry_events.js --telemetry={TELEMETRY_JSON}",
         "fail_action": "abort"
+      },
+      {
+        "id": "early_pii_frame_redaction_guard",
+        "description": "Verifies raw capture stream applies in-memory blur shaders before disk persistence to eliminate plaintext PII exposure",
+        "command": "node scripts/verify_early_frame_redaction.js --video={RAW_VIDEO}",
+        "fail_action": "abort"
       }
     ],
     "pre_composite_check": [
@@ -268,7 +289,7 @@
       {
         "id": "pii_redaction_audit",
         "description": "Ensures all billing IDs, LDAPs, and internal domains are masked in the telemetry stream",
-        "command": "node scripts/audit_redaction_targets.js --trace={TRACE_FILE}",
+        "command": "node scripts/audit_redaction_targets.js --trace={FILE}",
         "fail_action": "abort"
       },
       {
@@ -280,13 +301,13 @@
       {
         "id": "redaction_bounding_box_dilation_guard",
         "description": "Enforces minimum 12px dilation safety padding on all PII redaction bounding boxes to prevent sub-pixel font bleed",
-        "command": "node scripts/verify_redaction_dilation.js --trace={TRACE_FILE} --min-padding=12",
+        "command": "node scripts/verify_redaction_dilation.js --trace={FILE} --min-padding=12",
         "fail_action": "abort"
       },
       {
         "id": "legal_preview_disclaimer_check",
         "description": "Verifies that pre-GA or Preview features contain the mandatory legal disclaimer slate",
-        "command": "node scripts/check_legal_disclaimer.js --manifest={MANIFEST_FILE}",
+        "command": "node scripts/check_legal_disclaimer.js --manifest={FILE}",
         "fail_action": "auto_inject"
       }
     ],

@@ -139,3 +139,22 @@
 4. **1:1 Dual-Artifact Output Mandate:**
    - The whiteboard compiler must guarantee dual output parity: every sequence produces both a broadcast visual raster and an editable `.drawio` XML artifact with identical node geometry and connection routing.
 
+---
+
+## 9. Official Google Documentation, Quickstart & Training Media Grounding Constitution
+
+1. **Mandatory Canonical Grounding (Anti-Hallucination Source of Truth):**
+   - Content authoring, slide topology, narration, and console step sequences must strictly ground against official Google public documentation (`cloud.google.com/docs`), Google Cloud Architecture Center reference blueprints, Google Cloud Codelabs, and official Quickstarts.
+   - Code samples, PySpark/SQL scripts, and demo datasets must ground in official `github.com/GoogleCloudPlatform` repositories.
+
+2. **Pedagogical Pacing & Step-by-Step Parity:**
+   - Visual step sequences in Act 3 must maintain 1:1 operational parity with official Google Cloud Quickstarts.
+   - Pacing, architectural diagrams, and cognitive density must align with benchmark technical sessions from Google Cloud Next, official YouTube training videos (`@googlecloud`), and Google Cloud Skills Boost lab guides.
+
+3. **Automated Lifecycle Enforcement via `hooks.json`:**
+   - `google_public_docs_quickstart_grounding` (`pre_authoring_check`): Verifies documentation and quickstart grounding before authoring starts.
+   - `official_gcp_github_samples_verification` (`pre_authoring_check`): Validates code snippets and datasets against official GCP GitHub samples.
+   - `google_architecture_center_topology_audit` (`on_manifest_created`): Cross-references whiteboard diagrams with official Architecture Center blueprints.
+   - `official_training_media_and_codelab_crosscheck` (`on_manifest_created`): Audits timing and pedagogical pacing against Cloud Next & Skills Boost guides.
+   - `console_quickstart_step_parity_audit` (`on_trace_authored`): Audits console trace steps against official Quickstart documentation.
+

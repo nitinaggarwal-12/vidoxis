@@ -21,6 +21,18 @@
         "description": "Verifies that required APIs (Vertex AI, Cloud Run, Logging) and quotas are active",
         "command": "node scripts/verify_gcp_prerequisites.js --project={PROJECT_ID} --apis=aiplatform,run,logging",
         "fail_action": "abort"
+      },
+      {
+        "id": "google_public_docs_quickstart_grounding",
+        "description": "Enforces mandatory grounding against official Google Cloud Documentation, Codelabs & Quickstarts (cloud.google.com/docs)",
+        "command": "node scripts/verify_google_docs_grounding.js --project={PROJECT_ID} --topic={FILE}",
+        "fail_action": "abort"
+      },
+      {
+        "id": "official_gcp_github_samples_verification",
+        "description": "Ensures demo sample code, PySpark/SQL scripts, and datasets are grounded in official github.com/GoogleCloudPlatform repositories",
+        "command": "node scripts/verify_gcp_github_samples.js --manifest={FILE}",
+        "fail_action": "abort"
       }
     ],
     "on_manifest_created": [
@@ -52,6 +64,18 @@
         "id": "gcp_deprecation_and_staleness_sentinel",
         "description": "Scans commands and SDK calls against Google Cloud Deprecation Feeds & Release Notes",
         "command": "node scripts/audit_deprecation_rules.js --manifest={FILE}",
+        "fail_action": "abort"
+      },
+      {
+        "id": "google_architecture_center_topology_audit",
+        "description": "Cross-references architecture diagram topology and components against official Google Cloud Architecture Center reference blueprints",
+        "command": "node scripts/audit_architecture_center_alignment.js --manifest={FILE}",
+        "fail_action": "abort"
+      },
+      {
+        "id": "official_training_media_and_codelab_crosscheck",
+        "description": "Cross-checks pedagogical structure and timing benchmarks against official Google Cloud Next technical sessions & Skills Boost lab guides",
+        "command": "node scripts/audit_official_training_sources.js --manifest={FILE}",
         "fail_action": "abort"
       },
       {
@@ -124,6 +148,12 @@
         "id": "triad_selector_shadow_dom_piercing_audit",
         "description": "Verifies that selector resolution algorithms recursively traverse Shadow DOM roots (shadowRoot)",
         "command": "node scripts/audit_shadow_dom_piercing.js --resolver=src/runner/triad-selector.ts",
+        "fail_action": "abort"
+      },
+      {
+        "id": "console_quickstart_step_parity_audit",
+        "description": "Audits console step sequence against official Google Cloud Quickstarts to ensure 1:1 operational accuracy",
+        "command": "node scripts/audit_quickstart_step_parity.js --trace={FILE}",
         "fail_action": "abort"
       },
       {

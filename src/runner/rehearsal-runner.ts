@@ -24,7 +24,7 @@ export async function runRehearsalMatrix(
   for (let r = 1; r <= runs; r++) {
     const runner = new CDPReplayRunner();
     try {
-      await runner.initialize(options.headless ?? true);
+      await runner.initialize(options.headless ?? true, options.executablePath, options.userDataDir);
       const stream = await runner.executeTrace(trace, options);
       telemetryStreams.push(stream);
     } catch (err: any) {

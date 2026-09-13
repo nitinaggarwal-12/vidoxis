@@ -132,20 +132,31 @@ export function generatePcmWav(
   return buffer;
 }
 
-export async function synthesizeDeepMindNarration(outputDir?: string): Promise<{
-  wavPath: string;
-  phonemesPath: string;
-  manifest: NarrationManifest;
-}> {
-  const targetDir = outputDir || path.resolve(process.cwd(), "scratch");
-  fs.mkdirSync(targetDir, { recursive: true });
+/**
+ * REMOVED: synthetic sine-wave "narration" generator.
+ *
+ * This previously wrote a multi-harmonic sine tone (135/520/1750 Hz) to
+ * scratch/narration.wav under a "DeepMind Expressive Neural Core" label. The
+ * renderer cannot distinguish that file from real speech, so it silently
+ * poisoned the master with a buzzing tone.
+ *
+ * Real narration is produced by src/audio/synthesize-natural-audio.ts, which
+ * calls the Google Cloud Text-to-Speech API (en-US-Journey-F, 48 kHz LINEAR16)
+ * and also emits scratch/phonemes.json for the karaoke subtitle track.
+ */
+export async function synthesizeDeepMindNarration(): Promise<never> {
+  throw new Error(
+    "synthesizeDeepMindNarration() has been removed: it generated synthetic sine-wave " +
+      "audio, not speech. Run `npm run audio` (src/audio/synthesize-natural-audio.ts) " +
+      "to produce real Cloud TTS narration into scratch/narration.wav."
+  );
+}
 
-  console.log("================================================================================");
-  console.log("🎙️ SYNTHESIZING DEEPMIND EMOTIONAL NARRATION & PHONEME TIMINGS");
-  console.log("   Voice Model: DeepMind Expressive Neural Core (Dr. Maya Lin, Cloud AI Evangelist)");
-  console.log("   Standard: 48,000 Hz, 16-bit Linear PCM Broadcast WAV");
-  console.log("================================================================================");
-
+/**
+ * Builds the word/act subtitle timeline from FIVE_ACT_SCRIPT without
+ * synthesizing any audio. Safe to use for timing math and tests.
+ */
+export function buildNarrationTimeline(): NarrationManifest {
   let currentOffsetMs = 0;
   const segments: SubtitleSegmentData[] = [];
 
@@ -164,58 +175,13 @@ export async function synthesizeDeepMindNarration(outputDir?: string): Promise<{
     currentOffsetMs += act.durationMs;
   }
 
-  const totalDurationMs = currentOffsetMs;
-  const sampleRate = 48000;
-  const totalSamples = Math.round((totalDurationMs / 1000) * sampleRate);
-  const audioBuffer = new Float32Array(totalSamples);
-
-  // Generate acoustic voice formants across syllables
-  for (const seg of segments) {
-    for (const w of seg.words) {
-      const startSample = Math.round((w.startMs / 1000) * sampleRate);
-      const endSample = Math.min(totalSamples, Math.round((w.endMs / 1000) * sampleRate));
-      const wordLen = endSample - startSample;
-
-      for (let s = startSample; s < endSample; s++) {
-        const t = (s - startSample) / sampleRate;
-        const env = Math.sin((Math.PI * (s - startSample)) / wordLen); // Smooth Hanning envelope
-
-        // Multi-harmonic vocal resonance: F0 (135Hz), F1 (520Hz warmth), F2 (1750Hz articulation)
-        const fundamental = Math.sin(2 * Math.PI * 135 * t);
-        const f1 = 0.45 * Math.sin(2 * Math.PI * 520 * t);
-        const f2 = 0.25 * Math.sin(2 * Math.PI * 1750 * t);
-        const breath = (Math.random() * 2 - 1) * 0.04; // Sub-audible respiratory texture
-
-        audioBuffer[s] += (fundamental + f1 + f2 + breath) * env * 0.65;
-      }
-    }
-  }
-
-  const wavBuffer = generatePcmWav(audioBuffer, sampleRate, 1);
-  const wavPath = path.join(targetDir, "narration.wav");
-  fs.writeFileSync(wavPath, wavBuffer);
-  console.log(`  ✔ Exported 48kHz Narration WAV: ${wavPath} (${(wavBuffer.length / 1024).toFixed(1)} KB)`);
-
-  const manifest: NarrationManifest = {
+  return {
     courseTitle: "Deploying Private Gemini 2.0 Endpoints on Google Cloud",
-    voicePersona: "Dr. Maya Lin (Google DeepMind Neural Core)",
-    sampleRate,
+    voicePersona: "en-US-Journey-F (Google Cloud Text-to-Speech)",
+    sampleRate: 48000,
     channels: 1,
-    totalDurationMs,
-    totalFrames: Math.round((totalDurationMs / 1000) * 60),
+    totalDurationMs: currentOffsetMs,
+    totalFrames: Math.round((currentOffsetMs / 1000) * 60),
     segments
   };
-
-  const phonemesPath = path.join(targetDir, "phonemes.json");
-  fs.writeFileSync(phonemesPath, JSON.stringify(manifest, null, 2));
-  console.log(`  ✔ Exported Phoneme & Word Timings: ${phonemesPath}`);
-
-  return { wavPath, phonemesPath, manifest };
-}
-
-if (process.argv[1] && process.argv[1].endsWith("tts-engine.ts")) {
-  synthesizeDeepMindNarration().catch(err => {
-    console.error("TTS Synthesis Failed:", err);
-    process.exit(1);
-  });
 }

@@ -15,6 +15,13 @@ export interface ReplayOptions {
   onFrame?: (event: TelemetryEvent) => void;
   recordScreencast?: boolean;
   screencastOutputDir?: string;
+  /**
+   * Persistent Chrome profile directory holding an authenticated Google Cloud
+   * Console session (e.g. an Argolis account). Without this, every launch uses
+   * a throwaway profile and any console.cloud.google.com navigation redirects
+   * to accounts.google.com/signin. See RUNBOOK.md §1 for session seeding.
+   */
+  userDataDir?: string;
 }
 
 export function detectChromeExecutablePath(): string | undefined {
@@ -39,14 +46,25 @@ export class CDPReplayRunner {
     this.camera = new CameraSpringController({ x: 960, y: 540, zoom: 1.0 });
   }
 
-  public async initialize(headless = true, customExecutablePath?: string): Promise<void> {
+  public async initialize(
+    headless = true,
+    customExecutablePath?: string,
+    userDataDir?: string
+  ): Promise<void> {
     const executablePath = customExecutablePath || detectChromeExecutablePath();
     const meta = inspectChromeMetadata(executablePath);
     console.log(`  ↳ Browser: Google Chrome ${meta.microVersion} (${meta.platform}, Google-signed: ${meta.isGoogleSigned}, Cloudtop: ${meta.isCloudtop})`);
 
+    const profileDir = userDataDir || process.env.VIDOXIS_CHROME_PROFILE;
+    if (profileDir) {
+      fs.mkdirSync(profileDir, { recursive: true });
+      console.log(`  ↳ Auth Profile: ${profileDir} (persistent signed-in session)`);
+    }
+
     this.browser = await puppeteer.launch({
       headless: headless ? true : false,
       executablePath,
+      ...(profileDir ? { userDataDir: profileDir } : {}),
       args: [
         ...DEFAULT_CHROME_FLAGS,
         "--disable-background-timer-throttling",
@@ -60,6 +78,7 @@ export class CDPReplayRunner {
         deviceScaleFactor: 2
       }
     });
+
 
     const pages = await this.browser.pages();
     this.page = pages.length > 0 ? pages[0] : await this.browser.newPage();
@@ -78,7 +97,7 @@ export class CDPReplayRunner {
 
   public async executeTrace(trace: StepTrace, options: ReplayOptions = {}): Promise<TelemetryStream> {
     if (!this.page || !this.cdp) {
-      await this.initialize(options.headless ?? true, options.executablePath);
+      await this.initialize(options.headless ?? true, options.executablePath, options.userDataDir);
     }
     const page = this.page!;
     const cdp = this.cdp!;

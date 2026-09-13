@@ -8,6 +8,42 @@ import { VOICE_PRESETS, generateNaturalNarratorAndLyriaAudio } from "../audio/sy
 const PORT = parseInt(process.env.PORT || "8085", 10);
 const SCRATCH_DIR = path.resolve(process.cwd(), "scratch");
 const SCHEMAS_DIR = path.resolve(process.cwd(), "schemas");
+const MASTER_VIDEO = path.join(SCRATCH_DIR, "vidoxis_master_4k.mp4");
+
+function resolveFfmpeg(): string {
+  const candidates = ["/opt/homebrew/bin/ffmpeg", "/usr/local/bin/ffmpeg", "/usr/bin/ffmpeg"];
+  for (const c of candidates) {
+    if (fs.existsSync(c)) return c;
+  }
+  return execSync("which ffmpeg", { encoding: "utf8" }).trim();
+}
+
+/**
+ * Muxes a scratch audio track into the 4K master, locally.
+ *
+ * Replaces the previous rsync/ssh round-trip to `nitinagga.c.googlers.com:Documents/trainex/`,
+ * which pointed at the pre-rename directory and silently failed after the repo
+ * was renamed to vidoxis. No `-shortest`: the video length is authoritative, so
+ * a slightly shorter narration must not truncate trailing frames.
+ */
+function muxAudioIntoMaster(sourceFile: string): void {
+  const audioPath = path.join(SCRATCH_DIR, sourceFile);
+  if (!fs.existsSync(MASTER_VIDEO)) {
+    throw new Error(`Master video not found: ${MASTER_VIDEO}. Run the render pipeline first.`);
+  }
+  if (!fs.existsSync(audioPath)) {
+    throw new Error(`Audio track not found: ${audioPath}`);
+  }
+
+  const ffmpeg = resolveFfmpeg();
+  const tmpPath = path.join(SCRATCH_DIR, "vidoxis_master_4k.muxing.mp4");
+  execSync(
+    `"${ffmpeg}" -y -loglevel error -i "${MASTER_VIDEO}" -i "${audioPath}" ` +
+      `-map 0:v:0 -map 1:a:0 -c:v copy -c:a aac -b:a 320k -ar 48000 "${tmpPath}"`,
+    { stdio: "pipe" }
+  );
+  fs.renameSync(tmpPath, MASTER_VIDEO);
+}
 
 export function createStudioServer() {
   const server = http.createServer(async (req, res) => {
@@ -115,7 +151,7 @@ export function createStudioServer() {
           const trackChoice = payload.targetTrack || "narration";
           const sourceFile = trackChoice === "narration" ? "narration.wav" : (trackChoice === "music" ? "music_bed.wav" : "master_audio.wav");
           try {
-            execSync(`rsync -avz scratch/*.wav scratch/phonemes.json nitinagga.c.googlers.com:Documents/trainex/scratch/ && ssh nitinagga.c.googlers.com "ffmpeg -y -i Documents/trainex/scratch/trainex_master_4k.mp4 -i Documents/trainex/scratch/${sourceFile} -map 0:v:0 -map 1:a:0 -c:v copy -c:a aac -b:a 320k -shortest Documents/trainex/scratch/trainex_master_4k_muxed.mp4 && mv Documents/trainex/scratch/trainex_master_4k_muxed.mp4 Documents/trainex/scratch/trainex_master_4k.mp4" && rsync -avz nitinagga.c.googlers.com:Documents/trainex/scratch/trainex_master_4k.mp4 scratch/trainex_master_4k.mp4 && cp -f scratch/trainex_master_4k.mp4 scratch/vidoxis_master_4k.mp4`, { stdio: "pipe" });
+            muxAudioIntoMaster(sourceFile);
           } catch (e: any) {
             console.warn("Cloudtop remux warning:", e.message);
           }
@@ -137,7 +173,7 @@ export function createStudioServer() {
           const payload = body ? JSON.parse(body) : {};
           const track = payload.track || "narration";
           const sourceFile = track === "narration" ? "narration.wav" : (track === "music" ? "music_bed.wav" : "master_audio.wav");
-          execSync(`rsync -avz scratch/${sourceFile} nitinagga.c.googlers.com:Documents/trainex/scratch/ && ssh nitinagga.c.googlers.com "ffmpeg -y -i Documents/trainex/scratch/trainex_master_4k.mp4 -i Documents/trainex/scratch/${sourceFile} -map 0:v:0 -map 1:a:0 -c:v copy -c:a aac -b:a 320k -shortest Documents/trainex/scratch/trainex_master_4k_muxed.mp4 && mv Documents/trainex/scratch/trainex_master_4k_muxed.mp4 Documents/trainex/scratch/trainex_master_4k.mp4" && rsync -avz nitinagga.c.googlers.com:Documents/trainex/scratch/trainex_master_4k.mp4 scratch/trainex_master_4k.mp4 && cp -f scratch/trainex_master_4k.mp4 scratch/vidoxis_master_4k.mp4`, { stdio: "pipe" });
+          muxAudioIntoMaster(sourceFile);
           res.writeHead(200, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
           res.end(JSON.stringify({ success: true, track, sourceFile }));
         } catch (err: any) {
@@ -199,7 +235,7 @@ export function createStudioServer() {
 
     // Draw.io API & Dedicated Full-Screen Editor
     if (pathname === "/api/drawio/xml") {
-      const drawioPath = path.join(SCRATCH_DIR, "gcp_merck_agentic_ai_architecture.drawio");
+      const drawioPath = path.join(SCRATCH_DIR, "gcp_agentic_ai_architecture.drawio");
       if (fs.existsSync(drawioPath)) {
         const xml = fs.readFileSync(drawioPath, "utf-8");
         res.writeHead(200, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
@@ -218,7 +254,7 @@ export function createStudioServer() {
         try {
           const { xml } = JSON.parse(body);
           if (!xml) throw new Error("Missing xml in payload");
-          const drawioPath = path.join(SCRATCH_DIR, "gcp_merck_agentic_ai_architecture.drawio");
+          const drawioPath = path.join(SCRATCH_DIR, "gcp_agentic_ai_architecture.drawio");
           fs.writeFileSync(drawioPath, xml, "utf-8");
           res.writeHead(200, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
           res.end(JSON.stringify({ success: true, savedAt: new Date().toISOString() }));
@@ -728,7 +764,7 @@ function renderStudioHtml(): string {
             <span class="text-[11px] font-mono text-gray-600 font-medium">17.8 KB</span>
           </div>
           <div class="flex items-center gap-2">
-            <a href="/scratch/gcp_merck_agentic_ai_architecture.drawio" download class="flex-1 py-2 px-3 rounded-xl bg-white hover:bg-gray-100 border border-gray-300 text-gray-800 text-xs font-semibold text-center shadow-sm transition-all">Download .drawio</a>
+            <a href="/scratch/gcp_agentic_ai_architecture.drawio" download class="flex-1 py-2 px-3 rounded-xl bg-white hover:bg-gray-100 border border-gray-300 text-gray-800 text-xs font-semibold text-center shadow-sm transition-all">Download .drawio</a>
             <a href="/whiteboard/editor" target="_blank" class="py-2 px-3 rounded-xl bg-blue-50 hover:bg-blue-100 border border-blue-200 text-blue-700 text-xs font-semibold shadow-sm transition-all">Open Editor &gt;</a>
           </div>
         </div>
@@ -789,7 +825,7 @@ function renderStudioHtml(): string {
             <span class="w-2.5 h-2.5 rounded-full bg-blue-600 animate-ping"></span>
             Kinetic Particles: ON
           </button>
-          <a id="wb-open-link" href="/scratch/gcp_merck_agentic_ai_architecture.png" target="_blank" class="px-4 py-2 rounded-xl bg-white hover:bg-gray-100 text-gray-700 text-xs font-semibold flex items-center gap-2 border border-gray-300 shadow-sm transition-all">
+          <a id="wb-open-link" href="/scratch/gcp_agentic_ai_architecture.png" target="_blank" class="px-4 py-2 rounded-xl bg-white hover:bg-gray-100 text-gray-700 text-xs font-semibold flex items-center gap-2 border border-gray-300 shadow-sm transition-all">
             Open High-Res PNG &gt;
           </a>
         </div>
@@ -802,7 +838,7 @@ function renderStudioHtml(): string {
           <span id="whiteboard-inline-status-text">🟢 Draw.io Live Inline Editor • Autosaving to scratch/</span>
         </div>
         <div id="whiteboard-zoom-container" class="w-full flex items-center justify-center transition-transform duration-300 origin-center">
-          <img id="whiteboard-drawio-img" src="/scratch/gcp_merck_agentic_ai_architecture.png" alt="Executive Agentic Architecture Diagram" class="w-full h-auto max-h-[580px] object-contain" />
+          <img id="whiteboard-drawio-img" src="/scratch/gcp_agentic_ai_architecture.png" alt="Executive Agentic Architecture Diagram" class="w-full h-auto max-h-[580px] object-contain" />
           <iframe id="whiteboard-inline-iframe" class="w-full h-[660px] rounded-xl border-0 hidden" src="about:blank"></iframe>
         </div>
       </div>
@@ -1378,7 +1414,7 @@ function renderStudioHtml(): string {
               action: 'load',
               autosave: 1,
               xml: currentDrawioXml,
-              title: 'gcp_merck_agentic_ai_architecture.drawio'
+              title: 'gcp_agentic_ai_architecture.drawio'
             }), '*');
           }
         } else if (msg.event === 'load') {
@@ -1533,7 +1569,7 @@ function renderWhiteboardEditorHtml(): string {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Draw.io Cloud Editor — GCP Agentic AI Merck Architecture</title>
+  <title>Draw.io Cloud Editor — GCP Agentic AI Reference Architecture</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -1555,7 +1591,7 @@ function renderWhiteboardEditorHtml(): string {
       <div class="flex items-center gap-2.5">
         <div class="w-7 h-7 rounded-lg bg-orange-100 text-orange-700 flex items-center justify-center font-bold text-xs">📐</div>
         <div>
-          <h1 class="text-sm font-bold text-gray-900 leading-tight">gcp_merck_agentic_ai_architecture.drawio</h1>
+          <h1 class="text-sm font-bold text-gray-900 leading-tight">gcp_agentic_ai_architecture.drawio</h1>
           <p class="text-[11px] text-gray-500 mono">Executive 5-Tier Reference Architecture • Workspace Sync Active</p>
         </div>
       </div>
@@ -1570,10 +1606,10 @@ function renderWhiteboardEditorHtml(): string {
         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"/></svg>
         Save Workspace File
       </button>
-      <a href="/scratch/gcp_merck_agentic_ai_architecture.png" target="_blank" class="px-3.5 py-1.5 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-semibold transition-all">
+      <a href="/scratch/gcp_agentic_ai_architecture.png" target="_blank" class="px-3.5 py-1.5 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-semibold transition-all">
         View PNG
       </a>
-      <a href="/scratch/gcp_merck_agentic_ai_architecture.drawio" download class="px-3.5 py-1.5 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-semibold transition-all">
+      <a href="/scratch/gcp_agentic_ai_architecture.drawio" download class="px-3.5 py-1.5 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-semibold transition-all">
         Download .drawio
       </a>
     </div>
@@ -1619,7 +1655,7 @@ function renderWhiteboardEditorHtml(): string {
             action: 'load',
             autosave: 1,
             xml: currentXml,
-            title: 'gcp_merck_agentic_ai_architecture.drawio'
+            title: 'gcp_agentic_ai_architecture.drawio'
           }), '*');
         } else if (msg.event === 'load') {
           statusEl.innerHTML = '<span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> Workspace Synced (Draw.io Active)';

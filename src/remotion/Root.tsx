@@ -17,7 +17,7 @@ export const RemotionRoot: React.FC = () => {
           topicId: "vertex_gemini_private_endpoint",
           whiteboardDurationFrames: 840,
           screencastDurationFrames: 1372,
-          enableWatermark: true,
+          enableWatermark: false,
           enableDisclaimer: true
         }}
       />
@@ -33,7 +33,7 @@ export const RemotionRoot: React.FC = () => {
           topicId: "vertex_gemini_private_endpoint",
           whiteboardDurationFrames: 840,
           screencastDurationFrames: 1372,
-          enableWatermark: true,
+          enableWatermark: false,
           enableDisclaimer: true
         }}
       />

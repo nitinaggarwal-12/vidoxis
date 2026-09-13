@@ -49,6 +49,10 @@ export interface WhiteboardEdge {
 export interface WhiteboardTrackProps {
   nodes?: WhiteboardNode[];
   edges?: WhiteboardEdge[];
+  /** Banner headline. Driven by the `--topic` CLI flag via the master composition. */
+  title?: string;
+  /** Banner sub-headline. */
+  subtitle?: string;
 }
 
 export const DEFAULT_NODES: WhiteboardNode[] = ENTERPRISE_WHITEBOARD_NODES;
@@ -56,7 +60,9 @@ export const DEFAULT_EDGES: WhiteboardEdge[] = ENTERPRISE_WHITEBOARD_EDGES;
 
 export const WhiteboardTrack: React.FC<WhiteboardTrackProps> = ({
   nodes = DEFAULT_NODES,
-  edges = DEFAULT_EDGES
+  edges = DEFAULT_EDGES,
+  title = "Deploying Private Gemini 2.0 Endpoints on Google Cloud",
+  subtitle = "Zero-Egress Private Service Connect • Cloud Armor WAF • Vertex AI ScaNN • BigQuery Lakehouse"
 }) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
@@ -168,8 +174,8 @@ export const WhiteboardTrack: React.FC<WhiteboardTrackProps> = ({
             <text x="214" y="18" fill="#94A3B8" fontSize="13" fontFamily="'Roboto Mono', monospace">|</text>
             <text x="230" y="18" fill="#475569" fontSize="12" fontWeight="600">ENTERPRISE REFERENCE ARCHITECTURE</text>
             
-            <text x="0" y="52" fill="#0F172A" fontSize="26" fontWeight="800">Deploying Private Gemini 2.0 Endpoints on Google Cloud</text>
-            <text x="0" y="74" fill="#64748B" fontSize="13" fontWeight="500" fontFamily="'Roboto Mono', monospace">Zero-Egress Private Service Connect • Cloud Armor WAF • Vertex AI ScaNN • BigQuery Lakehouse</text>
+            <text x="0" y="52" fill="#0F172A" fontSize="26" fontWeight="800">{title}</text>
+            <text x="0" y="74" fill="#64748B" fontSize="13" fontWeight="500" fontFamily="'Roboto Mono', monospace">{subtitle}</text>
           </g>
 
           {/* Metadata Badges */}

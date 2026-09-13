@@ -1,8 +1,102 @@
 import path from "node:path";
 import fs from "node:fs";
+import { execFileSync } from "node:child_process";
 import { bundle } from "@remotion/bundler";
 import { renderMedia, renderStill, selectComposition } from "@remotion/renderer";
 import { resolveGoogleSignedChrome, inspectChromeMetadata, DEFAULT_CHROME_FLAGS } from "../utils/chrome-path.js";
+
+/**
+ * Maximum frames encoded by any single encoder process.
+ *
+ * A full-length 4K master (2212 frames) reproducibly dies with
+ * "FFmpeg quit with code null (SIGKILL)" at ~70%, while bounded windows always
+ * complete. Capping process lifetime sidesteps the cumulative failure entirely.
+ */
+const FRAMES_PER_CHUNK = 300;
+
+/** Locate an ffmpeg capable of a lossless concat, or undefined if none exists. */
+function resolveConcatFfmpeg(): string | undefined {
+  const candidates = [
+    "/usr/bin/ffmpeg",
+    "/opt/homebrew/bin/ffmpeg",
+    "/usr/local/bin/ffmpeg"
+  ];
+  for (const candidate of candidates) {
+    if (fs.existsSync(candidate)) {
+      return candidate;
+    }
+  }
+  try {
+    const fromPath = execFileSync("which", ["ffmpeg"], { encoding: "utf-8" }).trim();
+    return fromPath.length > 0 ? fromPath : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+/**
+ * Concatenate h264 chunks into the master via the concat demuxer with stream
+ * copy. No re-encode, so this is bit-exact and adds no generational loss.
+ */
+function concatMp4Chunks(chunkPaths: string[], outputPath: string, ffmpegPath: string): void {
+  const listPath = path.join(path.dirname(outputPath), ".chunks", "concat_list.txt");
+  const listBody = chunkPaths.map(chunk => `file '${chunk.replace(/'/g, "'\\''")}'`).join("\n");
+  fs.writeFileSync(listPath, `${listBody}\n`, "utf-8");
+
+  console.log(`  🔗 Concatenating ${chunkPaths.length} chunks (stream copy, no re-encode)...`);
+  execFileSync(
+    ffmpegPath,
+    ["-hide_banner", "-loglevel", "error", "-y", "-f", "concat", "-safe", "0", "-i", listPath, "-c", "copy", outputPath],
+    { stdio: ["ignore", "ignore", "pipe"] }
+  );
+}
+
+/**
+ * Pick the finished audio bed: the ducked narration+music broadcast mix if the
+ * Lyria scorer produced one, else bare narration. Returns undefined when no
+ * audio has been synthesized (run src/audio/synthesize-natural-audio.ts first).
+ */
+function resolveMasterAudio(): string | undefined {
+  const scratch = path.resolve(process.cwd(), "scratch");
+  for (const candidate of ["master_audio.wav", "narration.wav"]) {
+    const full = path.join(scratch, candidate);
+    if (fs.existsSync(full)) {
+      return full;
+    }
+  }
+  return undefined;
+}
+
+/**
+ * Mux one continuous audio track onto the assembled video.
+ *
+ * Chunks are rendered muted on purpose. If each chunk carried its own AAC
+ * track, concatenating them with stream copy would splice in encoder-delay
+ * priming samples at every seam, producing audible clicks and cumulative A/V
+ * drift. Applying the audio once, after concat, sidesteps that entirely.
+ *
+ * No -shortest: the narration is slightly shorter than the video, and we want
+ * the trailing frames preserved rather than the video truncated to the audio.
+ */
+function muxAudioTrack(videoPath: string, audioPath: string, ffmpegPath: string): void {
+  const merged = `${videoPath}.muxed.mp4`;
+  console.log(`  🔊 Muxing audio track (${path.basename(audioPath)}) onto master...`);
+  execFileSync(
+    ffmpegPath,
+    [
+      "-hide_banner", "-loglevel", "error", "-y",
+      "-i", videoPath,
+      "-i", audioPath,
+      "-map", "0:v:0", "-map", "1:a:0",
+      "-c:v", "copy",
+      "-c:a", "aac", "-b:a", "320k", "-ar", "48000",
+      merged
+    ],
+    { stdio: ["ignore", "ignore", "pipe"] }
+  );
+  fs.renameSync(merged, videoPath);
+}
+
 
 export interface RenderOptions {
   outputVideoPath?: string;
@@ -11,6 +105,10 @@ export interface RenderOptions {
   skipStills?: boolean;
   frameRange?: [number, number];
   previewOnly?: boolean;
+  /** Banner headline shown on the whiteboard track. Driven by `--topic`. */
+  title?: string;
+  /** Banner sub-headline shown on the whiteboard track. */
+  subtitle?: string;
 }
 
 function loadScreenshotAsDataUri(filename: string): string {
@@ -76,8 +174,10 @@ export async function renderVidoxisVideo(options: RenderOptions = {}): Promise<{
 
   // Prepare input props with embedded base64 screenshots and master audio
   const inputProps = {
-    title: "Deploying Private Gemini 2.0 Endpoints on Google Cloud",
-    subtitle: "Zero-Egress Enterprise Architectures with Private Service Connect & Vertex AI",
+    title: options.title || "Deploying Private Gemini 2.0 Endpoints on Google Cloud",
+    subtitle:
+      options.subtitle ||
+      "Zero-Egress Private Service Connect • Cloud Armor WAF • Vertex AI ScaNN • BigQuery Lakehouse",
     topicId: "vertex_gemini_private_endpoint",
     whiteboardDurationFrames: 840,
     screencastDurationFrames: 1372,
@@ -97,9 +197,8 @@ export async function renderVidoxisVideo(options: RenderOptions = {}): Promise<{
     },
     audioSrc: loadAudioAsDataUri("narration.wav"),
     segments: loadPhonemesSegments(),
-    enableWatermark: true,
+    enableWatermark: false,
     enableDisclaimer: true,
-    enableAvatar: true,
     enableSubtitles: true
   };
 
@@ -188,30 +287,93 @@ export async function renderVidoxisVideo(options: RenderOptions = {}): Promise<{
 
     try {
       const frameRange = options.frameRange || (options.previewOnly ? [0, 120] as [number, number] : undefined);
-      const ffmpegPath = process.platform === "linux" && fs.existsSync("/usr/bin/ffmpeg") ? "/usr/bin/ffmpeg" : undefined;
+      const ffmpegPath = resolveConcatFfmpeg();
       const concurrency = process.platform === "linux" ? 16 : 1;
 
-      console.log(`  ↳ Render concurrency: ${concurrency} worker(s), FFmpeg: ${ffmpegPath || "bundled/auto"}`);
-      await renderMedia({
-        composition,
-        serveUrl: bundleLocation,
-        outputLocation: outputVideoPath,
-        inputProps,
-        frameRange,
-        codec: "h264",
-        crf: 18,
-        concurrency,
-        pixelFormat: "yuv420p",
-        browserExecutable: chromeMeta.executablePath,
-        chromiumOptions,
-        onProgress: ({ progress }) => {
-          const pct = Math.round(progress * 100);
-          if (pct % 10 === 0) {
-            process.stdout.write(`  ⏳ Video render progress: ${pct}%\r`);
+      const startFrame = frameRange ? frameRange[0] : 0;
+      const endFrame = frameRange ? frameRange[1] : composition.durationInFrames - 1;
+      const totalFrames = endFrame - startFrame + 1;
+
+      const renderSegment = async (
+        target: string,
+        range: [number, number],
+        label: string,
+        muted = false
+      ) => {
+        await renderMedia({
+          composition,
+          serveUrl: bundleLocation,
+          outputLocation: target,
+          muted,
+          inputProps,
+          frameRange: range,
+          codec: "h264",
+          crf: 18,
+          concurrency,
+          pixelFormat: "yuv420p",
+          browserExecutable: chromeMeta.executablePath,
+          chromiumOptions,
+          onProgress: ({ progress }) => {
+            const pct = Math.round(progress * 100);
+            if (pct % 10 === 0) {
+              process.stdout.write(`  ⏳ ${label}: ${pct}%\r`);
+            }
           }
+        });
+      };
+
+      // A single long-lived encoder process gets SIGKILLed partway through a
+      // full-length 4K encode (reproducible at ~70%), while bounded frame
+      // windows always complete. Render in chunks and concatenate losslessly so
+      // no encoder process ever lives long enough to be killed.
+      const shouldChunk = ffmpegPath !== undefined && totalFrames > FRAMES_PER_CHUNK;
+
+      if (!shouldChunk) {
+        console.log(`  ↳ Single-pass encode: ${totalFrames} frames, concurrency ${concurrency}`);
+        await renderSegment(outputVideoPath, [startFrame, endFrame], "Video render progress");
+      } else {
+        const chunkDir = path.join(path.dirname(outputVideoPath), ".chunks");
+        fs.rmSync(chunkDir, { recursive: true, force: true });
+        fs.mkdirSync(chunkDir, { recursive: true });
+
+        const chunkPaths: string[] = [];
+        const chunkCount = Math.ceil(totalFrames / FRAMES_PER_CHUNK);
+        const masterAudio = resolveMasterAudio();
+        console.log(
+          `  ↳ Chunked encode: ${totalFrames} frames in ${chunkCount} x ${FRAMES_PER_CHUNK}-frame chunks ` +
+          `(concurrency ${concurrency}, concat via ${ffmpegPath})`
+        );
+        console.log(
+          masterAudio
+            ? `  ↳ Audio: chunks rendered muted, ${path.basename(masterAudio)} muxed once post-concat`
+            : `  ⚠️ Audio: no narration.wav/master_audio.wav in scratch/ — master will be SILENT. ` +
+              `Run \`npx tsx src/audio/synthesize-natural-audio.ts\` first.`
+        );
+
+        for (let i = 0; i < chunkCount; i++) {
+          const from = startFrame + i * FRAMES_PER_CHUNK;
+          const to = Math.min(from + FRAMES_PER_CHUNK - 1, endFrame);
+          const chunkPath = path.join(chunkDir, `chunk_${String(i).padStart(4, "0")}.mp4`);
+          await renderSegment(chunkPath, [from, to], `Chunk ${i + 1}/${chunkCount} (frames ${from}-${to})`, true);
+          if (!fs.existsSync(chunkPath)) {
+            throw new Error(`Chunk ${i + 1}/${chunkCount} produced no output at ${chunkPath}`);
+          }
+          chunkPaths.push(chunkPath);
+          console.log(`    ✔ Chunk ${i + 1}/${chunkCount} encoded (frames ${from}-${to})`);
         }
-      });
-      console.log(`\n  ✔ Master 4K MP4 successfully rendered: ${outputVideoPath}`);
+
+        concatMp4Chunks(chunkPaths, outputVideoPath, ffmpegPath!);
+        if (masterAudio) {
+          muxAudioTrack(outputVideoPath, masterAudio, ffmpegPath!);
+        }
+        fs.rmSync(chunkDir, { recursive: true, force: true });
+      }
+
+      if (!fs.existsSync(outputVideoPath)) {
+        throw new Error(`Encoder reported success but no file exists at ${outputVideoPath}`);
+      }
+      const sizeMb = (fs.statSync(outputVideoPath).size / (1024 * 1024)).toFixed(1);
+      console.log(`\n  ✔ Master 4K MP4 successfully rendered: ${outputVideoPath} (${sizeMb} MB)`);
       finalVideoPath = outputVideoPath;
 
       // Keep trainex_master_4k.mp4 alias in sync

@@ -4,7 +4,6 @@ import { WhiteboardTrack } from "./tracks/WhiteboardTrack.js";
 import { ConsoleScreencastTrack } from "./tracks/ConsoleScreencastTrack.js";
 import { LegalPreviewDisclaimerSlate } from "./tracks/LegalPreviewDisclaimerSlate.js";
 import { ConfidentialNDAWatermark } from "./tracks/ConfidentialNDAWatermark.js";
-import { PresenterAvatarCapsule } from "./tracks/PresenterAvatarCapsule.js";
 import { KaraokeSubtitleTrack, SubtitleSegment } from "./tracks/KaraokeSubtitleTrack.js";
 import { PromptCanvasSlideTrack } from "./tracks/PromptCanvasSlideTrack.js";
 
@@ -25,9 +24,9 @@ export interface VidoxisMasterCompositionProps {
   };
   audioSrc?: string;
   segments?: SubtitleSegment[];
+  /** NDA compliance badge (flat bottom-left label). Off by default. */
   enableWatermark?: boolean;
   enableDisclaimer?: boolean;
-  enableAvatar?: boolean;
   enableSubtitles?: boolean;
 }
 
@@ -43,9 +42,8 @@ export const VidoxisMasterComposition: React.FC<VidoxisMasterCompositionProps> =
   screenshots = {},
   audioSrc,
   segments,
-  enableWatermark = true,
+  enableWatermark = false,
   enableDisclaimer = true,
-  enableAvatar = true,
   enableSubtitles = true
 }) => {
   const frame = useCurrentFrame();
@@ -89,7 +87,7 @@ export const VidoxisMasterComposition: React.FC<VidoxisMasterCompositionProps> =
       {/* Sequence 1: Progressive Whiteboard Engine (Act 1 & 2: Frames 0 - 840) */}
       <Sequence from={slideDurationFrames} durationInFrames={whiteboardDurationFrames}>
         <div style={{ opacity: whiteboardOpacity, width: "100%", height: "100%" }}>
-          <WhiteboardTrack />
+          <WhiteboardTrack title={title} subtitle={subtitle} />
         </div>
       </Sequence>
 
@@ -106,17 +104,14 @@ export const VidoxisMasterComposition: React.FC<VidoxisMasterCompositionProps> =
       {/* Dynamic Gold Karaoke Subtitles */}
       {enableSubtitles && <KaraokeSubtitleTrack segments={segments} />}
 
-      {/* Veo 2 / Imagen 3 PiP Presenter Avatar */}
-      {enableAvatar && <PresenterAvatarCapsule />}
-
       {/* Compliance & Legal Disclaimers (Act 4) */}
       {enableDisclaimer && (
         <LegalPreviewDisclaimerSlate startFrame={120} durationFrames={180} />
       )}
 
-      {/* Dynamic Security Watermarking */}
+      {/* NDA compliance badge — opt-in, flat bottom-left label (no diagonal striping) */}
       {enableWatermark && (
-        <ConfidentialNDAWatermark partnerName="Alphabet Partner Briefing" opacity={0.07} />
+        <ConfidentialNDAWatermark partnerName="Alphabet Partner Briefing" />
       )}
     </div>
   );

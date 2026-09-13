@@ -20,6 +20,7 @@
     "rehearse": "tsx src/runner/run-rehearsal.ts",
     "replay": "tsx src/runner/cdp-replayer.ts",
     "whiteboard": "tsx src/whiteboard/whiteboard-compiler.ts",
+    "audio": "tsx src/audio/synthesize-natural-audio.ts",
     "render:video": "tsx src/remotion/render.ts"
   },
   "dependencies": {

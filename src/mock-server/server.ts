@@ -26,7 +26,7 @@ export function createMockGeminiEnterpriseChatHtml(pathname: string, searchParam
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Gemini Enterprise — Merck Clinical Research</title>
+  <title>Gemini Enterprise — Vidoxis Demo Tenant</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Google+Sans+Flex:wght@400;500;600;700&family=Roboto+Mono:wght@400;500;700&display=swap" rel="stylesheet">
@@ -187,7 +187,7 @@ export function createMockGeminiEnterpriseChatHtml(pathname: string, searchParam
   <!-- Environment Mode Switcher -->
   <div class="env-switcher">
     <a href="/chat/gemini-enterprise" class="active">💬 Gemini Enterprise Chat</a>
-    <a href="/vertex-ai/models?project=merck-clinical-ai-prod">☁️ Google Cloud Console</a>
+    <a href="/vertex-ai/models?project=vidoxis-sandbox-8f2a">☁️ Google Cloud Console</a>
   </div>
 
   <!-- Top Navigation -->
@@ -195,7 +195,7 @@ export function createMockGeminiEnterpriseChatHtml(pathname: string, searchParam
     <div class="brand-group">
       <div class="gemini-logo">✦</div>
       <h1 class="brand-title">Gemini Enterprise</h1>
-      <span class="org-pill">Merck Clinical AI</span>
+      <span class="org-pill">Vidoxis Demo Tenant</span>
     </div>
 
     <div class="center-indicator">
@@ -357,7 +357,7 @@ export function createMockGeminiEnterpriseChatHtml(pathname: string, searchParam
                   <span>🏥</span>
                   <span>Notify Trial Site Coordinators</span>
                 </button>
-                <a href="/vertex-ai/models?project=merck-clinical-ai-prod" class="cta-btn-secondary" style="text-decoration: none;">
+                <a href="/vertex-ai/models?project=vidoxis-sandbox-8f2a" class="cta-btn-secondary" style="text-decoration: none;">
                   <span>⚙️</span>
                   <span>Inspect Backend in GCP Console &gt;</span>
                 </a>
@@ -388,9 +388,9 @@ export function createMockConsoleHtml(pathname: string, searchParams: URLSearchP
     return createMockGeminiEnterpriseChatHtml(pathname, searchParams);
   }
 
-  const projectId = searchParams.get("project") || "merck-clinical-ai-prod";
+  const projectId = searchParams.get("project") || "vidoxis-sandbox-8f2a";
   const billingAccount = simulatePii ? "01A2B3-4C5D6E-7F8G9H" : "01••••-••••••-••••••";
-  const userLdap = simulatePii ? "engineer@google.com" : "cloud-architect@merck.com";
+  const userLdap = simulatePii ? "engineer@google.com" : "cloud-architect@example.com";
 
   return `<!DOCTYPE html>
 <html lang="en">
@@ -552,7 +552,7 @@ export function createMockConsoleHtml(pathname: string, searchParams: URLSearchP
   <!-- Environment Mode Switcher -->
   <div class="env-switcher">
     <a href="/chat/gemini-enterprise">💬 Gemini Enterprise Chat</a>
-    <a href="/vertex-ai/models?project=merck-clinical-ai-prod" class="active">☁️ Google Cloud Console</a>
+    <a href="/vertex-ai/models?project=vidoxis-sandbox-8f2a" class="active">☁️ Google Cloud Console</a>
   </div>
 
   <!-- Pantheon Header Bar -->
@@ -705,9 +705,9 @@ export function createMockConsoleHtml(pathname: string, searchParams: URLSearchP
           </thead>
           <tbody id="endpoints-table-body">
             <tr>
-              <td style="font-weight: 600; color: #1a73e8;"><code style="font-family: var(--font-mono);">gemini-20-flash-merck-prod</code></td>
+              <td style="font-weight: 600; color: #1a73e8;"><code style="font-family: var(--font-mono);">gemini-20-flash-sandbox</code></td>
               <td><span class="status-badge ready">● Active (PSC)</span></td>
-              <td><code style="font-family: var(--font-mono); font-size: 11.5px;">merck-clinical-vpc</code></td>
+              <td><code style="font-family: var(--font-mono); font-size: 11.5px;">sandbox-clinical-vpc</code></td>
               <td>gemini-2.0-flash-001</td>
               <td>us-central1</td>
               <td>1 – 5 replicas</td>
@@ -716,7 +716,7 @@ export function createMockConsoleHtml(pathname: string, searchParams: URLSearchP
             <tr>
               <td style="font-weight: 600; color: #1a73e8;"><code style="font-family: var(--font-mono);">clinical-search-grounding</code></td>
               <td><span class="status-badge ready">● Active</span></td>
-              <td><code style="font-family: var(--font-mono); font-size: 11.5px;">merck-clinical-vpc</code></td>
+              <td><code style="font-family: var(--font-mono); font-size: 11.5px;">sandbox-clinical-vpc</code></td>
               <td>text-embedding-005</td>
               <td>us-central1</td>
               <td>2 – 8 replicas</td>
@@ -789,14 +789,14 @@ export function createMockConsoleHtml(pathname: string, searchParams: URLSearchP
             <form id="endpoint-deploy-form">
               <div class="form-group">
                 <label class="form-label" for="endpoint-name-input">Endpoint name</label>
-                <input type="text" id="endpoint-name-input" class="form-input" role="textbox" aria-label="Endpoint name" data-test-id="input-endpoint-name" value="gemini-20-flash-merck-prod" required />
+                <input type="text" id="endpoint-name-input" class="form-input" role="textbox" aria-label="Endpoint name" data-test-id="input-endpoint-name" value="gemini-20-flash-sandbox" required />
                 <p class="form-help">Unique resource identifier within projects/${projectId}/locations/us-central1</p>
               </div>
 
               <div class="form-group">
                 <label class="form-label" for="vpc-select">VPC Network Routing (Zero Public IPs)</label>
                 <select id="vpc-select" class="form-select" data-test-id="select-vpc">
-                  <option value="merck-clinical-vpc" selected>projects/merck-prod/global/networks/merck-clinical-vpc (PSC Enabled)</option>
+                  <option value="sandbox-clinical-vpc" selected>projects/vidoxis-sandbox-8f2a/global/networks/sandbox-clinical-vpc (PSC Enabled)</option>
                   <option value="default-vpc">default-vpc</option>
                 </select>
                 <p class="form-help">Traffic routes directly over Google internal backbone with no external egress.</p>
@@ -839,7 +839,7 @@ export function createMockConsoleHtml(pathname: string, searchParams: URLSearchP
           const endpointName = shadow.getElementById('endpoint-name-input').value;
           statusPanel.style.display = 'block';
           badge.className = 'status-badge pending';
-          badge.textContent = 'Deploying ' + endpointName + ' to merck-clinical-vpc...';
+          badge.textContent = 'Deploying ' + endpointName + ' to sandbox-clinical-vpc...';
 
           setTimeout(() => {
             badge.className = 'status-badge ready';
@@ -847,7 +847,7 @@ export function createMockConsoleHtml(pathname: string, searchParams: URLSearchP
             const tableBody = document.getElementById('endpoints-table-body');
             if (tableBody) {
               const row = document.createElement('tr');
-              row.innerHTML = '<td style="font-weight: 600; color: #1a73e8;"><code>' + endpointName + '</code></td><td><span class="status-badge ready">● Active (PSC)</span></td><td><code>merck-clinical-vpc</code></td><td>gemini-2.0-flash-001</td><td>us-central1</td><td>1 – 5 replicas</td><td><span style="color: #137333; font-weight: 600;">Enabled</span></td>';
+              row.innerHTML = '<td style="font-weight: 600; color: #1a73e8;"><code>' + endpointName + '</code></td><td><span class="status-badge ready">● Active (PSC)</span></td><td><code>sandbox-clinical-vpc</code></td><td>gemini-2.0-flash-001</td><td>us-central1</td><td>1 – 5 replicas</td><td><span style="color: #137333; font-weight: 600;">Enabled</span></td>';
               tableBody.prepend(row);
             }
           }, 400);
@@ -941,6 +941,6 @@ if (process.argv[1] && process.argv[1].endsWith("server.ts")) {
   startMockServer({ port }).then(running => {
     console.log(`[Mock Server] Running at ${running.baseUrl}`);
     console.log(`  - Gemini Enterprise Chat: ${running.baseUrl}/chat/gemini-enterprise`);
-    console.log(`  - GCP Console: ${running.baseUrl}/vertex-ai/models?project=merck-clinical-ai-prod`);
+    console.log(`  - GCP Console: ${running.baseUrl}/vertex-ai/models?project=vidoxis-sandbox-8f2a`);
   });
 }

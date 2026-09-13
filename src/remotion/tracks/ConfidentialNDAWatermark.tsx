@@ -1,62 +1,46 @@
 import React from "react";
-import { useCurrentFrame } from "remotion";
 
 export interface ConfidentialNDAWatermarkProps {
   partnerName?: string;
   opacity?: number;
 }
 
+/**
+ * Compliance marking for NDA briefings (GEMINI.md §3.3).
+ *
+ * Renders a SINGLE flat bottom-left badge. The previous implementation tiled a
+ * 12x4 grid of text rotated -22deg across the full 4K canvas, which produced
+ * diagonal stripes that dominated every frame and obscured console content.
+ * Diagonal/tiled striping is explicitly banned.
+ */
 export const ConfidentialNDAWatermark: React.FC<ConfidentialNDAWatermarkProps> = ({
   partnerName = "Enterprise Cloud Partner",
-  opacity = 0.05
+  opacity = 0.5
 }) => {
-  const frame = useCurrentFrame();
-  const text = `CONFIDENTIAL • UNDER NDA • PREPARED FOR ${partnerName.toUpperCase()} • DO NOT DISTRIBUTE`;
-
-  // Gentle drift across time to prevent clean watermark cloning/removal
-  const offsetX = (frame * 0.5) % 400;
-  const offsetY = (frame * 0.25) % 250;
+  const text = `CONFIDENTIAL · UNDER NDA · ${partnerName.toUpperCase()} · DO NOT DISTRIBUTE`;
 
   return (
     <div
       style={{
         position: "absolute",
-        top: -200,
-        left: -400,
-        width: 4640,
-        height: 2560,
-        transform: `translate(${offsetX}px, ${offsetY}px) rotate(-22deg)`,
-        display: "flex",
-        flexDirection: "column",
-        justifyContent: "space-around",
+        left: 64,
+        bottom: 48,
         pointerEvents: "none",
         zIndex: 45,
-        overflow: "hidden"
+        opacity,
+        fontFamily: "'Roboto Mono', 'Google Sans Flex', monospace",
+        fontSize: 20,
+        fontWeight: 600,
+        letterSpacing: "1.5px",
+        color: "#475569",
+        backgroundColor: "rgba(255, 255, 255, 0.72)",
+        border: "1px solid #CBD5E1",
+        borderRadius: 8,
+        padding: "8px 18px",
+        whiteSpace: "nowrap"
       }}
     >
-      {Array.from({ length: 12 }).map((_, rowIdx) => (
-        <div
-          key={rowIdx}
-          style={{
-            display: "flex",
-            justifyContent: "space-around",
-            whiteSpace: "nowrap",
-            opacity,
-            fontFamily: "'Google Sans Flex', 'Roboto Mono', sans-serif",
-            fontSize: 22,
-            fontWeight: 700,
-            letterSpacing: "2px",
-            color: "#0F172A",
-            textTransform: "uppercase"
-          }}
-        >
-          {Array.from({ length: 4 }).map((_, colIdx) => (
-            <span key={colIdx} style={{ margin: "0 60px" }}>
-              {text}
-            </span>
-          ))}
-        </div>
-      ))}
+      {text}
     </div>
   );
 };

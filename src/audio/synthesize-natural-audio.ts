@@ -13,51 +13,59 @@ export interface VoicePreset {
   avatarSeed: string;
 }
 
+/**
+ * Google Cloud Text-to-Speech voices available to the narrator.
+ *
+ * These are synthesized voices, not people. Earlier revisions labelled them
+ * with invented human identities ("Dr. Maya Lin, Google Cloud AI Evangelist"),
+ * which misrepresented machine narration as a named Google employee. Presets
+ * are now named by their actual voice ID and documented timbre.
+ */
 export const VOICE_PRESETS: VoicePreset[] = [
   {
     id: "en-US-Journey-F",
-    name: "Dr. Maya Lin",
-    role: "Google Cloud AI Evangelist",
+    name: "Journey F",
+    role: "Google Cloud TTS · Journey (en-US)",
     gender: "female",
     style: "Warm, authoritative & natural phrasing",
     badge: "RECOMMENDED",
-    avatarSeed: "maya"
+    avatarSeed: "journey-f"
   },
   {
     id: "en-US-Journey-D",
-    name: "Alex Chen",
-    role: "Principal Solutions Architect",
+    name: "Journey D",
+    role: "Google Cloud TTS · Journey (en-US)",
     gender: "male",
     style: "Deep, conversational & precise cadence",
     badge: "CONVERSATIONAL",
-    avatarSeed: "alex"
+    avatarSeed: "journey-d"
   },
   {
     id: "en-US-Journey-O",
-    name: "Elena Vance",
-    role: "Executive Keynote Presenter",
+    name: "Journey O",
+    role: "Google Cloud TTS · Journey (en-US)",
     gender: "female",
     style: "Dynamic, energetic & keynote polished",
     badge: "DYNAMIC",
-    avatarSeed: "elena"
+    avatarSeed: "journey-o"
   },
   {
     id: "en-US-Studio-O",
-    name: "Sarah Jenkins",
-    role: "Cloud Engineering Lead",
+    name: "Studio O",
+    role: "Google Cloud TTS · Studio (en-US)",
     gender: "female",
     style: "Studio-mastered broadcast clarity",
     badge: "STUDIO BROADCAST",
-    avatarSeed: "sarah"
+    avatarSeed: "studio-o"
   },
   {
     id: "en-US-Studio-Q",
-    name: "David Ross",
-    role: "Enterprise Infrastructure Director",
+    name: "Studio Q",
+    role: "Google Cloud TTS · Studio (en-US)",
     gender: "male",
     style: "Commanding, resonant enterprise delivery",
     badge: "ENTERPRISE",
-    avatarSeed: "david"
+    avatarSeed: "studio-q"
   }
 ];
 
@@ -107,6 +115,28 @@ function getAccessToken(): string {
   return execSync("gcloud auth print-access-token", { encoding: "utf-8" }).trim();
 }
 
+/**
+ * Resolve the billing/quota project for the TTS call.
+ *
+ * This was previously hardcoded to a single project ID, which 403s for any
+ * account lacking access to it. Prefer an explicit env override, then the
+ * active gcloud config.
+ */
+function getQuotaProject(): string {
+  const fromEnv = process.env.GOOGLE_CLOUD_PROJECT || process.env.GCLOUD_PROJECT;
+  if (fromEnv && fromEnv.trim().length > 0) {
+    return fromEnv.trim();
+  }
+  const fromConfig = execSync("gcloud config get-value project", { encoding: "utf-8" }).trim();
+  if (!fromConfig || fromConfig === "(unset)") {
+    throw new Error(
+      "No Google Cloud project configured. Run `gcloud config set project <PROJECT_ID>` " +
+      "or set GOOGLE_CLOUD_PROJECT."
+    );
+  }
+  return fromConfig;
+}
+
 async function synthesizeSpeech(
   text: string,
   token: string,
@@ -133,7 +163,7 @@ async function synthesizeSpeech(
     method: "POST",
     headers: {
       "Authorization": `Bearer ${token}`,
-      "X-Goog-User-Project": "vertex-ai-493102",
+      "X-Goog-User-Project": getQuotaProject(),
       "Content-Type": "application/json; charset=utf-8"
     },
     body: JSON.stringify(body)

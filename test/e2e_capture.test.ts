@@ -105,7 +105,7 @@ export async function runE2ECaptureSuite(): Promise<string[]> {
 
     // 04. Google Cloud Console Vertex AI Model Garden
     console.log("📸 [04] Navigating to GCP Console Vertex AI Model Garden deep link...");
-    await page.goto(`${mockServer.baseUrl}/vertex-ai/models?project=merck-clinical-ai-prod`, { waitUntil: "networkidle0" });
+    await page.goto(`${mockServer.baseUrl}/vertex-ai/models?project=vidoxis-sandbox-8f2a`, { waitUntil: "networkidle0" });
     await page.waitForSelector("[data-test-id='pantheon-logo']", { timeout: 5000 });
     await page.waitForSelector("[data-test-id='mg-deploy-btn']", { timeout: 5000 });
     await sleep(800);

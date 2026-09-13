@@ -200,7 +200,8 @@ Options:
   const renderResult = await renderVidoxisVideo({
     outputStillsDir: path.join(outputDir, "rendered_stills"),
     outputVideoPath: path.join(outputDir, "vidoxis_master_4k.mp4"),
-    renderStillsOnly: Boolean(values["stills-only"])
+    renderStillsOnly: Boolean(values["stills-only"]),
+    title: validatedContract.title
   });
 
   console.log("\n================================================================================");

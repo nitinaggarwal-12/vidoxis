@@ -6,7 +6,7 @@ import { TelemetryStream, TelemetryEvent } from "../types/telemetry.js";
 import { computeMinimumJerkTrajectory, Point2D } from "./trajectory-math.js";
 import { CameraSpringController } from "./camera-spring.js";
 import { TriadSelectorResolver } from "./triad-selector.js";
-import { resolveGoogleSignedChrome, inspectChromeMetadata, DEFAULT_CHROME_FLAGS } from "../utils/chrome-path.js";
+import { resolveGoogleSignedChrome, inspectChromeMetadata, isBannedBrowserPath, DEFAULT_CHROME_FLAGS } from "../utils/chrome-path.js";
 
 export interface ReplayOptions {
   headless?: boolean;
@@ -24,6 +24,15 @@ export interface ReplayOptions {
   userDataDir?: string;
 }
 
+/**
+ * Non-throwing probe for a Google-signed Chrome. Returns `undefined` when none
+ * is found.
+ *
+ * ⚠️ Do NOT feed this directly into `puppeteer.launch({ executablePath })`.
+ * Puppeteer treats `undefined` as "use my bundled browser", which silently
+ * selects the unsigned Chrome for Testing build that Santa Lockdown kills.
+ * Use {@link resolveGoogleSignedChrome} (which throws) on any launch path.
+ */
 export function detectChromeExecutablePath(): string | undefined {
   try {
     return resolveGoogleSignedChrome();
@@ -51,7 +60,22 @@ export class CDPReplayRunner {
     customExecutablePath?: string,
     userDataDir?: string
   ): Promise<void> {
-    const executablePath = customExecutablePath || detectChromeExecutablePath();
+    // Fail closed: never hand `undefined` to puppeteer.launch, and never trust
+    // a caller-supplied path without checking it. Both routes would otherwise
+    // end up on an unsigned Chrome for Testing build.
+    let executablePath: string;
+    if (customExecutablePath) {
+      if (isBannedBrowserPath(customExecutablePath)) {
+        throw new Error(
+          `[CDPReplayRunner] Refusing to launch "${customExecutablePath}": it is a Chrome for Testing / ` +
+            `headless-shell build. Capture requires the Google Developer ID signed Chrome.`
+        );
+      }
+      executablePath = customExecutablePath;
+    } else {
+      executablePath = resolveGoogleSignedChrome();
+    }
+
     const meta = inspectChromeMetadata(executablePath);
     console.log(`  ↳ Browser: Google Chrome ${meta.microVersion} (${meta.platform}, Google-signed: ${meta.isGoogleSigned}, Cloudtop: ${meta.isCloudtop})`);
 

@@ -2,6 +2,7 @@ import { testContractValidation } from "./topology_contract.test.js";
 import { testWhiteboardCompilation } from "./whiteboard_compiler.test.js";
 import { testRehearsalMatrix } from "./rehearsal_matrix.test.js";
 import { testHookExecutionEngine } from "./hooks_execution.test.js";
+import { testChromeSignatureEnforcement } from "./chrome_signature.test.js";
 
 async function main() {
   console.log("======================================================================");
@@ -30,6 +31,11 @@ async function main() {
   results.push({ suite: "Vidoxis Lifecycle Hooks & Quality Guard Engine (39 Hooks)", passed: r4 });
   console.log("");
 
+  // Suite 5: Google-Signed Chrome Enforcement (Santa Lockdown Guard)
+  const r5 = await testChromeSignatureEnforcement();
+  results.push({ suite: "Google-Signed Chrome Enforcement (Santa Lockdown Guard)", passed: r5 });
+  console.log("");
+
   console.log("======================================================================");
   console.log("                           VERIFICATION REPORT                        ");
   console.log("======================================================================");
@@ -45,7 +51,7 @@ async function main() {
     console.error("\n❌ Test harness detected one or more failures. Exiting with code 1.");
     process.exit(1);
   } else {
-    console.log("\n🎉 ALL QUALITY GATES PASSED (4/4 SUITES VERIFIED).");
+    console.log(`\n🎉 ALL QUALITY GATES PASSED (${results.length}/${results.length} SUITES VERIFIED).`);
   }
 }
 

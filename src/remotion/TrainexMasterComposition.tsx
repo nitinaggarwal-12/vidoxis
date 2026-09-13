@@ -33,12 +33,12 @@ export interface VidoxisMasterCompositionProps {
 export type TrainexMasterCompositionProps = VidoxisMasterCompositionProps;
 
 export const VidoxisMasterComposition: React.FC<VidoxisMasterCompositionProps> = ({
-  title = "Deploying Private Gemini 2.0 Endpoints on Google Cloud",
-  subtitle = "Zero-Egress Enterprise Architectures with Private Service Connect & Vertex AI",
-  topicId = "vertex_gemini_private_endpoint",
-  slideDurationFrames = 0,
-  whiteboardDurationFrames = 840, // 14.0 seconds @ 60fps (Act 1 hook + Act 2 progressive whiteboard)
-  screencastDurationFrames = 1372, // 22.87 seconds @ 60fps (Act 3, 4, 5 GCP Console step-by-step walkthrough)
+  title = "A2UI Protocol Architecture & Multi-Agent Live Demo on Google Cloud",
+  subtitle = "Declarative Agent-to-Renderer UI • Trust Boundary • Cloud Run a2a-gateway on nitinagga-ge-2",
+  topicId = "a2ui_v1_0_rc_architecture_and_demo",
+  slideDurationFrames = 3600,
+  whiteboardDurationFrames = 7200,
+  screencastDurationFrames = 7200,
   screenshots = {},
   audioSrc,
   segments,
@@ -48,18 +48,18 @@ export const VidoxisMasterComposition: React.FC<VidoxisMasterCompositionProps> =
 }) => {
   const frame = useCurrentFrame();
 
-  // Cross-dissolve transition window between Whiteboard and Screencast (20 frames)
-  const transitionStart = whiteboardDurationFrames - 20;
+  const whiteboardEndGlobal = slideDurationFrames + whiteboardDurationFrames;
+  const transitionStartGlobal = whiteboardEndGlobal - 20;
   const whiteboardOpacity = interpolate(
     frame,
-    [transitionStart, whiteboardDurationFrames],
+    [transitionStartGlobal, whiteboardEndGlobal],
     [1, 0],
     { extrapolateLeft: "clamp", extrapolateRight: "clamp" }
   );
 
   const screencastOpacity = interpolate(
     frame,
-    [transitionStart, whiteboardDurationFrames],
+    [transitionStartGlobal, whiteboardEndGlobal],
     [0, 1],
     { extrapolateLeft: "clamp", extrapolateRight: "clamp" }
   );
@@ -74,26 +74,22 @@ export const VidoxisMasterComposition: React.FC<VidoxisMasterCompositionProps> =
         overflow: "hidden"
       }}
     >
-      {/* Audio Layer (Narration + Ducked Lyria Music Bed + SFX) */}
       {audioSrc && <Audio src={audioSrc} />}
 
-      {/* Optional Stage 1: Keynote Slide Track */}
       {slideDurationFrames > 0 && (
         <Sequence from={0} durationInFrames={slideDurationFrames}>
           <PromptCanvasSlideTrack title={title} subtitle={subtitle} />
         </Sequence>
       )}
 
-      {/* Sequence 1: Progressive Whiteboard Engine (Act 1 & 2: Frames 0 - 840) */}
       <Sequence from={slideDurationFrames} durationInFrames={whiteboardDurationFrames}>
         <div style={{ opacity: whiteboardOpacity, width: "100%", height: "100%" }}>
           <WhiteboardTrack title={title} subtitle={subtitle} />
         </div>
       </Sequence>
 
-      {/* Sequence 2: Live Console Deterministic Screencast (Act 3, 4, 5: Frames 820 - 2212) */}
       <Sequence
-        from={slideDurationFrames + transitionStart}
+        from={transitionStartGlobal}
         durationInFrames={screencastDurationFrames + 20}
       >
         <div style={{ opacity: screencastOpacity, width: "100%", height: "100%" }}>
